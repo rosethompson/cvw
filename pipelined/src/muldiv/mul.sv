@@ -37,62 +37,15 @@ module mul (
     //    input logic [`XLEN-1:0] 	SrcAE, SrcBE,
   input logic [`XLEN-1:0] ForwardedSrcAE, ForwardedSrcBE, // *** these are the src outputs before the mux choosing between them and PCE to put in srcA/B
   input  logic [2:0]       Funct3E,
-  output logic [`XLEN*2-1:0] ProdM
-);
+  output logic [`XLEN*2-1:0] ProdM);
+  logic [`XLEN*2-1:0] ProdE;
 
-    // Number systems
-    // Let A' = sum(i=0, XLEN-2, A[i]*2^i)
-    // Unsigned: A = A' + A[XLEN-1]*2^(XLEN-1)
-    // Signed:   A = A' - A[XLEN-1]*2^(XLEN-1)
-
-    // Multiplication: A*B
-    // Let P' = A' * B'
-    //     PA = (A' * B[XLEN-1]) 
-    //     PB = (B' * A[XLEN-1])
-    //     PP = A[XLEN-1] * B[XLEN-1]
-    // Signed * Signed     = P' + (-PA - PB)*2^(XLEN-1) + PP*2^(2XLEN-2)
-    // Signed * Unsigned   = P' + ( PA - PB)*2^(XLEN-1) - PP*2^(2XLEN-2)
-    // Unsigned * Unsigned = P' + ( PA + PB)*2^(XLEN-1) + PP*2^(2XLEN-2)
-
-    logic [`XLEN*2-1:0] PP1E, PP2E, PP3E, PP4E;
-    logic [`XLEN*2-1:0] PP1M, PP2M, PP3M, PP4M;
-    logic [`XLEN-2:0]   PA, PB;
-    logic               PP;
-    logic               MULH, MULHSU;
-    logic [`XLEN-1:0]   Aprime, Bprime;
+  // Add Lab 5 code here to compute ProdE
+  assign ProdE = 0; // This isn't right!
 
   //////////////////////////////
-  // Execute Stage: Compute partial products
+  // Memory Stage Register
   //////////////////////////////
-
-    assign Aprime = {1'b0, ForwardedSrcAE[`XLEN-2:0]};
-    assign Bprime = {1'b0, ForwardedSrcBE[`XLEN-2:0]};
-    assign PP1E = Aprime * Bprime;
-    assign PA = {(`XLEN-1){ForwardedSrcAE[`XLEN-1]}} & ForwardedSrcBE[`XLEN-2:0];  
-    assign PB = {(`XLEN-1){ForwardedSrcBE[`XLEN-1]}} & ForwardedSrcAE[`XLEN-2:0];
-    assign PP = ForwardedSrcAE[`XLEN-1] & ForwardedSrcBE[`XLEN-1];
-
-    // flavor of multiplication
-    assign MULH   = (Funct3E == 3'b001);
-    assign MULHSU = (Funct3E == 3'b010);
-
-    // Handle signs
-    assign PP2E = {2'b00, (MULH | MULHSU) ? ~PA : PA, {(`XLEN-1){1'b0}}};
-    assign PP3E = {2'b00, (MULH) ? ~PB : PB, {(`XLEN-1){1'b0}}};
-    always_comb 
-    if (MULH)        PP4E = {1'b1, PP, {(`XLEN-3){1'b0}}, 1'b1, {(`XLEN){1'b0}}}; 
-    else if (MULHSU) PP4E = {1'b1, ~PP, {(`XLEN-2){1'b0}}, 1'b1, {(`XLEN-1){1'b0}}};
-    else             PP4E = {1'b0, PP, {(`XLEN*2-2){1'b0}}};
-
-  //////////////////////////////
-  // Memory Stage: Sum partial proudcts
-  //////////////////////////////
-
-	 flopenrc #(`XLEN*2) PP1Reg(clk, reset, FlushM, ~StallM, PP1E, PP1M); 
-	 flopenrc #(`XLEN*2) PP2Reg(clk, reset, FlushM, ~StallM, PP2E, PP2M); 
-	 flopenrc #(`XLEN*2) PP3Reg(clk, reset, FlushM, ~StallM, PP3E, PP3M); 
-	 flopenrc #(`XLEN*2) PP4Reg(clk, reset, FlushM, ~StallM, PP4E, PP4M); 
-
-    assign ProdM = PP1M + PP2M + PP3M + PP4M; //ForwardedSrcAE * ForwardedSrcBE;
+	 flopenrc #(`XLEN*2) ProdMReg(clk, reset, FlushM, ~StallM, ProdE, ProdM); 
  endmodule
 
