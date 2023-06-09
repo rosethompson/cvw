@@ -124,6 +124,7 @@ module csr #(parameter
   logic [`XLEN-1:0]        TVecAlignedM;
   logic                    InstrValidNotFlushedM;
   logic                    STimerInt;
+  logic                    MENVCFG_STCE;
 
   // only valid unflushed instructions can access CSRs
   assign InstrValidNotFlushedM = InstrValidM & ~StallW & ~FlushW;

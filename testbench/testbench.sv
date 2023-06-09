@@ -421,7 +421,7 @@ module testbench;
     end // always @ (negedge clk)
 
 
-  if(`PrintHPMCounters & `ZICOUNTERS_SUPPORTED) begin : HPMCSample
+  if(`PrintHPMCounters & `ZICNTR_SUPPORTED) begin : HPMCSample
     integer           HPMCindex;
     logic             StartSampleFirst;
     logic             StartSampleDelayed, BeginDelayed;
@@ -507,7 +507,7 @@ module testbench;
 
 
   // track the current function or global label
-  if (DEBUG == 1 | (`PrintHPMCounters & `ZICOUNTERS_SUPPORTED)) begin : FunctionName
+  if (DEBUG == 1 | (`PrintHPMCounters & `ZICNTR_SUPPORTED)) begin : FunctionName
     FunctionName FunctionName(.reset(reset),
 			      .clk(clk),
 			      .ProgramAddrMapFile(ProgramAddrMapFile),

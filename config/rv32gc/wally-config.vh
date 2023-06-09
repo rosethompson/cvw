@@ -45,6 +45,10 @@
 `define ZIHPM_SUPPORTED 1
 `define ZFH_SUPPORTED 0
 `define SSTC_SUPPORTED 1
+`define ZICBOM_SUPPORTED 0
+`define ZICBOZ_SUPPORTED 0
+`define ZICBOP_SUPPORTED 0
+`define SVPBMT_SUPPORTED 0
 
 // LSU microarchitectural Features
 `define BUS_SUPPORTED 1

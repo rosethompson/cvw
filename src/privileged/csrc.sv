@@ -119,9 +119,9 @@ module csrc #(parameter
     // DivBusyE will never be assert high since this configuration uses the FPU to do integer division
     assign CounterEvent[24] = DivBusyE | FDivBusyE;                                      // division cycles *** RT: might need to be delay until the next cycle
     // coverage on
-    assign CounterEvent[P.COUNTERS-1:25] = 0; // eventually give these sources, including FP instructions, I$/D$ misses, branches and mispredictions
+    assign CounterEvent[`COUNTERS-1:25] = 0; // eventually give these sources, including FP instructions, I$/D$ misses, branches and mispredictions
   end else begin: cevent
-    assign CounterEvent[P.COUNTERS-1:3] = 0;
+    assign CounterEvent[`COUNTERS-1:3] = 0;
   end
   
   // Counter update and write logic

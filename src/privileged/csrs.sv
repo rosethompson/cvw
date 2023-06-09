@@ -91,9 +91,9 @@ module csrs #(parameter
   assign WriteSTVALM = STrapM | (CSRSWriteM & (CSRAdrM == STVAL));
   assign WriteSATPM = CSRSWriteM & (CSRAdrM == SATP) & (PrivilegeModeW == `M_MODE | ~STATUS_TVM);
   assign WriteSCOUNTERENM = CSRSWriteM & (CSRAdrM == SCOUNTEREN);
-  assign WriteSENVCFGM    = CSRSWriteM & (CSRAdrM == SENVCFG);
-  assign WriteSTIMECMPM   = CSRSWriteM & (CSRAdrM == STIMECMP) & (PrivilegeModeW == `M_MODE | (MCOUNTEREN_TM & MENVCFG_STCE));
-  assign WriteSTIMECMPHM  = CSRSWriteM & (CSRAdrM == STIMECMPH) & (PrivilegeModeW == `M_MODE | (MCOUNTEREN_TM & MENVCFG_STCE)) & (`XLEN == 32);
+  assign WriteSENVCFGM = CSRSWriteM & (CSRAdrM == SENVCFG);
+  assign WriteSTIMECMPM = CSRSWriteM & (CSRAdrM == STIMECMP) & (PrivilegeModeW == `M_MODE | (MCOUNTEREN_TM & MENVCFG_STCE));
+  assign WriteSTIMECMPHM = CSRSWriteM & (CSRAdrM == STIMECMPH) & (PrivilegeModeW == `M_MODE | (MCOUNTEREN_TM & MENVCFG_STCE)) & (`XLEN == 32);
 
   // CSRs
   flopenr #(`XLEN) STVECreg(clk, reset, WriteSTVECM, {CSRWriteValM[`XLEN-1:2], 1'b0, CSRWriteValM[0]}, STVEC_REGW); 
@@ -130,15 +130,15 @@ module csrs #(parameter
     CSRWriteValM[0]   & `S_SUPPORTED & `VIRTMEM_SUPPORTED
   };
 
-  flopenr #(P.XLEN) SENVCFGreg(clk, reset, WriteSENVCFGM, SENVCFG_WriteValM, SENVCFG_REGW);
+  flopenr #(`XLEN) SENVCFGreg(clk, reset, WriteSENVCFGM, SENVCFG_WriteValM, SENVCFG_REGW);
 
   // Extract bit fields
   // Uncomment these other fields when they are defined
   // assign SENVCFG_PBMTE = SENVCFG_REGW[62];
-  // assign SENVCFG_CBZE  =  SENVCFG_REGW[7];
+  // assign SENVCFG_CBZE =  SENVCFG_REGW[7];
   // assign SENVCFG_CBCFE = SENVCFG_REGW[6];
-  // assign SENVCFG_CBIE  =  SENVCFG_REGW[5:4];
-  // assign SENVCFG_FIOM  =  SENVCFG_REGW[0];
+  // assign SENVCFG_CBIE =  SENVCFG_REGW[5:4];
+  // assign SENVCFG_FIOM =  SENVCFG_REGW[0];
     
   // CSR Reads
   always_comb begin:csrr
@@ -157,7 +157,7 @@ module csrs #(parameter
                    CSRSReadValM = 0;
                    IllegalCSRSAccessM = 1;
                  end
-      SCOUNTEREN:CSRSReadValM = {{(P.XLEN-32){1'b0}}, SCOUNTEREN_REGW};
+      SCOUNTEREN:CSRSReadValM = {{(`XLEN-32){1'b0}}, SCOUNTEREN_REGW};
       SENVCFG:   CSRSReadValM = SENVCFG_REGW;
       STIMECMP:  if (`SSTC_SUPPORTED & (PrivilegeModeW == `M_MODE | (MCOUNTEREN_TM && MENVCFG_STCE))) 
                    CSRSReadValM = STIMECMP_REGW[`XLEN-1:0]; 
