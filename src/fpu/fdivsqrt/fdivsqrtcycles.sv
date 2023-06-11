@@ -52,9 +52,10 @@ module fdivsqrtcycles(
   else if (`FPSIZES == 3)
     always_comb
       case (FmtE)
-        `FMT:  Nf = `NF;
-        `FMT1: Nf = `NF1;
-        `FMT2: Nf = `NF2; 
+        `FMT:   Nf = `NF;
+        `FMT1:  Nf = `NF1;
+        `FMT2:  Nf = `NF2; 
+        default: Nf = 'x; // shouldn't happen
       endcase
   else if (`FPSIZES == 4)  
     always_comb

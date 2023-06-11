@@ -84,7 +84,7 @@ module cvtshiftcalc(
               `FMT:  ResNegNF = -($clog2(`NF)+1)'(`NF);
               `FMT1: ResNegNF = -($clog2(`NF)+1)'(`NF1);
               `FMT2: ResNegNF = -($clog2(`NF)+1)'(`NF2);
-              default: ResNegNF = 1'bx;
+              default: ResNegNF = 'x;
           endcase
 
   end else if (`FPSIZES == 4) begin        
