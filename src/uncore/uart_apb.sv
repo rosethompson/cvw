@@ -83,7 +83,6 @@ module uart_apb (
   end
   
   logic BAUDOUTb;  // loop tx clock BAUDOUTb back to rx clock RCLK
-  // *** make sure reads don't occur on UART unless fully selected because they could change state.  This applies to all peripherals
   uartPC16550D u(  
     // Processor Interface
     .PCLK, .PRESETn,
