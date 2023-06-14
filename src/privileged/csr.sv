@@ -180,13 +180,13 @@ module csr #(parameter
     else                                 CSRReadVal2M = CSRReadValM;
 
     // Compute AND/OR modification
-    CSRRWM = CSRSrcM;
-    CSRRSM = CSRReadVal2M | CSRSrcM;
-    CSRRCM = CSRReadVal2M & ~CSRSrcM;
+    CSRRWM =   CSRSrcM;
+    CSRRSM =   CSRReadVal2M | CSRSrcM;
+    CSRRCM =   CSRReadVal2M & ~CSRSrcM;
     case (InstrM[13:12])
-      2'b01:  CSRWriteValM = CSRRWM;
-      2'b10:  CSRWriteValM = CSRRSM;
-      2'b11:  CSRWriteValM = CSRRCM;
+      2'b01:   CSRWriteValM = CSRRWM;
+      2'b10:   CSRWriteValM = CSRRSM;
+      2'b11:   CSRWriteValM = CSRRCM;
       default: CSRWriteValM = CSRReadValM;
     endcase
   end
@@ -214,7 +214,7 @@ module csr #(parameter
   csri   csri(.clk, .reset,  
     .CSRMWriteM, .CSRSWriteM, .CSRWriteValM, .CSRAdrM, 
     .MExtInt, .SExtInt, .MTimerInt, .STimerInt, .MSwInt,
-    .MIDELEG_REGW, .MIP_REGW, .MIE_REGW, .MIP_REGW_writeable);
+    .MIDELEG_REGW, .MENVCFG_STCE, .MIP_REGW, .MIE_REGW, .MIP_REGW_writeable);
 
   csrsr csrsr(.clk, .reset, .StallW, 
     .WriteMSTATUSM, .WriteMSTATUSHM, .WriteSSTATUSM, 
@@ -232,7 +232,8 @@ module csr #(parameter
     .MEPC_REGW, .MCOUNTEREN_REGW, .MCOUNTINHIBIT_REGW, 
     .MEDELEG_REGW, .MIDELEG_REGW,.PMPCFG_ARRAY_REGW, .PMPADDR_ARRAY_REGW,
     .MIP_REGW, .MIE_REGW, .WriteMSTATUSM, .WriteMSTATUSHM,
-    .IllegalCSRMAccessM, .IllegalCSRMWriteReadonlyM);
+    .IllegalCSRMAccessM, .IllegalCSRMWriteReadonlyM,
+    .MENVCFG_STCE);
 
 
   if (`S_SUPPORTED) begin:csrs
@@ -243,7 +244,7 @@ module csr #(parameter
       .CSRWriteValM, .PrivilegeModeW,
       .CSRSReadValM, .STVEC_REGW, .SEPC_REGW,      
       .SCOUNTEREN_REGW,
-      .SATP_REGW, .MIP_REGW, .MIE_REGW, .MIDELEG_REGW, .MTIME_CLINT,
+      .SATP_REGW, .MIP_REGW, .MIE_REGW, .MIDELEG_REGW, .MTIME_CLINT, .MENVCFG_STCE,
       .WriteSSTATUSM, .IllegalCSRSAccessM, .STimerInt);
   end else begin
     assign WriteSSTATUSM = 0;
@@ -268,7 +269,7 @@ module csr #(parameter
   end
   
   if (`ZICOUNTERS_SUPPORTED) begin:counters
-    csrc  counters(.clk, .reset, .StallE, .StallM, .FlushM,
+    csrc counters(.clk, .reset, .StallE, .StallM, .FlushM,
       .InstrValidNotFlushedM, .LoadStallD, .StoreStallD, .CSRWriteM, .CSRMWriteM,
       .BPDirPredWrongM, .BTAWrongM, .RASPredPCWrongM, .IClassWrongM, .BPWrongM,
       .InstrClassM, .DCacheMiss, .DCacheAccess, .ICacheMiss, .ICacheAccess, .sfencevmaM,
