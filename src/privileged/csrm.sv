@@ -87,7 +87,8 @@ module csrm #(parameter
   output var logic [7:0]          PMPCFG_ARRAY_REGW[`PMP_ENTRIES-1:0],
   output var logic [`PA_BITS-3:0] PMPADDR_ARRAY_REGW [`PMP_ENTRIES-1:0],
   output logic                    WriteMSTATUSM, WriteMSTATUSHM,
-  output logic                    IllegalCSRMAccessM, IllegalCSRMWriteReadonlyM
+  output logic                    IllegalCSRMAccessM, IllegalCSRMWriteReadonlyM,
+  output logic                     MENVCFG_STCE
 );
 
   logic [`XLEN-1:0]               MISA_REGW, MHARTID_REGW;
@@ -132,16 +133,17 @@ module csrm #(parameter
   assign MHARTID_REGW = 0;
 
   // Write machine Mode CSRs 
-  assign WriteMSTATUSM = CSRMWriteM & (CSRAdrM == MSTATUS);
-  assign WriteMSTATUSHM = CSRMWriteM & (CSRAdrM == MSTATUSH)& (`XLEN==32);
-  assign WriteMTVECM = CSRMWriteM & (CSRAdrM == MTVEC);
-  assign WriteMEDELEGM = CSRMWriteM & (CSRAdrM == MEDELEG);
-  assign WriteMIDELEGM = CSRMWriteM & (CSRAdrM == MIDELEG);
-  assign WriteMSCRATCHM = CSRMWriteM & (CSRAdrM == MSCRATCH);
-  assign WriteMEPCM = MTrapM | (CSRMWriteM & (CSRAdrM == MEPC));
-  assign WriteMCAUSEM = MTrapM | (CSRMWriteM & (CSRAdrM == MCAUSE));
-  assign WriteMTVALM = MTrapM | (CSRMWriteM & (CSRAdrM == MTVAL));
-  assign WriteMCOUNTERENM = CSRMWriteM & (CSRAdrM == MCOUNTEREN);
+  assign WriteMSTATUSM       = CSRMWriteM & (CSRAdrM == MSTATUS);
+  assign WriteMSTATUSHM      = CSRMWriteM & (CSRAdrM == MSTATUSH) & (`XLEN==32);
+  assign WriteMTVECM         = CSRMWriteM & (CSRAdrM == MTVEC);
+  assign WriteMEDELEGM       = CSRMWriteM & (CSRAdrM == MEDELEG);
+  assign WriteMIDELEGM       = CSRMWriteM & (CSRAdrM == MIDELEG);
+  assign WriteMSCRATCHM      = CSRMWriteM & (CSRAdrM == MSCRATCH);
+  assign WriteMEPCM          = MTrapM | (CSRMWriteM & (CSRAdrM == MEPC));
+  assign WriteMCAUSEM        = MTrapM | (CSRMWriteM & (CSRAdrM == MCAUSE));
+  assign WriteMTVALM         = MTrapM | (CSRMWriteM & (CSRAdrM == MTVAL));
+  assign WriteMCOUNTERENM    = CSRMWriteM & (CSRAdrM == MCOUNTEREN);
+  assign WriteMENVCFGM       = CSRMWriteM & (CSRAdrM == MENVCFG);
   assign WriteMCOUNTINHIBITM = CSRMWriteM & (CSRAdrM == MCOUNTINHIBIT);
 
   assign IllegalCSRMWriteReadonlyM = UngatedCSRMWriteM & (CSRAdrM == MVENDORID | CSRAdrM == MARCHID | CSRAdrM == MIMPID | CSRAdrM == MHARTID);
@@ -162,6 +164,39 @@ module csrm #(parameter
   if (`U_SUPPORTED) begin: mcounteren // MCOUNTEREN only exists when user mode is supported
     flopenr #(32)   MCOUNTERENreg(clk, reset, WriteMCOUNTERENM, CSRWriteValM[31:0], MCOUNTEREN_REGW);
   end else assign MCOUNTEREN_REGW = '0;
+
+  // MENVCFG is always 64 bits even for RV32
+  assign MENVCFG_WriteValM = {
+    MENVCFG_PreWriteValM[63]  & P.SSTC_SUPPORTED,
+    MENVCFG_PreWriteValM[62]  & P.SVPBMT_SUPPORTED,
+    54'b0,
+    MENVCFG_PreWriteValM[7]   & P.ZICBOZ_SUPPORTED,
+    MENVCFG_PreWriteValM[6:4] & {3{P.ZICBOM_SUPPORTED}},
+    3'b0,
+    MENVCFG_PreWriteValM[0]   & P.S_SUPPORTED & P.VIRTMEM_SUPPORTED
+  };
+
+  if (P.XLEN == 64) begin
+    assign MENVCFG_PreWriteValM = CSRWriteValM;
+    flopenr #(P.XLEN) MENVCFGreg(clk, reset, WriteMENVCFGM, MENVCFG_WriteValM, MENVCFG_REGW);
+    assign MENVCFGH_REGW = 0;
+  end else begin
+    logic WriteMENVCFGHM;
+    assign MENVCFG_PreWriteValM = {CSRWriteValM, CSRWriteValM};
+    assign WriteMENVCFGHM = CSRMWriteM & (CSRAdrM == MENVCFGH) & (P.XLEN==32);
+    flopenr #(P.XLEN) MENVCFGreg(clk, reset, WriteMENVCFGM, MENVCFG_WriteValM[31:0], MENVCFG_REGW[31:0]);
+    flopenr #(P.XLEN) MENVCFGHreg(clk, reset, WriteMENVCFGHM, MENVCFG_WriteValM[63:32], MENVCFG_REGW[63:32]);
+    assign MENVCFGH_REGW = MENVCFG_REGW[63:32];
+  end
+
+  // Extract bit fields
+  assign MENVCFG_STCE =  MENVCFG_REGW[63];
+  // Uncomment these other fields when they are defined
+  // assign MENVCFG_PBMTE = MENVCFG_REGW[62];
+  // assign MENVCFG_CBZE  =  MENVCFG_REGW[7];
+  // assign MENVCFG_CBCFE = MENVCFG_REGW[6];
+  // assign MENVCFG_CBIE  =  MENVCFG_REGW[5:4];
+  // assign MENVCFG_FIOM  =  MENVCFG_REGW[0];
 
   // Read machine mode CSRs
   // verilator lint_off WIDTH
@@ -202,6 +237,8 @@ module csrm #(parameter
       MTVAL:     CSRMReadValM = MTVAL_REGW;
       MTINST:    CSRMReadValM = 0; // implemented as trivial zero
       MCOUNTEREN:CSRMReadValM = {{(`XLEN-32){1'b0}}, MCOUNTEREN_REGW};
+      MENVCFG:       CSRMReadValM = MENVCFG_REGW[`XLEN-1:0];
+      MENVCFGH:      CSRMReadValM = MENVCFGH_REGW;
       MCOUNTINHIBIT:CSRMReadValM = {{(`XLEN-32){1'b0}}, MCOUNTINHIBIT_REGW};
 
       default: begin
