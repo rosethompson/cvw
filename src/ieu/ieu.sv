@@ -44,6 +44,7 @@ module ieu (
   output logic [2:0]        Funct3E,                         // Funct3 instruction field
   output logic [`XLEN-1:0]  ForwardedSrcAE, ForwardedSrcBE,  // ALU src inputs before the mux choosing between them and PCE to put in srcA/B
   output logic [4:0]        RdE,                             // Destination register
+  output logic              MDUActiveE,                      // Mul/Div instruction being executed
   // Memory stage signals
   input  logic              SquashSCW,                       // Squash store conditional, from LSU
   output logic [1:0]        MemRWM,                          // Read/write control goes to LSU
@@ -102,8 +103,8 @@ controller c(
     .IllegalIEUFPUInstrD, .IllegalBaseInstrD, .StallE, .FlushE, .FlagsE, .FWriteIntE,
     .PCSrcE, .ALUSrcAE, .ALUSrcBE, .ALUResultSrcE, .ALUSelectE, .MemReadE, .CSRReadE, 
     .Funct3E, .IntDivE, .MDUE, .W64E, .SubArithE, .BranchD, .BranchE, .JumpD, .JumpE, .SCE, 
-    .BranchSignedE, .BSelectE, .ZBBSelectE, .BALUControlE, .BMUActiveE, .StallM, .FlushM, .MemRWM,
-    .CSRReadM, .CSRWriteM, .PrivilegedM, .AtomicM, .Funct3M,
+    .BranchSignedE, .BSelectE, .ZBBSelectE, .BALUControlE, .BMUActiveE, .MDUActiveE,
+    .StallM, .FlushM, .MemRWM, .CSRReadM, .CSRWriteM, .PrivilegedM, .AtomicM, .Funct3M,
     .RegWriteM, .FlushDCacheM, .InstrValidM, .InstrValidE, .InstrValidD, .FWriteIntM,
     .StallW, .FlushW, .RegWriteW, .IntDivW, .ResultSrcW, .CSRWriteFenceM, .InvalidateICacheM, .StoreStallD);
 

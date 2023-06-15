@@ -29,14 +29,15 @@
 `include "wally-config.vh"
 
 module mdu(
-  input  logic             clk, reset,
-  input  logic             StallM, StallW, 
-  input  logic             FlushE, FlushM, FlushW,
+  input  logic              clk, reset,
+  input  logic              StallM, StallW, 
+  input  logic              FlushE, FlushM, FlushW,
   input  logic [`XLEN-1:0] ForwardedSrcAE, ForwardedSrcBE, // inputs A and B from IEU forwarding mux output
-  input  logic [2:0]       Funct3E, Funct3M,               // type of MDU operation
-  input  logic             IntDivE, W64E,                  // Integer division/remainder, and W-type instrutions
+  input  logic [2:0]        Funct3E, Funct3M,               // type of MDU operation
+  input  logic              IntDivE, W64E,                  // Integer division/remainder, and W-type instrutions
+  input  logic              MDUActiveE,                     // Mul/Div instruction being executed
   output logic [`XLEN-1:0] MDUResultW,                     // multiply/divide result
-  output logic             DivBusyE                        // busy signal to stall pipeline in Execute stage
+  output logic              DivBusyE                        // busy signal to stall pipeline in Execute stage
 );
 
   logic [`XLEN*2-1:0]      ProdM;                          // double-width product from mul
@@ -44,6 +45,12 @@ module mdu(
   logic [`XLEN-1:0]        PrelimResultM;                  // selected result before W truncation
   logic [`XLEN-1:0]        MDUResultM;                     // result after W truncation
   logic                    W64M;                           // W-type instruction
+
+  logic [`XLEN-1:0]        AMDU, BMDU;                     // Gated inputs to MDU
+
+  // gate data inputs to MDU to only operate when MDU is active.
+  assign AMDU = ForwardedSrcAE & {`XLEN{MDUActiveE}};
+  assign BMDU = ForwardedSrcBE & {`XLEN{MDUActiveE}};
 
   // Multiplier
   mul mul(.clk, .reset, .StallM, .FlushM, .ForwardedSrcAE, .ForwardedSrcBE, .Funct3E, .ProdM);
