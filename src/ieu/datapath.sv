@@ -37,20 +37,21 @@ module datapath (
   // Execute stage signals
   input  logic [`XLEN-1:0] PCE,                     // PC in Execute stage  
   input  logic [`XLEN-1:0] PCLinkE,                 // PC + 4 (of instruction in Execute stage)
-  input  logic [2:0]       Funct3E,                 // Funct3 field of instruction in Execute stage
-  input  logic             StallE, FlushE,          // Stall, flush Execute stage
-  input  logic [1:0]       ForwardAE, ForwardBE,    // Forward ALU operands from later stages
-  input  logic             W64E,                    // W64-type instruction
-  input  logic             SubArithE,               // Subtraction or arithmetic shift
-  input  logic             ALUSrcAE, ALUSrcBE,      // ALU operands
-  input  logic             ALUResultSrcE,           // Selects result to pass on to Memory stage
-  input  logic [2:0]       ALUSelectE,              // ALU mux select signal
-  input  logic             JumpE,                   // Is a jump (j) instruction
-  input  logic             BranchSignedE,           // Branch comparison operands are signed (if it's a branch)
-  input  logic [1:0]       BSelectE,                // One hot encoding of ZBA_ZBB_ZBC_ZBS instruction
-  input  logic [2:0]       ZBBSelectE,              // ZBB mux select signal
-  input  logic [2:0]       BALUControlE,            // ALU Control signals for B instructions in Execute Stage
-  output logic [1:0]       FlagsE,                  // Comparison flags ({eq, lt})
+  input  logic [2:0]        Funct3E,                 // Funct3 field of instruction in Execute stage
+  input  logic              StallE, FlushE,          // Stall, flush Execute stage
+  input  logic [1:0]        ForwardAE, ForwardBE,    // Forward ALU operands from later stages
+  input  logic              W64E,                    // W64-type instruction
+  input  logic              SubArithE,               // Subtraction or arithmetic shift
+  input  logic              ALUSrcAE, ALUSrcBE,      // ALU operands
+  input  logic              ALUResultSrcE,           // Selects result to pass on to Memory stage
+  input  logic [2:0]        ALUSelectE,              // ALU mux select signal
+  input  logic              JumpE,                   // Is a jump (j) instruction
+  input  logic              BranchSignedE,           // Branch comparison operands are signed (if it's a branch)
+  input  logic [1:0]        BSelectE,                // One hot encoding of ZBA_ZBB_ZBC_ZBS instruction
+  input  logic [2:0]        ZBBSelectE,              // ZBB mux select signal
+  input  logic [2:0]        BALUControlE,            // ALU Control signals for B instructions in Execute Stage
+  input  logic              BMUActiveE,              // Bit manipulation instruction being executed
+  output logic [1:0]        FlagsE,                  // Comparison flags ({eq, lt})
   output logic [`XLEN-1:0] IEUAdrE,                 // Address computed by ALU
   output logic [`XLEN-1:0] ForwardedSrcAE, ForwardedSrcBE, // ALU sources before the mux chooses between them and PCE to put in srcA/B
   // Memory stage signals
@@ -114,9 +115,9 @@ module datapath (
   comparator #(`XLEN) comp(ForwardedSrcAE, ForwardedSrcBE, BranchSignedE, FlagsE);
   mux2  #(`XLEN)  srcamux(ForwardedSrcAE, PCE, ALUSrcAE, SrcAE);
   mux2  #(`XLEN)  srcbmux(ForwardedSrcBE, ImmExtE, ALUSrcBE, SrcBE);
-  alu   #(`XLEN)  alu(SrcAE, SrcBE, W64E, SubArithE, ALUSelectE, BSelectE, ZBBSelectE, Funct3E, BALUControlE, ALUResultE, IEUAdrE);
-  mux2 #(`XLEN)   altresultmux(ImmExtE, PCLinkE, JumpE, AltResultE);
-  mux2 #(`XLEN)   ieuresultmux(ALUResultE, AltResultE, ALUResultSrcE, IEUResultE);
+  alu   #(`XLEN)  alu(SrcAE, SrcBE, W64E, SubArithE, ALUSelectE, BSelectE, ZBBSelectE, Funct3E, BALUControlE, BMUActiveE, ALUResultE, IEUAdrE);
+  mux2  #(`XLEN)  altresultmux(ImmExtE, PCLinkE, JumpE, AltResultE);
+  mux2  #(`XLEN)  ieuresultmux(ALUResultE, AltResultE, ALUResultSrcE, IEUResultE);
 
   // Memory stage pipeline register
   flopenrc #(`XLEN) SrcAMReg(clk, reset, FlushM, ~StallM, SrcAE, SrcAM);

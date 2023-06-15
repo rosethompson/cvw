@@ -61,6 +61,7 @@ module controller(
   output logic [1:0]  BSelectE,                // One-Hot encoding of if it's ZBA_ZBB_ZBC_ZBS instruction
   output logic [2:0]  ZBBSelectE,              // ZBB mux select signal in Execute stage
   output logic [2:0]  BALUControlE,            // ALU Control signals for B instructions in Execute Stage
+  output logic        BMUActiveE,              // Bit manipulation instruction being executed
 
   // Memory stage control signals
   input  logic        StallM, FlushM,          // Stall, flush Memory stage
@@ -256,7 +257,7 @@ module controller(
 
     bmuctrl bmuctrl(.clk, .reset, .StallD, .FlushD, .InstrD, .ALUOpD, .BSelectD, .ZBBSelectD, 
       .BRegWriteD, .BALUSrcBD, .BW64D, .BSubArithD, .IllegalBitmanipInstrD, .StallE, .FlushE, 
-      .ALUSelectD, .BSelectE, .ZBBSelectE, .BRegWriteE, .BALUControlE);
+      .ALUSelectD, .BSelectE, .ZBBSelectE, .BRegWriteE, .BALUControlE, .BMUActiveE);
     if (`ZBA_SUPPORTED) begin
       // ALU Decoding is more comprehensive when ZBA is supported. slt and slti conflicts with sh1add, sh1add.uw
       assign sltD = (Funct3D == 3'b010 & (~(Funct7D[4]) | ~OpD[5])) ;
@@ -285,6 +286,7 @@ module controller(
     assign BSelectD = 2'b00;
     assign ZBBSelectE = 3'b000;
     assign BALUControlE = 3'b0;
+    assign BMUActiveE = 1'b0;
   end
 
   // Fences
