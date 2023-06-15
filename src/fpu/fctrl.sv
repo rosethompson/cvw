@@ -31,29 +31,30 @@ module fctrl (
   input  logic                clk,
   input  logic                reset,
   // input control signals
-  input  logic                StallE, StallM, StallW,             // stall signals
-  input  logic                FlushE, FlushM, FlushW,             // flush signals
-  input  logic                IntDivE,                            // is inteteger division
-  input  logic [2:0]          FRM_REGW,                           // rounding mode from CSR
-  input  logic [1:0]          STATUS_FS,                          // is FPU enabled?
-  input  logic                FDivBusyE,                          // is the divider busy
-  // intruction                                                   
-  input  logic [31:0]         InstrD,                             // the full instruction
-  input  logic [6:0]          Funct7D,                            // bits 31:25 of instruction - may contain percision
-  input  logic [6:0]          OpD,                                // bits 6:0 of instruction
-  input  logic [4:0]          Rs2D,                               // bits 24:20 of instruction
-  input  logic [2:0]          Funct3D, Funct3E,                   // bits 14:12 of instruction - may contain rounding mode
+  input  logic                 StallE, StallM, StallW,             // stall signals
+  input  logic                 FlushE, FlushM, FlushW,             // flush signals
+  input  logic                 IntDivE,                            // is inteteger division
+  input  logic [2:0]           FRM_REGW,                           // rounding mode from CSR
+  input  logic [1:0]           STATUS_FS,                          // is FPU enabled?
+  input  logic                 FDivBusyE,                          // is the divider busy
+  // instruction                                                   
+  input  logic [31:0]          InstrD,                             // the full instruction
+  input  logic [6:0]           Funct7D,                            // bits 31:25 of instruction - may contain percision
+  input  logic [6:0]           OpD,                                // bits 6:0 of instruction
+  input  logic [4:0]           Rs2D,                               // bits 24:20 of instruction
+  input  logic [2:0]           Funct3D, Funct3E,                   // bits 14:12 of instruction - may contain rounding mode
   // input mux selections                                         
   output logic                XEnD, YEnD, ZEnD,                   // enable inputs
   output logic                XEnE, YEnE, ZEnE,                   // enable inputs
   // opperation mux selections                                    
-  output logic                FCvtIntE, FCvtIntW,                 // convert to integer opperation
-  output logic [2:0]          FrmM,                               // FP rounding mode
+  output logic                 FCvtIntE, FCvtIntW,                 // convert to integer opperation
+  output logic [2:0]           FrmM,                               // FP rounding mode
   output logic [`FMTBITS-1:0] FmtE, FmtM,                         // FP format
-  output logic [2:0]          OpCtrlE, OpCtrlM,                   // Select which opperation to do in each component
-  output logic                FpLoadStoreM,                       // FP load or store instruction
-  output logic [1:0]          PostProcSelE, PostProcSelM,         // select result in the post processing unit
-  output logic [1:0]          FResSelE, FResSelM, FResSelW,       // Select one of the results that finish in the memory stage
+  output logic [2:0]           OpCtrlE, OpCtrlM,                   // Select which opperation to do in each component
+  output logic                 FpLoadStoreM,                       // FP load or store instruction
+  output logic [1:0]           PostProcSelE, PostProcSelM,         // select result in the post processing unit
+  output logic [1:0]           FResSelE, FResSelM, FResSelW,       // Select one of the results that finish in the memory stage
+  output logic                 FPUActiveE,                         // FP instruction being executed
   // register control signals
   output logic                FRegWriteE, FRegWriteM, FRegWriteW, // FP register write enable
   output logic                FWriteIntE, FWriteIntM,             // Write to integer register
@@ -313,9 +314,9 @@ module fctrl (
   assign Adr3D = InstrD[31:27];
  
   // D/E pipleine register
-  flopenrc #(13+`FMTBITS) DECtrlReg3(clk, reset, FlushE, ~StallE, 
-              {FRegWriteD, PostProcSelD, FResSelD, FrmD, FmtD, OpCtrlD, FWriteIntD, FCvtIntD},
-              {FRegWriteE, PostProcSelE, FResSelE, FrmE, FmtE, OpCtrlE, FWriteIntE, FCvtIntE});
+  flopenrc #(14+`FMTBITS) DECtrlReg3(clk, reset, FlushE, ~StallE, 
+              {FRegWriteD, PostProcSelD, FResSelD, FrmD, FmtD, OpCtrlD, FWriteIntD, FCvtIntD, ~IllegalFPUInstrD},
+              {FRegWriteE, PostProcSelE, FResSelE, FrmE, FmtE, OpCtrlE, FWriteIntE, FCvtIntE, FPUActiveE});
   flopenrc #(15) DEAdrReg(clk, reset, FlushE, ~StallE, {Adr1D, Adr2D, Adr3D}, {Adr1E, Adr2E, Adr3E});
   flopenrc #(1) DEFDivStartReg(clk, reset, FlushE, ~StallE|FDivBusyE, FDivStartD, FDivStartE);
   flopenrc #(3) DEEnReg(clk, reset, FlushE, ~StallE, {XEnD, YEnD, ZEnD}, {XEnE, YEnE, ZEnE});

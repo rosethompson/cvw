@@ -70,20 +70,21 @@ module fpu (
   //    - RISC-V detects underflow after rounding
 
   // control signals
-  logic                    FRegWriteW;                        // FP register write enable
-  logic [2:0]              FrmM;                              // FP rounding mode
-  logic [`FMTBITS-1:0]     FmtE, FmtM;                        // FP precision 0-single 1-double
-  logic                    FDivStartE, IDivStartE;            // Start division or squareroot
-  logic                    FWriteIntM;                        // Write to integer register
-  logic [1:0]              ForwardXE, ForwardYE, ForwardZE;   // forwarding mux control signals
-  logic [2:0]              OpCtrlE, OpCtrlM;                  // Select which opperation to do in each component
-  logic [1:0]              FResSelE, FResSelM, FResSelW;      // Select one of the results that finish in the memory stage
-  logic [1:0]              PostProcSelE, PostProcSelM;        // select result in the post processing unit
-  logic [4:0]              Adr1D, Adr2D, Adr3D;               // register adresses of each input
-  logic [4:0]              Adr1E, Adr2E, Adr3E;               // register adresses of each input
-  logic                    XEnD, YEnD, ZEnD;                  // X, Y, Z inputs used for current operation
-  logic                    XEnE, YEnE, ZEnE;                  // X, Y, Z inputs used for current operation
-  logic                    FRegWriteE;                        // Write floating-point register
+  logic                        FRegWriteW;                         // FP register write enable
+  logic [2:0]                  FrmM;                               // FP rounding mode
+  logic [`FMTBITS-1:0]        FmtE, FmtM;                         // FP precision 0-single 1-double
+  logic                        FDivStartE, IDivStartE;             // Start division or squareroot
+  logic                        FWriteIntM;                         // Write to integer register
+  logic [1:0]                  ForwardXE, ForwardYE, ForwardZE;    // forwarding mux control signals
+  logic [2:0]                  OpCtrlE, OpCtrlM;                   // Select which opperation to do in each component
+  logic [1:0]                  FResSelE, FResSelM, FResSelW;       // Select one of the results that finish in the memory stage
+  logic [1:0]                  PostProcSelE, PostProcSelM;         // select result in the post processing unit
+  logic [4:0]                  Adr1D, Adr2D, Adr3D;                // register adresses of each input
+  logic [4:0]                  Adr1E, Adr2E, Adr3E;                // register adresses of each input
+  logic                        XEnD, YEnD, ZEnD;                   // X, Y, Z inputs used for current operation
+  logic                        XEnE, YEnE, ZEnE;                   // X, Y, Z inputs used for current operation
+  logic                        FRegWriteE;                         // Write floating-point register
+  logic                        FPUActiveE;                         // FP instruction being executed
 
   // regfile signals
   logic [`FLEN-1:0]        FRD1D, FRD2D, FRD3D;                  // Read Data from FP register - decode stage
@@ -173,7 +174,7 @@ module fpu (
               .reset, .clk, .FRegWriteE, .FRegWriteM, .FRegWriteW, .FrmM, .FmtE, .FmtM,
               .FDivStartE, .IDivStartE, .FWriteIntE, .FCvtIntE, .FWriteIntM, .OpCtrlE, .OpCtrlM, .FpLoadStoreM,
               .IllegalFPUInstrD, .XEnD, .YEnD, .ZEnD, .XEnE, .YEnE, .ZEnE,
-              .FResSelE, .FResSelM, .FResSelW, .PostProcSelE, .PostProcSelM, .FCvtIntW, 
+              .FResSelE, .FResSelM, .FResSelW, .FPUActiveE, .PostProcSelE, .PostProcSelM, .FCvtIntW, 
               .Adr1D, .Adr2D, .Adr3D, .Adr1E, .Adr2E, .Adr3E);
 
   // FP register file
@@ -228,7 +229,7 @@ module fpu (
 
   // unpack unit: splits FP inputs into their parts and classifies SNaN, NaN, Subnorm, Norm, Zero, Infifnity
   unpack unpack (.X(XE), .Y(YE), .Z(ZE), .Fmt(FmtE), .Xs(XsE), .Ys(YsE), .Zs(ZsE), 
-    .Xe(XeE), .Ye(YeE), .Ze(ZeE), .Xm(XmE), .Ym(YmE), .Zm(ZmE), .YEn(YEnE),
+    .Xe(XeE), .Ye(YeE), .Ze(ZeE), .Xm(XmE), .Ym(YmE), .Zm(ZmE), .YEn(YEnE), .FPUActive(FPUActiveE),
     .XNaN(XNaNE), .YNaN(YNaNE), .ZNaN(ZNaNE), .XSNaN(XSNaNE), .XEn(XEnE), 
     .YSNaN(YSNaNE), .ZSNaN(ZSNaNE), .XSubnorm(XSubnormE), 
     .XZero(XZeroE), .YZero(YZeroE), .ZZero(ZZeroE), .XInf(XInfE), .YInf(YInfE), 
