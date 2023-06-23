@@ -268,7 +268,7 @@ module csr #(parameter
     assign IllegalCSRUAccessM = 1;
   end
   
-  if (`ZICOUNTERS_SUPPORTED) begin:counters
+  if (`ZICNTR_SUPPORTED) begin:counters
     csrc counters(.clk, .reset, .StallE, .StallM, .FlushM,
       .InstrValidNotFlushedM, .LoadStallD, .StoreStallD, .CSRWriteM, .CSRMWriteM,
       .BPDirPredWrongM, .BTAWrongM, .RASPredPCWrongM, .IClassWrongM, .BPWrongM,

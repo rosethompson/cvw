@@ -43,6 +43,7 @@ module csrs #(parameter
   SIP= 12'h144,
   STIMECMP = 12'h14D,
   STIMECMPH = 12'h15D,
+  SENVCFG    = 12'h10A,
   SATP = 12'h180) (
   input  logic             clk, reset, 
   input  logic             CSRSWriteM, STrapM,
@@ -122,11 +123,11 @@ module csrs #(parameter
     assign STimerInt = 0;
 
   assign SENVCFG_WriteValM = {
-    {(P.XLEN-8){1'b0}},
-    CSRWriteValM[7]   & P.ZICBOZ_SUPPORTED,
-    CSRWriteValM[6:4] & {3{P.ZICBOM_SUPPORTED}},
+    {(`XLEN-8){1'b0}},
+    CSRWriteValM[7]   & `ZICBOZ_SUPPORTED,
+    CSRWriteValM[6:4] & {3{`ZICBOM_SUPPORTED}},
     3'b0,
-    CSRWriteValM[0]   & P.S_SUPPORTED & P.VIRTMEM_SUPPORTED
+    CSRWriteValM[0]   & `S_SUPPORTED & `VIRTMEM_SUPPORTED
   };
 
   flopenr #(P.XLEN) SENVCFGreg(clk, reset, WriteSENVCFGM, SENVCFG_WriteValM, SENVCFG_REGW);

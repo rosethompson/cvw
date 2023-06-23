@@ -194,7 +194,7 @@ module bpred (
   if(`INSTR_CLASS_PRED) mux2 #(`XLEN) pcmuxBPWrongInvalidateFlush(PCE, PCF, BPWrongM, NextValidPCE);
   else  assign NextValidPCE = PCE;
 
-  if(`ZICOUNTERS_SUPPORTED) begin
+  if(`ZICNTR_SUPPORTED) begin
     logic [`XLEN-1:0]       RASPCD, RASPCE;
     logic                   BTAWrongE, RASPredPCWrongE;  
     // performance counters
