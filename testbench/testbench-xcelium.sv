@@ -243,6 +243,21 @@ module testbench;
   assign Validate = CurrState == STATE_VALIDATE;
   assign SelectTest = CurrState == STATE_INIT_TEST;
 
+  always_comb 
+    case(CurrState)
+      STATE_TESTBENCH_RESET: $display("TestBenchReset");
+      STATE_INIT_TEST: $display("InitTest");
+      STATE_RESET_MEMORIES: $display("Reset Memories");
+      STATE_RESET_MEMORIES2: $display("Reset Memories 2");
+      STATE_LOAD_MEMORIES: $display("Load Memories");
+      STATE_RESET_TEST: $display("Reset Test");
+      STATE_RUN_TEST: $display("Run Test");
+      STATE_CHECK_TEST: $display("Check Test");
+      STATE_CHECK_TEST_WAIT: $display("Check Test Wait");
+      STATE_VALIDATE: $display("Validate");
+      STATE_INCR_TEST: $display("Incr Teset");
+    endcase
+
   // fsm reset counter
   counter #(3) RstCounter(clk, ResetCntRst, ResetCntEn, ResetCount);
 
@@ -367,6 +382,7 @@ module testbench;
   if (P.BUS_SUPPORTED) `define TB_BUS_SUPPORTED
   always @(posedge clk) begin
     if (LoadMem) begin
+      $display("LoadMem = %d", LoadMem);
       if (P.FPGA) begin
       `ifdef TB_FPGA
         string romfilename, sdcfilename;
@@ -384,6 +400,7 @@ module testbench;
       `endif
       end
       else if (P.BUS_SUPPORTED) begin
+        $display("memfile name is %s", memfilename);
       `ifdef TB_BUS_SUPPORTED
         $readmemh(memfilename, dut.uncore.uncore.ram.ram.memory.RAM);
       `endif

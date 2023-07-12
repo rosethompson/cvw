@@ -136,7 +136,7 @@ localparam GPIO_LOOPBACK_TEST = 1;
 localparam UART_PRESCALE = 32'd1;
 
 // Interrupt configuration
-localparam PLIC_NUM_SRC = 32'd10;
+localparam PLIC_NUM_SRC = 32'd53;
 // comment out the following if >=32 sources
 localparam PLIC_NUM_SRC_LT_32 = (PLIC_NUM_SRC < 32);
 localparam PLIC_GPIO_ID = 32'd3;

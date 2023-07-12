@@ -31,8 +31,8 @@ module clockgater #(parameter FPGA) (
   output logic ECLK
 );
 
-  if (FPGA) BUFGCE bufgce_i0 (.I(CLK), .CE(E | SE), .O(ECLK));
-  else begin
+//  if (FPGA) BUFGCE bufgce_i0 (.I(CLK), .CE(E | SE), .O(ECLK));
+//  else begin
     // *** BUG 
     // VERY IMPORTANT.
     // This part functionally models a clock gater, but does not necessarily meet the timing constrains a real standard cell would.
@@ -44,6 +44,6 @@ module clockgater #(parameter FPGA) (
       end
     end
     assign ECLK = enable_q & CLK;
-  end    
+//  end    
 
 endmodule
