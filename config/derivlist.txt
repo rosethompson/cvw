@@ -273,6 +273,8 @@ BPRED_TYPE          `BP_TWOBIT
 deriv bpred_TWOBIT_16_16_10_1_rv32gc bpred_GSHARE_16_16_10_1_rv32gc
 BPRED_TYPE          `BP_TWOBIT
 
+
+
 deriv bpred_GSHARE_10_2_10_1_rv32gc rv32gc
 RAS_SIZE         32'd2
 
@@ -305,6 +307,7 @@ BTB_SIZE          32'd14
 
 deriv bpred_GSHARE_10_16_16_1_rv32gc rv32gc
 BTB_SIZE          32'd16
+
 
 
 
@@ -377,6 +380,157 @@ INSTR_CLASS_PRED          0
 
 deriv bpred_GSHARE_10_16_16_0_rv32gc bpred_GSHARE_10_16_16_1_rv32gc
 INSTR_CLASS_PRED          0
+
+
+
+
+
+
+
+deriv bpred_GLOBAL_6_16_10_0_rv32gc bpred_GSHARE_6_16_10_0_rv32gc
+BPRED_TYPE          `BP_GLOBAL
+
+deriv bpred_GLOBAL_8_16_10_0_rv32gc bpred_GSHARE_8_16_10_0_rv32gc
+BPRED_TYPE          `BP_GLOBAL
+
+deriv bpred_GLOBAL_10_16_10_0_rv32gc bpred_GSHARE_10_16_10_0_rv32gc
+BPRED_TYPE          `BP_GLOBAL
+
+deriv bpred_GLOBAL_12_16_10_0_rv32gc bpred_GSHARE_12_16_10_0_rv32gc
+BPRED_TYPE          `BP_GLOBAL
+
+deriv bpred_GLOBAL_14_16_10_0_rv32gc bpred_GSHARE_14_16_10_0_rv32gc
+BPRED_TYPE          `BP_GLOBAL
+
+deriv bpred_GLOBAL_16_16_10_0_rv32gc bpred_GSHARE_16_16_10_0_rv32gc
+BPRED_TYPE          `BP_GLOBAL
+
+deriv bpred_LOCAL_6_6_16_10_0_rv32gc rv32gc
+BPRED_TYPE          `BP_LOCAL
+BPRED_SIZE          32'd6
+INSTR_CLASS_PRED          0
+
+deriv bpred_LOCAL_8_6_16_10_0_rv32gc rv32gc
+BPRED_TYPE          `BP_LOCAL
+BPRED_SIZE          32'd8
+INSTR_CLASS_PRED          0
+
+deriv bpred_LOCAL_10_6_16_10_0_rv32gc rv32gc
+BPRED_TYPE          `BP_LOCAL
+BPRED_SIZE          32'd10
+INSTR_CLASS_PRED          0
+
+deriv bpred_LOCAL_12_6_16_10_0_rv32gc rv32gc
+BPRED_TYPE          `BP_LOCAL
+BPRED_SIZE          32'd12
+INSTR_CLASS_PRED          0
+
+deriv bpred_LOCAL_14_6_16_10_0_rv32gc rv32gc
+BPRED_TYPE          `BP_LOCAL
+BPRED_SIZE          32'd14
+INSTR_CLASS_PRED          0
+
+deriv bpred_LOCAL_16_6_16_10_0_rv32gc rv32gc
+BPRED_TYPE          `BP_LOCAL
+BPRED_SIZE          32'd16
+INSTR_CLASS_PRED          0
+
+deriv bpred_LOCAL_6_8_16_10_0_rv32gc bpred_LOCAL_6_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd8
+
+deriv bpred_LOCAL_8_8_16_10_0_rv32gc bpred_LOCAL_8_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd8
+
+deriv bpred_LOCAL_10_8_16_10_0_rv32gc bpred_LOCAL_10_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd8
+
+deriv bpred_LOCAL_12_8_16_10_0_rv32gc bpred_LOCAL_12_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd01
+
+deriv bpred_LOCAL_14_8_16_10_0_rv32gc bpred_LOCAL_14_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd10
+
+deriv bpred_LOCAL_16_8_16_10_0_rv32gc bpred_LOCAL_16_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd10
+
+deriv bpred_LOCAL_6_10_16_10_0_rv32gc bpred_LOCAL_6_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd10
+
+deriv bpred_LOCAL_8_10_16_10_0_rv32gc bpred_LOCAL_8_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd10
+
+deriv bpred_LOCAL_10_10_16_10_0_rv32gc bpred_LOCAL_10_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd10
+
+deriv bpred_LOCAL_12_10_16_10_0_rv32gc bpred_LOCAL_12_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd10
+
+deriv bpred_LOCAL_14_10_16_10_0_rv32gc bpred_LOCAL_14_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd10
+
+deriv bpred_LOCAL_16_10_16_10_0_rv32gc bpred_LOCAL_16_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd10
+
+deriv bpred_LOCAL_6_12_16_10_0_rv32gc bpred_LOCAL_6_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd12
+
+deriv bpred_LOCAL_8_12_16_10_0_rv32gc bpred_LOCAL_8_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd12
+
+deriv bpred_LOCAL_10_12_16_10_0_rv32gc bpred_LOCAL_10_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd12
+
+deriv bpred_LOCAL_12_12_16_10_0_rv32gc bpred_LOCAL_12_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd12
+
+deriv bpred_LOCAL_14_12_16_10_0_rv32gc bpred_LOCAL_14_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd12
+
+deriv bpred_LOCAL_16_12_16_10_0_rv32gc bpred_LOCAL_16_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd12
+
+deriv bpred_LOCAL_6_14_16_10_0_rv32gc bpred_LOCAL_6_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd14
+
+deriv bpred_LOCAL_8_14_16_10_0_rv32gc bpred_LOCAL_8_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd14
+
+deriv bpred_LOCAL_10_14_16_10_0_rv32gc bpred_LOCAL_10_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd14
+
+deriv bpred_LOCAL_12_14_16_10_0_rv32gc bpred_LOCAL_12_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd14
+
+deriv bpred_LOCAL_14_14_16_10_0_rv32gc bpred_LOCAL_14_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd14
+
+deriv bpred_LOCAL_16_14_16_10_0_rv32gc bpred_LOCAL_16_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd14
+
+deriv bpred_LOCAL_6_16_16_10_0_rv32gc bpred_LOCAL_6_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd16
+
+deriv bpred_LOCAL_8_16_16_10_0_rv32gc bpred_LOCAL_8_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd16
+
+deriv bpred_LOCAL_10_16_16_10_0_rv32gc bpred_LOCAL_10_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd16
+
+deriv bpred_LOCAL_12_16_16_10_0_rv32gc bpred_LOCAL_12_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd16
+
+deriv bpred_LOCAL_14_16_16_10_0_rv32gc bpred_LOCAL_14_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd16
+
+deriv bpred_LOCAL_16_16_16_10_0_rv32gc bpred_LOCAL_16_6_16_10_0_rv32gc
+BPRED_NUM_LHR       32'd16
+
+
+
+
+
+
+
 
 # Cache configurations
 
