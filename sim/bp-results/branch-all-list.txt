@@ -1,0 +1,29 @@
+../logs/bpred_GSHARE_6_16_10_0_rv32gc_embench.log gshare 6
+../logs/bpred_GSHARE_8_16_10_0_rv32gc_embench.log gshare 8
+../logs/bpred_GSHARE_10_16_10_0_rv32gc_embench.log gshare 10
+../logs/bpred_GSHARE_12_16_10_0_rv32gc_embench.log gshare 12
+../logs/bpred_GSHARE_14_16_10_0_rv32gc_embench.log gshare 14
+../logs/bpred_GSHARE_16_16_10_0_rv32gc_embench.log gshare 16
+../logs/bpred_GLOBAL_6_16_10_0_rv32gc_embench.log global 6
+../logs/bpred_GLOBAL_8_16_10_0_rv32gc_embench.log global 8
+../logs/bpred_GLOBAL_10_16_10_0_rv32gc_embench.log global 10
+../logs/bpred_GLOBAL_12_16_10_0_rv32gc_embench.log global 12
+../logs/bpred_GLOBAL_14_16_10_0_rv32gc_embench.log global 14
+../logs/bpred_GLOBAL_16_16_10_0_rv32gc_embench.log global 16
+../logs/bpred_TWOBIT_6_16_10_0_rv32gc_embench.log twobit 6
+../logs/bpred_TWOBIT_8_16_10_0_rv32gc_embench.log twobit 8
+../logs/bpred_TWOBIT_10_16_10_0_rv32gc_embench.log twobit 10
+../logs/bpred_TWOBIT_12_16_10_0_rv32gc_embench.log twobit 12
+../logs/bpred_TWOBIT_14_16_10_0_rv32gc_embench.log twobit 14
+../logs/bpred_TWOBIT_16_16_10_0_rv32gc_embench.log twobit 16
+../logs/bpred_LOCAL_6_6_16_10_0_rv32gc_embench.log local 6 6
+../logs/bpred_LOCAL_8_6_16_10_0_rv32gc_embench.log local 6 8
+../logs/bpred_LOCAL_10_6_16_10_0_rv32gc_embench.log local 6 10
+../logs/bpred_LOCAL_12_6_16_10_0_rv32gc_embench.log local 6 12
+../logs/bpred_LOCAL_14_6_16_10_0_rv32gc_embench.log local 6 14
+../logs/bpred_LOCAL_16_6_16_10_0_rv32gc_embench.log local 6 16
+../logs/bpred_LOCAL_6_8_16_10_0_rv32gc_embench.log local 8 6
+../logs/bpred_LOCAL_8_8_16_10_0_rv32gc_embench.log local 8 8
+../logs/bpred_LOCAL_10_8_16_10_0_rv32gc_embench.log local 8 10
+../logs/bpred_LOCAL_14_8_16_10_0_rv32gc_embench.log local 8 14
+../logs/bpred_LOCAL_16_8_16_10_0_rv32gc_embench.log local 8 16
