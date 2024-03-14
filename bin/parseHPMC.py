@@ -120,23 +120,23 @@ def ComputeGeometricAverage(benchmarks):
     benchmarks.append(('Mean', '', AllAve))
 
 def GenerateName(predictorType, predictorParams):
-    if(predictorType == 'gshare' or  predictorType == 'twobit' or predictorType == 'btb' or predictorType == 'class' or predictorType == 'ras'):
+    if(predictorType == 'gshare' or predictorType == 'global' or  predictorType == 'twobit' or predictorType == 'btb' or predictorType == 'class' or predictorType == 'ras'):
         return predictorType + predictorParams[0]
-    elif(predictorParams == 'local'):
+    elif(predictorType == 'local'):
         return predictorType + predictorParams[0] + '_' + predictorParams[1]
     else:
-        print(f'Error unsupported predictor type {predictorType}')
+        print(f'Error GenerateName: unsupported predictor type {predictorType}')
         sys.exit(-1)
 
 def ComputePredNumEntries(predictorType, predictorParams):
-    if(predictorType == 'gshare' or  predictorType == 'twobit' or predictorType == 'btb' or predictorType == 'class'):
+    if(predictorType == 'gshare' or predictorType == 'global' or  predictorType == 'twobit' or predictorType == 'btb' or predictorType == 'class'):
         return 2**int(predictorParams[0])
     elif(predictorType == 'ras'):
         return int(predictorParams[0])
-    elif(predictorParams == 'local'):
-        return 2**int(predictorParams[0]) * int(predictorParams[1]) + 2**int(predictorParams[1])
+    elif(predictorType == 'local'):
+        return (2**int(predictorParams[0]) * int(predictorParams[1])) + 2**int(predictorParams[1])
     else:
-        print(f'Error unsupported predictor type {predictorType}')
+        print(f'Error ComputePredNumEntries unsupported predictor type {predictorType}')
         sys.exit(-1)
 
 def BuildDataBase(predictorLogs):
