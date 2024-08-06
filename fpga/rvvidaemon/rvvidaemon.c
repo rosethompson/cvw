@@ -86,11 +86,16 @@ typedef struct {
   uint64_t GPRValue;
   uint8_t FPRReg : 5;
   uint64_t FPRValue;
-  uint8_t CSRWen[3];
   uint16_t CSRReg[3];
   uint64_t CSRValue[3];
   
 } RequiredRVVI_t; // total size is 241 bits or 30.125 bytes
+
+typedef struct __attribute__((packed)) {
+  uint16_t CSRReg : 12;
+  uint16_t CSRPad : 4;
+  uint64_t CSRValue;
+} CSR_t;
 
 typedef struct __attribute__((packed)) {
   uint64_t PC;
@@ -110,21 +115,7 @@ typedef struct __attribute__((packed)) {
   uint8_t FPRReg : 5;
   uint8_t PadF3 : 3;
   uint64_t FPRValue;
-  uint16_t CSR0Wen : 12;
-  uint16_t PadC04 : 4;
-  uint64_t CSR0Value;
-  uint16_t CSR1Wen : 12;
-  uint16_t PadC14 : 4;
-  uint64_t CSR1Value;
-  uint16_t CSR2Wen : 12;
-  uint16_t PadC24 : 4;
-  uint64_t CSR2Value;
-  uint16_t CSR3Wen : 12;
-  uint16_t PadC34 : 4;
-  uint64_t CSR3Value;
-  uint16_t CSR4Wen : 12;
-  uint16_t PadC44 : 4;
-  uint64_t CSR4Value;
+  CSR_t CSR[3];
 } FixedRequiredRVVI_t; // 904 bits
 
 typedef struct {
@@ -134,6 +125,7 @@ typedef struct {
 
 void DecodeRVVI(uint8_t *payload, ssize_t payloadsize, RequiredRVVI_t *InstructionData);
 void PrintInstructionData(RequiredRVVI_t *InstructionData);
+void FixedPrintInstructionData(FixedRequiredRVVI_t *InstructionData);
 int ProcessRvviAll(RequiredRVVI_t *InstructionData);
 void set_gpr(int hart, int reg, uint64_t value);
 void set_fpr(int hart, int reg, uint64_t value);
@@ -296,10 +288,13 @@ int main(int argc, char **argv){
       uint64_t PC;
       uint32_t insn;
       RequiredRVVI_t InstructionData;
+      FixedRequiredRVVI_t *FixedInstructionDataPtr = (FixedRequiredRVVI_t *) buf + headerbytes;
+
       DecodeRVVI(buf + headerbytes, payloadbytes, &InstructionData);
       // now let's drive IDV
       // start simple just drive and compare PC.
       PrintInstructionData(&InstructionData);
+      FixedPrintInstructionData(FixedInstructionDataPtr);
       result = ProcessRvviAll(&InstructionData);
       if(result == -1) break;
     }
@@ -309,9 +304,27 @@ int main(int argc, char **argv){
 
   close(sockfd);
 
-  
+
 
   return 0;
+}
+
+void FixedPrintInstructionData(FixedRequiredRVVI_t *InstructionData){
+  int CSRIndex;
+  printf("PC = %lx, insn = %x, Mcycle = %lx, Minstret = %lx, Trap = %hhx, PrivilegeMode = %hhx",
+	 InstructionData->PC, InstructionData->insn, InstructionData->Mcycle, InstructionData->Minstret, InstructionData->Trap, InstructionData->PrivilegeMode);
+  if(InstructionData->GPREn){
+    printf(", GPR[%d] = %lx", InstructionData->GPRReg, InstructionData->GPRValue);
+  }
+  if(InstructionData->FPREn){
+    printf(", FPR[%d] = %lx", InstructionData->FPRReg, InstructionData->FPRValue);
+  }
+  for(CSRIndex = 0; CSRIndex < 3; CSRIndex++){
+    if(InstructionData->CSR[CSRIndex].CSRReg != 0){
+      printf(", CSR[%x] = %lx", InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
+    }
+  }
+  printf("\n");
 }
 
 int ProcessRvviAll(RequiredRVVI_t *InstructionData){
@@ -395,33 +408,11 @@ void DecodeRVVI(uint8_t *payload, ssize_t payloadsize, RequiredRVVI_t *Instructi
   InstructionData->FPRReg = FixedInstructionData->FPRReg;
   InstructionData->FPRValue = FixedInstructionData->FPRValue;
 
-  
-  InstructionData->CSRReg[0] = FixedInstructionData->CSR0Wen;
-  if(InstructionData->CSRReg[0] != 0) InstructionData->CSRWen[0] = 1;
-  else InstructionData->CSRWen[0] = 0;
-  InstructionData->CSRValue[0] = FixedInstructionData->CSR0Value;
-
-  InstructionData->CSRReg[1] = FixedInstructionData->CSR1Wen;
-  if(InstructionData->CSRReg[1] != 0) InstructionData->CSRWen[1] = 1;
-  else InstructionData->CSRWen[1] = 0;
-  InstructionData->CSRValue[1] = FixedInstructionData->CSR1Value;
-
-  InstructionData->CSRReg[2] = FixedInstructionData->CSR2Wen;
-  if(InstructionData->CSRReg[2] != 0) InstructionData->CSRWen[2] = 1;
-  else InstructionData->CSRWen[2] = 0;
-  InstructionData->CSRValue[2] = FixedInstructionData->CSR2Value;
-
-  //InstructionData->CSRReg[3] = FixedInstructionData->CSR3Wen;
-  InstructionData->CSRReg[3] = 0;
-  if(InstructionData->CSRReg[3] != 0) InstructionData->CSRWen[3] = 1;
-  else InstructionData->CSRWen[3] = 0;
-  InstructionData->CSRValue[3] = FixedInstructionData->CSR3Value;
-
-  //InstructionData->CSRReg[4] = FixedInstructionData->CSR4Wen;
-  InstructionData->CSRReg[4] = 0;
-  if(InstructionData->CSRReg[4] != 0) InstructionData->CSRWen[4] = 1;
-  else InstructionData->CSRWen[4] = 0;
-  InstructionData->CSRValue[4] = FixedInstructionData->CSR4Value;
+  int i;
+  for(i = 0; i < 3; i++){
+    InstructionData->CSRReg[i] = FixedInstructionData->CSR[i].CSRReg;
+    InstructionData->CSRValue[i] = FixedInstructionData->CSR[i].CSRValue;
+  }
 } 
 
 void PrintInstructionData(RequiredRVVI_t *InstructionData){
@@ -435,7 +426,7 @@ void PrintInstructionData(RequiredRVVI_t *InstructionData){
     printf(", FPR[%d] = %lx", InstructionData->FPRReg, InstructionData->FPRValue);
   }
   for(CSRIndex = 0; CSRIndex < 3; CSRIndex++){
-    if(InstructionData->CSRWen[CSRIndex]){
+    if(InstructionData->CSRReg[CSRIndex] != 0){
       printf(", CSR[%x] = %lx", InstructionData->CSRReg[CSRIndex], InstructionData->CSRValue[CSRIndex]);
     }
   }
