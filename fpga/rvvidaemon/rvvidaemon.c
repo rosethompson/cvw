@@ -288,12 +288,12 @@ int main(int argc, char **argv){
       uint64_t PC;
       uint32_t insn;
       RequiredRVVI_t InstructionData;
-      FixedRequiredRVVI_t *FixedInstructionDataPtr = (FixedRequiredRVVI_t *) buf + headerbytes;
+      FixedRequiredRVVI_t *FixedInstructionDataPtr = (FixedRequiredRVVI_t *) (buf + headerbytes);
 
       DecodeRVVI(buf + headerbytes, payloadbytes, &InstructionData);
       // now let's drive IDV
       // start simple just drive and compare PC.
-      PrintInstructionData(&InstructionData);
+      //PrintInstructionData(&InstructionData);
       FixedPrintInstructionData(FixedInstructionDataPtr);
       result = ProcessRvviAll(&InstructionData);
       if(result == -1) break;
