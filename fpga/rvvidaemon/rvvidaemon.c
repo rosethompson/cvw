@@ -72,25 +72,6 @@ struct ether_header *sendeh = (struct ether_header *) sendbuf;
 int tx_len = 0;
 int sockfd;
 
-typedef struct {
-  uint64_t PC;
-  uint32_t insn;
-  uint64_t Mcycle;
-  uint64_t Minstret;
-  uint8_t Trap : 1;
-  uint8_t PrivilegeMode : 2;
-  uint8_t GPREn : 1;
-  uint8_t FPREn : 1;
-  uint16_t CSRCount : 12;
-  uint8_t GPRReg : 5;
-  uint64_t GPRValue;
-  uint8_t FPRReg : 5;
-  uint64_t FPRValue;
-  uint16_t CSRReg[3];
-  uint64_t CSRValue[3];
-  
-} RequiredRVVI_t; // total size is 241 bits or 30.125 bytes
-
 typedef struct __attribute__((packed)) {
   uint16_t CSRReg : 12;
   uint16_t CSRPad : 4;
@@ -116,16 +97,9 @@ typedef struct __attribute__((packed)) {
   uint8_t PadF3 : 3;
   uint64_t FPRValue;
   CSR_t CSR[3];
-} FixedRequiredRVVI_t; // 904 bits
+} RequiredRVVI_t; // 904 bits
 
-typedef struct {
-  uint8_t RegAddress : 5;
-  uint64_t RegValue;
-} Reg_t;
-
-void DecodeRVVI(uint8_t *payload, ssize_t payloadsize, RequiredRVVI_t *InstructionData);
 void PrintInstructionData(RequiredRVVI_t *InstructionData);
-void FixedPrintInstructionData(FixedRequiredRVVI_t *InstructionData);
 int ProcessRvviAll(RequiredRVVI_t *InstructionData);
 void set_gpr(int hart, int reg, uint64_t value);
 void set_fpr(int hart, int reg, uint64_t value);
@@ -285,17 +259,12 @@ int main(int argc, char **argv){
         eh->ether_dhost[4] == DEST_MAC4 &&
         eh->ether_dhost[5] == DEST_MAC5) {
       //printf("Correct destination MAC address\n");
-      uint64_t PC;
-      uint32_t insn;
-      RequiredRVVI_t InstructionData;
-      FixedRequiredRVVI_t *FixedInstructionDataPtr = (FixedRequiredRVVI_t *) (buf + headerbytes);
+      RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes);
 
-      DecodeRVVI(buf + headerbytes, payloadbytes, &InstructionData);
       // now let's drive IDV
       // start simple just drive and compare PC.
-      //PrintInstructionData(&InstructionData);
-      FixedPrintInstructionData(FixedInstructionDataPtr);
-      result = ProcessRvviAll(&InstructionData);
+      PrintInstructionData(InstructionDataPtr);
+      result = ProcessRvviAll(InstructionDataPtr);
       if(result == -1) break;
     }
   }
@@ -309,7 +278,7 @@ int main(int argc, char **argv){
   return 0;
 }
 
-void FixedPrintInstructionData(FixedRequiredRVVI_t *InstructionData){
+void PrintInstructionData(RequiredRVVI_t *InstructionData){
   int CSRIndex;
   printf("PC = %lx, insn = %x, Mcycle = %lx, Minstret = %lx, Trap = %hhx, PrivilegeMode = %hhx",
 	 InstructionData->PC, InstructionData->insn, InstructionData->Mcycle, InstructionData->Minstret, InstructionData->Trap, InstructionData->PrivilegeMode);
@@ -391,44 +360,3 @@ void set_fpr(int hart, int reg, uint64_t value){
   rvviDutFprSet(hart, reg, value);
 }
 
-void DecodeRVVI(uint8_t *payload, ssize_t payloadsize, RequiredRVVI_t *InstructionData){
-
-  FixedRequiredRVVI_t *FixedInstructionData = (FixedRequiredRVVI_t *) payload;
-  InstructionData->PC = FixedInstructionData->PC;
-  InstructionData->insn = FixedInstructionData->insn;
-  InstructionData->Mcycle = FixedInstructionData->Mcycle;
-  InstructionData->Minstret = FixedInstructionData->Minstret;
-  InstructionData->Trap = FixedInstructionData->Trap;
-  InstructionData->PrivilegeMode = FixedInstructionData->PrivilegeMode;
-  InstructionData->GPREn = FixedInstructionData->GPREn;
-  InstructionData->FPREn = FixedInstructionData->FPREn;
-  InstructionData->CSRCount = FixedInstructionData->CSRCount;
-  InstructionData->GPRReg = FixedInstructionData->GPRReg;
-  InstructionData->GPRValue = FixedInstructionData->GPRValue;
-  InstructionData->FPRReg = FixedInstructionData->FPRReg;
-  InstructionData->FPRValue = FixedInstructionData->FPRValue;
-
-  int i;
-  for(i = 0; i < 3; i++){
-    InstructionData->CSRReg[i] = FixedInstructionData->CSR[i].CSRReg;
-    InstructionData->CSRValue[i] = FixedInstructionData->CSR[i].CSRValue;
-  }
-} 
-
-void PrintInstructionData(RequiredRVVI_t *InstructionData){
-  int CSRIndex;
-  printf("PC = %lx, insn = %x, Mcycle = %lx, Minstret = %lx, Trap = %hhx, PrivilegeMode = %hhx",
-	 InstructionData->PC, InstructionData->insn, InstructionData->Mcycle, InstructionData->Minstret, InstructionData->Trap, InstructionData->PrivilegeMode);
-  if(InstructionData->GPREn){
-    printf(", GPR[%d] = %lx", InstructionData->GPRReg, InstructionData->GPRValue);
-  }
-  if(InstructionData->FPREn){
-    printf(", FPR[%d] = %lx", InstructionData->FPRReg, InstructionData->FPRValue);
-  }
-  for(CSRIndex = 0; CSRIndex < 3; CSRIndex++){
-    if(InstructionData->CSRReg[CSRIndex] != 0){
-      printf(", CSR[%x] = %lx", InstructionData->CSRReg[CSRIndex], InstructionData->CSRValue[CSRIndex]);
-    }
-  }
-  printf("\n");
-}
