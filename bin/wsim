@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 #
 # wsim
 # David_Harris@hmc.edu 5 April 2024
@@ -28,6 +28,7 @@ parser.add_argument("--tb", "-t", help="Testbench", choices=["testbench", "testb
 parser.add_argument("--gui", "-g", help="Simulate with GUI", action="store_true")
 parser.add_argument("--ccov", "-c", help="Code Coverage", action="store_true")
 parser.add_argument("--fcov", "-f", help="Functional Coverage, implies lockstep", action="store_true")
+parser.add_argument("--fcovrvvi", "-fr", help="Functional Coverage RVVI", action="store_true")
 parser.add_argument("--args", "-a", help="Optional arguments passed to simulator via $value$plusargs", default="")
 parser.add_argument("--vcd", "-v", help="Generate testbench.vcd", action="store_true")
 parser.add_argument("--lockstep", "-l", help="Run ImperasDV lock, step, and compare.", action="store_true")
@@ -48,7 +49,15 @@ elif (args.elf != ""):
 if(args.testsuite.endswith('.elf') and args.elf == ""): # No --elf argument; check if testsuite has a .elf extension and use that instead
     if (os.path.isfile(args.testsuite)):
         ElfFile = "+ElfFile=" + os.path.abspath(args.testsuite)
-        if ('/' in args.testsuite):
+        # extract the elf name from the path to be the test suite
+        fields = args.testsuite.rsplit('/', 3)
+        # if the name is just ref.elf in a deep path (riscv-arch-test/wally-riscv-arch-test), then use the directory name as the test suite to make it unique; otherwise work directory will have duplicates.
+        if (len(fields) > 3):
+            if (fields[2] == "ref"):
+                args.testsuite = fields[1] + "_" + fields[3]
+            else:
+                args.testsuite = fields[2] + "_" + fields[3]
+        elif ('/' in args.testsuite): 
             args.testsuite=args.testsuite.rsplit('/', 1)[1] # strip off path if present
     else:
         print("ELF file not found: " + args.testsuite)
@@ -57,7 +66,7 @@ if(args.testsuite.endswith('.elf') and args.elf == ""): # No --elf argument; che
 
 
 # Validate arguments
-if (args.gui or args.ccov or args.fcov or args.lockstep):
+if (args.gui or args.ccov or args.fcov or args.fcovrvvi or args.lockstep):
     if args.sim not in ["questa", "vcs"]:
         print("Option only supported for Questa and VCS")
         exit(1)
@@ -95,10 +104,12 @@ if (args.ccov):
     flags += " --ccov"
 if (args.fcov):
     flags += " --fcov"
+if (args.fcovrvvi):
+    flags += "--fcovrvvi"
 
 #  create the output sub-directories.
 regressionDir = WALLY + '/sim/'
-for d in ["logs", "wkdir", "cov", "ucdb", "fcov", "fcov_ucdb"]:
+for d in ["logs", "wkdir", "cov", "ucdb", "fcov", "fcov_ucdb", "fcovrvvi", "fcovrvvi_ucdb"]:
     try:
         os.mkdir(regressionDir+args.sim+"/"+d)
     except:

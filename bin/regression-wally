@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 ##################################
 #
 # regression-wally
@@ -229,6 +229,13 @@ bpredtests = [
         ["bpred_GSHARE_10_10_10_1_rv32gc", ["embench"], "-GPrintHPMCounters=1"]
 ]
 
+# list of tests not supported by ImperasDV yet that should be waived during lockstep testing
+lockstepwaivers = [
+    "WALLY-q-01.S_ref.elf",     # Q extension is not supported by ImperasDV
+    "WALLY-cbom-01.S_ref.elf",  # cbom extension is not supported by ImperasDV because there is no cache model in ImperasDV
+    "coverage_ieu.elf"          # Issue 881: ImperasDV misinterprets 0x6BF05013 as a grevi rather than an illegal instruction
+]
+
 ##################################
 # Data Types & Functions
 ##################################
@@ -282,21 +289,35 @@ def addTests(tests, sim):
                     grepfile = grepfile)
             configs.append(tc)
 
+
 def addLockstepTestsByDir(dir, config, sim):
     sim_logdir = WALLY+ "/sim/" + sim + "/logs/"
-    cmdPrefix="wsim --sim " + sim + " " + coverStr + " " + config
-    for file in os.listdir(dir):
-        if file.endswith(".elf"):
-            fullfile = os.path.join(dir, file)
-            sim_log = sim_logdir + config + "_" + file + ".log"
-            grepstring = ""
-            tc = TestCase(
-                    name=file,
-                    variant=config,
-                    cmd=cmdPrefix + " " + fullfile + " > " + sim_log,
-                    grepstr="Mismatches            : 0",
-                    grepfile = sim_log)
-            configs.append(tc)
+    cmdPrefix="wsim --lockstep --sim " + sim + " " + coverStr + " " + config
+    if (os.path.isdir(dir)): 
+        for dirpath, dirnames, filenames in os.walk(os.path.abspath(dir)):
+            for file in filenames:
+                if file.endswith(".elf"):
+                    fullfile = os.path.join(dirpath, file)
+                    fields = fullfile.rsplit('/', 3)
+                    if (fields[2] == "ref"):
+                        shortelf = fields[1] + "_" + fields[3]
+                    else:
+                        shortelf = fields[2] + "_" + fields[3]
+                    if (shortelf in lockstepwaivers): # skip tests that itch bugs in ImperasDV
+                        print(f"{bcolors.WARNING}Skipping waived test {shortelf}{bcolors.ENDC}")
+                        continue
+                    sim_log = sim_logdir + config + "_" + shortelf + ".log"
+                    grepstring = ""
+                    tc = TestCase(
+                            name=file,
+                            variant=config,
+                            cmd=cmdPrefix + " " + fullfile + " > " + sim_log,
+                            grepstr="Mismatches            : 0",
+                            grepfile = sim_log)
+                    configs.append(tc)
+    else:
+        print("Error: Directory not found: " + dir)
+        exit(1)
 
 def search_log_for_text(text, grepfile):
     """Search through the given log file for text, returning True if it is found or False if it is not"""
@@ -340,6 +361,7 @@ defaultsim = "verilator"   # Default simulator for all other tests
 parser = argparse.ArgumentParser()
 parser.add_argument("--ccov", help="Code Coverage", action="store_true")
 parser.add_argument("--fcov", help="Functional Coverage", action="store_true")
+parser.add_argument("--fcovrvvi", help="Functional Coverage RVVI", action="store_true")
 parser.add_argument("--nightly", help="Run large nightly regression", action="store_true")
 parser.add_argument("--buildroot", help="Include Buildroot Linux boot test (takes many hours, done along with --nightly)", action="store_true")
 parser.add_argument("--testfloat", help="Include Testfloat floating-point unit tests", action="store_true")
@@ -357,6 +379,8 @@ if (args.ccov):  # only run RV64GC tests in coverage mode
     coverStr = '--ccov'
 elif (args.fcov):  # only run RV64GC tests in lockstep in coverage mode
     coverStr = '--fcov'
+elif (args.fcovrvvi):  # only run RV64GC tests in rvvi coverage mode
+    coverStr = '--fcovrvvi'
 else:
    coverStr = ''
 
@@ -384,14 +408,10 @@ if (args.ccov):  # only run RV64GC tests on Questa in code coverage mode
         addTests(tests64gc_fp, coveragesim)
 elif (args.fcov):  # only run RV64GC tests on Questa in lockstep in functional coverage mode
     addLockstepTestsByDir(WALLY+"/tests/functcov/rv64/I", "rv64gc", coveragesim)
-    #sim_log = WALLY + "/sim/questa/logs/fcov.log" 
-    #tc = TestCase(
-    #        name="lockstep_functcov",
-    #        variant="rv64gc",
-    #        cmd="iterelf " + WALLY + "/tests/functcov/rv64/I > " + sim_log,
-    #        grepstr="SUCCESS! All tests ran without failures",
-    #        grepfile = sim_log)
-    #configs.append(tc)
+elif (args.fcovrvvi):  # only run RV64GC tests on Questa in rvvi coverage mode
+    addTests(tests64gc_nofp, coveragesim)
+    if (args.fp):
+        addTests(tests64gc_fp, coveragesim)
 else: 
     for sim in sims:
         if (not (args.buildroot and sim == defaultsim)):  # skip short buildroot sim if running long one
@@ -402,23 +422,8 @@ else:
 
 # run derivative configurations and lockstep tests in nightly regression
 if (args.nightly):
-    sim_log = WALLY + "/sim/questa/logs/lockstep_coverage.log" 
-    tc = TestCase(
-            name="lockstep_coverage",
-            variant="rv64gc",
-            cmd="iterelf " + WALLY + "/tests/coverage > " + sim_log,
-            grepstr="SUCCESS! All tests ran without failures",
-            grepfile = sim_log)
-    configs.append(tc)
-
-    sim_log = WALLY + "/sim/questa/logs/lockstep_wally-riscv-arch-test.log" 
-    tc = TestCase(
-            name="lockstep_wally-riscv-arch-test",
-            variant="rv64gc",
-            cmd="iterelf " + WALLY + "/tests/riscof/work/wally-riscv-arch-test/rv64i_m > " + sim_log,
-            grepstr="SUCCESS! All tests ran without failures",
-            grepfile = sim_log)
-    configs.append(tc)
+    addLockstepTestsByDir(WALLY+"/tests/coverage", "rv64gc", "questa")
+    addLockstepTestsByDir(WALLY+"/tests/riscof/work/wally-riscv-arch-test/rv64i_m", "rv64gc", "questa")
     addTests(derivconfigtests, defaultsim)
 
 # testfloat tests
@@ -501,6 +506,9 @@ def main():
     if args.ccov:
         TIMEOUT_DUR = 20*60 # seconds
         os.system('rm -f questa/cov/*.ucdb')
+    elif args.fcovrvvi:
+        TIMEOUT_DUR = 20*60
+        os.system('rm -f questa/fcovrvvi_ucdb/* questa/fcovrvvi_logs/* questa/fcovrvvi/*')
     elif args.fcov:
         TIMEOUT_DUR = 1*60
         os.system('rm -f questa/fcov_ucdb/* questa/fcov_logs/* questa/fcov/*')
@@ -535,6 +543,8 @@ def main():
        os.system('make QuestaCodeCoverage')
     if args.fcov:
        os.system('make QuestaFunctCoverage')
+    if args.fcovrvvi:
+        os.system('make QuestaFunctCoverageRvvi')
     # Count the number of failures
     if num_fail:
         print(f"{bcolors.FAIL}Regression failed with %s failed configurations{bcolors.ENDC}" % num_fail)
