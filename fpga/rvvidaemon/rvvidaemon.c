@@ -102,6 +102,7 @@ typedef struct __attribute__((packed)) {
 void PrintInstructionData(RequiredRVVI_t *InstructionData);
 int ProcessRvviAll(RequiredRVVI_t *InstructionData);
 void set_gpr(int hart, int reg, uint64_t value);
+void set_csr(int hart, int csrIndex, uint64_t value);
 void set_fpr(int hart, int reg, uint64_t value);
 int state_compare(int hart, uint64_t Minstret);
 
@@ -288,9 +289,11 @@ void PrintInstructionData(RequiredRVVI_t *InstructionData){
   if(InstructionData->FPREn){
     printf(", FPR[%d] = %lx", InstructionData->FPRReg, InstructionData->FPRValue);
   }
-  for(CSRIndex = 0; CSRIndex < 3; CSRIndex++){
-    if(InstructionData->CSR[CSRIndex].CSRReg != 0){
-      printf(", CSR[%x] = %lx", InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
+  if(InstructionData->CSRCount > 0) {
+    for(CSRIndex = 0; CSRIndex < 3; CSRIndex++){
+      if(InstructionData->CSR[CSRIndex].CSRReg != 0){
+	printf(", CSR[%x] = %lx", InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
+      }
     }
   }
   printf("\n");
@@ -302,10 +305,18 @@ int ProcessRvviAll(RequiredRVVI_t *InstructionData){
   uint8_t trap = InstructionData->Trap;
   uint64_t order = InstructionData->Minstret;
   int result;
+  int CSRIndex;
 
   result = 0;
   if(InstructionData->GPREn) set_gpr(0, InstructionData->GPRReg, InstructionData->GPRValue);
   if(InstructionData->FPREn) set_fpr(0, InstructionData->FPRReg, InstructionData->FPRValue);
+  if(InstructionData->CSRCount > 0) {
+    for(CSRIndex = 0; CSRIndex < 3; CSRIndex++){
+      if(InstructionData->CSR[CSRIndex].CSRReg != 0){
+	set_csr(0, InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
+      }
+    }
+  }
 
   if (trap) {
     rvviDutTrap(0, InstructionData->PC, InstructionData->insn);
@@ -350,6 +361,10 @@ int state_compare(int hart, uint64_t Minstret){
     return -1;
   }
   
+}
+
+void set_csr(int hart, int csrIndex, uint64_t value){
+  rvviDutCsrSet(hart, csrIndex, value);
 }
 
 void set_gpr(int hart, int reg, uint64_t value){
