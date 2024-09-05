@@ -28,14 +28,16 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 module regchangedetect #(parameter XLEN = 64) (
-  input clk, reset,
+  input clk, reset, clear,
   input logic [XLEN-1:0] Value,
   output logic           Change);
 
   logic [XLEN-1:0]           ValueD;
+  logic			     LocalChange;
 
   flopr #(XLEN) register(clk, reset, Value, ValueD);
-  assign Change = |(Value ^ ValueD);
+  assign LocalChange = |(Value ^ ValueD);
+  flopenrc #(1) changereg(clk, reset, clear, (LocalChange | clear), 1'b1, Change);
   
 endmodule
   

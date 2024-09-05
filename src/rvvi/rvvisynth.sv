@@ -99,7 +99,7 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
   // step 2
   genvar                                   index;
   for (index = 0; index < TOTAL_CSRS; index = index + 1) begin
-    regchangedetect #(P.XLEN) changedetect(clk, reset, CSRArray[index], CSRArrayWen[index]);
+    regchangedetect #(P.XLEN) changedetect(clk, reset, valid, CSRArray[index], CSRArrayWen[index]);
   end
 
   // step 3a
