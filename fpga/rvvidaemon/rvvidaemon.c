@@ -218,6 +218,11 @@ int main(int argc, char **argv){
   rvviRefCsrSetVolatile(0, 0xB02);   // MINSTRET
   rvviRefCsrSetVolatile(0, 0xC01);   // TIME
 
+  // *** fix me
+  rvviRefCsrSetVolatile(0, 0x301);   // MISA
+  rvviRefCsrSetVolatile(0, 0xF13);   // mimpid
+
+
   int iter;
   for (iter = 0xC03; iter <= 0xC1F; iter++) {
     rvviRefCsrSetVolatile(0, iter);   // HPMCOUNTERx
@@ -233,7 +238,7 @@ int main(int argc, char **argv){
 
   // set bootrom and bootram as volatile memory
   rvviRefMemorySetVolatile(0x1000, 0x1FFF);
-  rvviRefMemorySetVolatile(0x2000, 0x2FFF);
+  rvviRefMemorySetVolatile(0x2000, 0x3FFF);
 
   // Privileges for PMA are set in the imperas.ic
   // volatile (IO) regions are defined here
