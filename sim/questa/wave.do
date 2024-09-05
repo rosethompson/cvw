@@ -204,12 +204,12 @@ add wave -noupdate -group {Execution Stage} /testbench/dut/core/ieu/dp/SrcAE
 add wave -noupdate -group {Execution Stage} /testbench/dut/core/ieu/dp/SrcBE
 add wave -noupdate -group {Execution Stage} /testbench/dut/core/ieu/dp/ALUResultE
 add wave -noupdate -group {Execution Stage} /testbench/dut/core/ieu/dp/ResultW
-add wave -noupdate -group {Memory Stage} /testbench/FunctionName/FunctionName/FunctionName
-add wave -noupdate -group {Memory Stage} /testbench/dut/core/InstrValidM
-add wave -noupdate -group {Memory Stage} /testbench/dut/core/PCM
-add wave -noupdate -group {Memory Stage} /testbench/dut/core/InstrM
-add wave -noupdate -group {Memory Stage} /testbench/InstrMName
-add wave -noupdate -group {Memory Stage} /testbench/dut/core/lsu/IEUAdrM
+add wave -noupdate -expand -group {Memory Stage} /testbench/FunctionName/FunctionName/FunctionName
+add wave -noupdate -expand -group {Memory Stage} /testbench/dut/core/InstrValidM
+add wave -noupdate -expand -group {Memory Stage} /testbench/dut/core/PCM
+add wave -noupdate -expand -group {Memory Stage} /testbench/dut/core/InstrM
+add wave -noupdate -expand -group {Memory Stage} /testbench/InstrMName
+add wave -noupdate -expand -group {Memory Stage} /testbench/dut/core/lsu/IEUAdrM
 add wave -noupdate -group lsu /testbench/dut/core/lsu/ReadDataM
 add wave -noupdate -group lsu /testbench/dut/core/lsu/WriteDataM
 add wave -noupdate -group lsu /testbench/dut/core/lsu/FWriteDataM
@@ -426,9 +426,9 @@ add wave -noupdate -group lsu -group ptwalker -expand -group faults /testbench/d
 add wave -noupdate -group lsu -group ptwalker -expand -group faults /testbench/dut/core/lsu/hptw/hptw/StoreAmoAccessFaultM
 add wave -noupdate -group lsu -group ptwalker -expand -group faults /testbench/dut/core/lsu/hptw/hptw/HPTWInstrAccessFault
 add wave -noupdate -group lsu -group ptwalker -expand -group faults /testbench/dut/core/lsu/hptw/hptw/PBMTFaultM
-add wave -noupdate -group {WriteBack stage} /testbench/InstrW
-add wave -noupdate -group {WriteBack stage} /testbench/InstrWName
-add wave -noupdate -group {WriteBack stage} /testbench/dut/core/priv/priv/pmd/wfiW
+add wave -noupdate -expand -group {WriteBack stage} /testbench/InstrW
+add wave -noupdate -expand -group {WriteBack stage} /testbench/InstrWName
+add wave -noupdate -expand -group {WriteBack stage} /testbench/dut/core/priv/priv/pmd/wfiW
 add wave -noupdate -group AHB -group multicontroller /testbench/dut/core/ebu/ebu/IFUReq
 add wave -noupdate -group AHB -group multicontroller /testbench/dut/core/ebu/ebu/LSUReq
 add wave -noupdate -group AHB -group multicontroller /testbench/dut/core/ebu/ebu/IFUSave
@@ -468,88 +468,95 @@ add wave -noupdate -group AHB /testbench/dut/core/ebu/ebu/HBURST
 add wave -noupdate -group AHB /testbench/dut/core/ebu/ebu/HPROT
 add wave -noupdate -group AHB /testbench/dut/core/ebu/ebu/HTRANS
 add wave -noupdate -group AHB /testbench/dut/core/ebu/ebu/HMASTLOCK
-add wave -noupdate -expand -group uncore /testbench/dut/uncoregen/uncore/HADDR
-add wave -noupdate -expand -group uncore /testbench/dut/uncoregen/uncore/HTRANS
-add wave -noupdate -expand -group uncore /testbench/dut/uncoregen/uncore/HREADY
-add wave -noupdate -expand -group uncore /testbench/dut/uncoregen/uncore/HSELRegions
-add wave -noupdate -expand -group uncore /testbench/dut/uncoregen/uncore/HSELNoneD
-add wave -noupdate -expand -group uncore /testbench/dut/uncoregen/uncore/HSELPLICD
-add wave -noupdate -expand -group uncore /testbench/dut/uncoregen/uncore/HRDATA
-add wave -noupdate -expand -group uncore -group plic /testbench/dut/uncoregen/uncore/plic/plic/UARTIntr
-add wave -noupdate -expand -group uncore -group plic /testbench/dut/uncoregen/uncore/plic/plic/GPIOIntr
-add wave -noupdate -expand -group uncore -group plic /testbench/dut/uncoregen/uncore/plic/plic/MExtInt
-add wave -noupdate -expand -group uncore -group plic /testbench/dut/uncoregen/uncore/plic/plic/SExtInt
-add wave -noupdate -expand -group uncore -group plic /testbench/dut/uncoregen/uncore/plic/plic/Dout
-add wave -noupdate -expand -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/intClaim
-add wave -noupdate -expand -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/intEn
-add wave -noupdate -expand -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/intInProgress
-add wave -noupdate -expand -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/intPending
-add wave -noupdate -expand -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/intPriority
-add wave -noupdate -expand -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/intThreshold
-add wave -noupdate -expand -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/nextIntPending
-add wave -noupdate -expand -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/requests
-add wave -noupdate -expand -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/irqMatrix
-add wave -noupdate -expand -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/priorities_with_irqs
-add wave -noupdate -expand -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/max_priority_with_irqs
-add wave -noupdate -expand -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/irqs_at_max_priority
-add wave -noupdate -expand -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/threshMask
-add wave -noupdate -expand -group uncore -group CLINT /testbench/dut/uncoregen/uncore/clint/clint/MTIME
-add wave -noupdate -expand -group uncore -group CLINT /testbench/dut/uncoregen/uncore/clint/clint/MTIMECMP
-add wave -noupdate -expand -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PSEL
-add wave -noupdate -expand -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PADDR
-add wave -noupdate -expand -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PWDATA
-add wave -noupdate -expand -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PSTRB
-add wave -noupdate -expand -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PWRITE
-add wave -noupdate -expand -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PENABLE
-add wave -noupdate -expand -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PRDATA
-add wave -noupdate -expand -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PREADY
-add wave -noupdate -expand -group uncore -group uart -expand -group Registers /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/LSR
-add wave -noupdate -expand -group uncore -group uart -expand -group Registers /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/MCR
-add wave -noupdate -expand -group uncore -group uart -expand -group Registers /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/MSR
-add wave -noupdate -expand -group uncore -group uart -expand -group Registers /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/RBR
-add wave -noupdate -expand -group uncore -group uart -expand -group Registers /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/TXHR
-add wave -noupdate -expand -group uncore -group uart -expand -group Registers /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/LCR
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/intrID
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/INTR
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxstate
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/txstate
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/txbitssent
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/txbitsexpected
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxbitsreceived
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxbitsexpected
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxdata
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxoverrunerr
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxdataready
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxdataavailintr
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/RXBR
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/squashRXerrIP
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxshiftreg
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/SOUTbit
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/SINsync
-add wave -noupdate -expand -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/txsr
-add wave -noupdate -expand -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/SIN
-add wave -noupdate -expand -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/SOUT
-add wave -noupdate -expand -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/RTSb
-add wave -noupdate -expand -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/DTRb
-add wave -noupdate -expand -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/OUT1b
-add wave -noupdate -expand -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/OUT2b
-add wave -noupdate -expand -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/DSRb
-add wave -noupdate -expand -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/DCDb
-add wave -noupdate -expand -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/CTSb
-add wave -noupdate -expand -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/TXRDYb
-add wave -noupdate -expand -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/RXRDYb
-add wave -noupdate -expand -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/GPIOIN
-add wave -noupdate -expand -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/GPIOOUT
-add wave -noupdate -expand -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/GPIOEN
-add wave -noupdate -expand -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/GPIOIntr
-add wave -noupdate -expand -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PSEL
-add wave -noupdate -expand -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PADDR
-add wave -noupdate -expand -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PWRITE
-add wave -noupdate -expand -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PRDATA
-add wave -noupdate -expand -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PREADY
-add wave -noupdate -expand -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PWDATA
-add wave -noupdate -expand -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PSTRB
-add wave -noupdate -expand -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PENABLE
+add wave -noupdate -group uncore /testbench/dut/uncoregen/uncore/HADDR
+add wave -noupdate -group uncore /testbench/dut/uncoregen/uncore/HTRANS
+add wave -noupdate -group uncore /testbench/dut/uncoregen/uncore/HREADY
+add wave -noupdate -group uncore /testbench/dut/uncoregen/uncore/HSELRegions
+add wave -noupdate -group uncore /testbench/dut/uncoregen/uncore/HSELNoneD
+add wave -noupdate -group uncore /testbench/dut/uncoregen/uncore/HSELPLICD
+add wave -noupdate -group uncore /testbench/dut/uncoregen/uncore/HRDATA
+add wave -noupdate -group uncore -group plic /testbench/dut/uncoregen/uncore/plic/plic/UARTIntr
+add wave -noupdate -group uncore -group plic /testbench/dut/uncoregen/uncore/plic/plic/GPIOIntr
+add wave -noupdate -group uncore -group plic /testbench/dut/uncoregen/uncore/plic/plic/MExtInt
+add wave -noupdate -group uncore -group plic /testbench/dut/uncoregen/uncore/plic/plic/SExtInt
+add wave -noupdate -group uncore -group plic /testbench/dut/uncoregen/uncore/plic/plic/Dout
+add wave -noupdate -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/intClaim
+add wave -noupdate -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/intEn
+add wave -noupdate -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/intInProgress
+add wave -noupdate -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/intPending
+add wave -noupdate -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/intPriority
+add wave -noupdate -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/intThreshold
+add wave -noupdate -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/nextIntPending
+add wave -noupdate -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/requests
+add wave -noupdate -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/irqMatrix
+add wave -noupdate -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/priorities_with_irqs
+add wave -noupdate -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/max_priority_with_irqs
+add wave -noupdate -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/irqs_at_max_priority
+add wave -noupdate -group uncore -group plic -expand -group internals /testbench/dut/uncoregen/uncore/plic/plic/threshMask
+add wave -noupdate -group uncore -group CLINT /testbench/dut/uncoregen/uncore/clint/clint/MTIME
+add wave -noupdate -group uncore -group CLINT /testbench/dut/uncoregen/uncore/clint/clint/MTIMECMP
+add wave -noupdate -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PSEL
+add wave -noupdate -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PADDR
+add wave -noupdate -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PWDATA
+add wave -noupdate -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PSTRB
+add wave -noupdate -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PWRITE
+add wave -noupdate -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PENABLE
+add wave -noupdate -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PRDATA
+add wave -noupdate -group uncore -group CLINT -expand -group {clint bus} /testbench/dut/uncoregen/uncore/clint/clint/PREADY
+add wave -noupdate -group uncore -group uart -expand -group Registers /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/LSR
+add wave -noupdate -group uncore -group uart -expand -group Registers /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/MCR
+add wave -noupdate -group uncore -group uart -expand -group Registers /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/MSR
+add wave -noupdate -group uncore -group uart -expand -group Registers /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/RBR
+add wave -noupdate -group uncore -group uart -expand -group Registers /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/TXHR
+add wave -noupdate -group uncore -group uart -expand -group Registers /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/LCR
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/intrID
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/INTR
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxstate
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/txstate
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/txbitssent
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/txbitsexpected
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxbitsreceived
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxbitsexpected
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxdata
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxoverrunerr
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxdataready
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxdataavailintr
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/RXBR
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/squashRXerrIP
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/rxshiftreg
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/SOUTbit
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/SINsync
+add wave -noupdate -group uncore -group uart /testbench/dut/uncoregen/uncore/uartgen/uart/uartPC/txsr
+add wave -noupdate -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/SIN
+add wave -noupdate -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/SOUT
+add wave -noupdate -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/RTSb
+add wave -noupdate -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/DTRb
+add wave -noupdate -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/OUT1b
+add wave -noupdate -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/OUT2b
+add wave -noupdate -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/DSRb
+add wave -noupdate -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/DCDb
+add wave -noupdate -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/CTSb
+add wave -noupdate -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/TXRDYb
+add wave -noupdate -group uncore -group uart -expand -group {Off-Chip Interface} /testbench/dut/uncoregen/uncore/uartgen/uart/RXRDYb
+add wave -noupdate -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/GPIOIN
+add wave -noupdate -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/GPIOOUT
+add wave -noupdate -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/GPIOEN
+add wave -noupdate -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/GPIOIntr
+add wave -noupdate -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PSEL
+add wave -noupdate -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PADDR
+add wave -noupdate -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PWRITE
+add wave -noupdate -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PRDATA
+add wave -noupdate -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PREADY
+add wave -noupdate -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PWDATA
+add wave -noupdate -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PSTRB
+add wave -noupdate -group uncore -group GPIO /testbench/dut/uncoregen/uncore/gpio/gpio/PENABLE
+add wave -noupdate -group uncore -group spi /testbench/dut/uncoregen/uncore/spi/spi/PCLK
+add wave -noupdate -group uncore -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPICLK
+add wave -noupdate -group uncore -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPICS
+add wave -noupdate -group uncore -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPIOut
+add wave -noupdate -group uncore -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPIIn
+add wave -noupdate -group uncore -group spi /testbench/dut/uncoregen/uncore/spi/spi/ChipSelectMode
+add wave -noupdate -group uncore -group spi /testbench/dut/uncoregen/uncore/spi/spi/SckMode
 add wave -noupdate -group RegFile /testbench/dut/core/ieu/dp/regf/rf
 add wave -noupdate -group RegFile /testbench/dut/core/ieu/dp/regf/a1
 add wave -noupdate -group RegFile /testbench/dut/core/ieu/dp/regf/a2
@@ -588,31 +595,31 @@ add wave -noupdate -group CSRs /testbench/dut/core/priv/priv/csr/csrs/csrs/STIME
 add wave -noupdate -group CSRs -group {user mode} /testbench/dut/core/priv/priv/csr/csru/csru/FRM_REGW
 add wave -noupdate -group CSRs -group {user mode} /testbench/dut/core/priv/priv/csr/csru/csru/FFLAGS_REGW
 add wave -noupdate -group CSRs -group {user mode} /testbench/dut/core/priv/priv/csr/csru/csru/STATUS_FS
-add wave -noupdate -group CSRs -group {Performance Counters} -label MCYCLE -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[0]}
-add wave -noupdate -group CSRs -group {Performance Counters} -label MINSTRET -radix hexadecimal {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[2]}
-add wave -noupdate -group CSRs -group {Performance Counters} -expand -group BP -label Branch -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[3]}
-add wave -noupdate -group CSRs -group {Performance Counters} -expand -group BP -label {BP Dir Wrong} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[7]}
-add wave -noupdate -group CSRs -group {Performance Counters} -expand -group BP -label {Jump (Not Return)} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[4]}
-add wave -noupdate -group CSRs -group {Performance Counters} -expand -group BP -label Return -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[5]}
-add wave -noupdate -group CSRs -group {Performance Counters} -expand -group BP -label {BP Wrong} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[6]}
-add wave -noupdate -group CSRs -group {Performance Counters} -expand -group BP -label {BTA Wrong} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[8]}
-add wave -noupdate -group CSRs -group {Performance Counters} -expand -group BP -label {RAS Wrong} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[9]}
-add wave -noupdate -group CSRs -group {Performance Counters} -expand -group BP -label {BP CLASS WRONG} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[10]}
-add wave -noupdate -group CSRs -group {Performance Counters} -group ICACHE -label {I Cache Access} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[16]}
-add wave -noupdate -group CSRs -group {Performance Counters} -group ICACHE -label {I Cache Miss} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[17]}
-add wave -noupdate -group CSRs -group {Performance Counters} -group ICACHE -label {I Cache Miss Cycles} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[18]}
-add wave -noupdate -group CSRs -group {Performance Counters} -group DCACHE -label {Load Stall} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[11]}
-add wave -noupdate -group CSRs -group {Performance Counters} -group DCACHE -label {Store Stall} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[12]}
-add wave -noupdate -group CSRs -group {Performance Counters} -group DCACHE -label {DCACHE MISS} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[14]}
-add wave -noupdate -group CSRs -group {Performance Counters} -group DCACHE -label {DCACHE ACCESS} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[13]}
-add wave -noupdate -group CSRs -group {Performance Counters} -group DCACHE -label {D Cache Miss Cycles} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[15]}
-add wave -noupdate -group CSRs -group {Performance Counters} -group Privileged -label {CSR Write} {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[19]}
-add wave -noupdate -group CSRs -group {Performance Counters} -group Privileged -label Fence.I {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[20]}
-add wave -noupdate -group CSRs -group {Performance Counters} -group Privileged -label sfence.VMA {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[21]}
-add wave -noupdate -group CSRs -group {Performance Counters} -group Privileged -label Interrupt {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[22]}
-add wave -noupdate -group CSRs -group {Performance Counters} -group Privileged -label Exception {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[23]}
-add wave -noupdate -group CSRs -group {Performance Counters} -label {FDiv or IDiv Cycles} {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[24]}
-add wave -noupdate -group CSRs -group {Performance Counters} /testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -label MCYCLE -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[0]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -label MINSTRET -radix hexadecimal {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[2]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -expand -group BP -label Branch -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[3]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -expand -group BP -label {BP Dir Wrong} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[7]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -expand -group BP -label {Jump (Not Return)} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[4]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -expand -group BP -label Return -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[5]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -expand -group BP -label {BP Wrong} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[6]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -expand -group BP -label {BTA Wrong} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[8]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -expand -group BP -label {RAS Wrong} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[9]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -expand -group BP -label {BP CLASS WRONG} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[10]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -group ICACHE -label {I Cache Access} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[16]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -group ICACHE -label {I Cache Miss} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[17]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -group ICACHE -label {I Cache Miss Cycles} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[18]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -group DCACHE -label {Load Stall} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[11]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -group DCACHE -label {Store Stall} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[12]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -group DCACHE -label {DCACHE MISS} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[14]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -group DCACHE -label {DCACHE ACCESS} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[13]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -group DCACHE -label {D Cache Miss Cycles} -radix unsigned {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[15]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -group Privileged -label {CSR Write} {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[19]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -group Privileged -label Fence.I {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[20]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -group Privileged -label sfence.VMA {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[21]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -group Privileged -label Interrupt {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[22]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -group Privileged -label Exception {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[23]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} -label {FDiv or IDiv Cycles} {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[24]}
+add wave -noupdate -group CSRs -expand -group {Performance Counters} /testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW
 add wave -noupdate -group alu /testbench/dut/core/ieu/dp/alu/A
 add wave -noupdate -group alu /testbench/dut/core/ieu/dp/alu/B
 add wave -noupdate -group alu /testbench/dut/core/ieu/dp/alu/ALUResult
@@ -654,23 +661,27 @@ add wave -noupdate -group wfi /testbench/dut/core/priv/priv/pmd/STATUS_TW
 add wave -noupdate -group wfi /testbench/dut/core/priv/priv/pmd/PrivilegeModeW
 add wave -noupdate -group wfi /testbench/dut/core/priv/priv/pmd/wfi/WFICount
 add wave -noupdate -group wfi /testbench/dut/core/priv/priv/pmd/WFITimeoutM
-add wave -noupdate -expand -group testbench /testbench/DCacheFlushStart
-add wave -noupdate /testbench/dut/core/lsu/hptw/hptw/HPTWLoadPageFault
-add wave -noupdate /testbench/dut/core/lsu/hptw/hptw/HPTWLoadPageFaultDelay
-add wave -noupdate -expand -group spi /testbench/dut/uncoregen/uncore/spi/spi/PCLK
-add wave -noupdate -expand -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPICLK
-add wave -noupdate -expand -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPICS
-add wave -noupdate -expand -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPIOut
-add wave -noupdate -expand -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPIIn
-add wave -noupdate -expand -group spi /testbench/dut/uncoregen/uncore/spi/spi/ChipSelectMode
-add wave -noupdate -expand -group spi /testbench/dut/uncoregen/uncore/spi/spi/SckMode
-add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/TransmitShiftRegLoad
-add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/ShiftEdge
-add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/Active
-add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/TransmitData
-add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/TransmitShiftReg
+add wave -noupdate -group testbench /testbench/DCacheFlushStart
+add wave -noupdate -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/RVVIStall
+add wave -noupdate -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/rvvisynth/StallW
+add wave -noupdate -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/InstrValidM
+add wave -noupdate -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/rvvisynth/InstrValidW
+add wave -noupdate -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/rvvisynth/valid
+add wave -noupdate -expand -group rvvi -expand -group rvvi-synth /testbench/rvvi_synth/rvvitbwrapper/rvvisynth/CSRValue
+add wave -noupdate -expand -group rvvi -expand -group rvvi-synth /testbench/rvvi_synth/rvvitbwrapper/rvvisynth/CSRAddr
+add wave -noupdate -expand -group rvvi -expand -group rvvi-synth /testbench/rvvi_synth/rvvitbwrapper/rvvisynth/EnabledCSRs
+add wave -noupdate -expand -group rvvi -expand -group rvvi-synth /testbench/rvvi_synth/rvvitbwrapper/rvvisynth/CSRCount
+add wave -noupdate -expand -group rvvi -expand -group rvvi-synth /testbench/rvvi_synth/rvvitbwrapper/rvvisynth/CSRs
+add wave -noupdate -expand -group rvvi -expand -group rvvi-synth /testbench/rvvi_synth/rvvitbwrapper/rvvisynth/Required
+add wave -noupdate -expand -group rvvi -expand -group rvvi-synth /testbench/rvvi_synth/rvvitbwrapper/rvvisynth/valid
+add wave -noupdate -expand -group rvvi -expand -group rvvi-synth /testbench/rvvi_synth/rvvitbwrapper/rvvi
+add wave -noupdate -expand -group rvvi -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/packetizer/RvviAxiWvalid
+add wave -noupdate -expand -group rvvi -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/packetizer/RvviAxiWready
+add wave -noupdate -expand -group rvvi -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/packetizer/RvviAxiWdata
+add wave -noupdate -expand -group rvvi -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/packetizer/RvviAxiWstrb
+add wave -noupdate -expand -group rvvi -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/packetizer/RvviAxiWlast
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {640 ns} 1} {{Cursor 4} {2400 ns} 1} {{Cursor 3} {214070 ns} 0} {{Cursor 4} {223860 ns} 1}
+WaveRestoreCursors {{Cursor 4} {640 ns} 1} {{Cursor 4} {10854470 ns} 1} {{Cursor 3} {10854474 ns} 0} {{Cursor 4} {223860 ns} 1}
 quietly wave cursor active 3
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -686,4 +697,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {213740 ns} {214380 ns}
+WaveRestoreZoom {10854311 ns} {10854703 ns}
