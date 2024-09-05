@@ -28,7 +28,7 @@
 
 import cvw::*;
 
-module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 0)
+module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
   (input           default_100mhz_clk,
 (* mark_debug = "true" *)   input           resetn,
    input           south_reset,
@@ -484,7 +484,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 0)
     localparam MAX_CSRS = 3;
     localparam TOTAL_CSRS = 36;
     localparam [31:0] RVVI_INIT_TIME_OUT = 32'd100000000;
-    localparam [31:0] RVVI_PACKET_DELAY = 32'd400;
+    localparam [31:0] RVVI_PACKET_DELAY = 32'd800;
     
     // pipeline controlls
     logic                                             StallE, StallM, StallW, FlushE, FlushM, FlushW;
