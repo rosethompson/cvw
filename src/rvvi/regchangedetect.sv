@@ -34,10 +34,12 @@ module regchangedetect #(parameter XLEN = 64) (
 
   logic [XLEN-1:0]           ValueD;
   logic			     LocalChange;
-
+  logic			     ChangeDelay;
+  
   flopr #(XLEN) register(clk, reset, Value, ValueD);
   assign LocalChange = |(Value ^ ValueD);
-  flopenrc #(1) changereg(clk, reset, clear, (LocalChange | clear), 1'b1, Change);
+  flopenrc #(1) changereg(clk, reset, clear, (LocalChange | clear), 1'b1, ChangeDelay);
+  assign Change = ChangeDelay | LocalChange;
   
 endmodule
   

@@ -295,6 +295,7 @@ void PrintInstructionData(RequiredRVVI_t *InstructionData){
     printf(", FPR[%d] = %lx", InstructionData->FPRReg, InstructionData->FPRValue);
   }
   if(InstructionData->CSRCount > 0) {
+    printf( ", Num CSR = %d", InstructionData->CSRCount);
     for(CSRIndex = 0; CSRIndex < 3; CSRIndex++){
       if(InstructionData->CSR[CSRIndex].CSRReg != 0){
 	printf(", CSR[%x] = %lx", InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
