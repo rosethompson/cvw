@@ -1,4 +1,7 @@
-all: rvvidaemon
+all: rvvidaemon queue_tb
+
+queue_tb: queue.o queue_tb.o
+	gcc $^ -o $@
 
 rvvidaemon: rvvidaemon.o
 	gcc $^ $(RISCV)/ImperasDV-OpenHW/Imperas/lib/Linux64/ImperasLib/imperas.com/verification/riscv/1.0/model.so  -o rvvidaemon

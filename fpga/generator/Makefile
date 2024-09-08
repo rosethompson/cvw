@@ -15,7 +15,7 @@ ArtyA7rvvi: export XILINX_PART := xc7a100tcsg324-1
 ArtyA7rvvi: export XILINX_BOARD := digilentinc.com:arty-a7-100:part0:1.1
 ArtyA7rvvi: export board := ArtyA7
 ArtyA7rvvi: export SYSTEMCLOCK := 20000000
-ArtyA7rvvi: export MAXSDCCLOCK  :=  400000
+ArtyA7rvvi: export MAXSDCCLOCK  := 1000000
 ArtyA7rvvi: FPGA_Arty
 
 vcu118: export XILINX_PART := xcvu9p-flga2104-2L-e
