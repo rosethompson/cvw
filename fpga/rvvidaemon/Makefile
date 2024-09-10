@@ -1,4 +1,7 @@
-all: rvvidaemon queue_tb
+all: rvvidaemon queue_tb rvvidaemon-multithread
+
+rvvidaemon-multithread: queue.o rvvidaemon-multithread.o
+	gcc $^ -o $@
 
 queue_tb: queue.o queue_tb.o
 	gcc $^ -o $@

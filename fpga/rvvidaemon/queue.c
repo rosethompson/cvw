@@ -95,8 +95,31 @@ void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue){
 void Dequeue(RequiredRVVI_t * InstructionData, queue_t *queue){
   if(IsEmpty(queue)) return;
   pthread_mutex_lock(&(queue->lock));
-  RequiredRVVI_t * InstructionDataArray = queue->InstructionData;
-  *InstructionData = InstructionDataArray[queue->tail];
+  RequiredRVVI_t * InstructionDataArray = &queue->InstructionData[queue->tail];
+  // deep copy
+  InstructionData->PC = InstructionDataArray->PC;
+  InstructionData->insn = InstructionDataArray->insn;
+  InstructionData->Mcycle = InstructionDataArray->Mcycle;
+  InstructionData->Minstret = InstructionDataArray->Minstret;
+  InstructionData->Trap = InstructionDataArray->Trap;
+  InstructionData->PrivilegeMode = InstructionDataArray->PrivilegeMode;
+  InstructionData->GPREn = InstructionDataArray->GPREn;
+  InstructionData->FPREn = InstructionDataArray->FPREn;
+  InstructionData->Pad3 = InstructionDataArray->Pad3;
+  InstructionData->CSRCount = InstructionDataArray->CSRCount;
+  InstructionData->Pad4 = InstructionDataArray->Pad4;
+  InstructionData->GPRReg = InstructionDataArray->GPRReg;
+  InstructionData->PadG3 = InstructionDataArray->PadG3;
+  InstructionData->GPRValue = InstructionDataArray->GPRValue;
+  InstructionData->FPRReg = InstructionDataArray->FPRReg;
+  InstructionData->PadF3 = InstructionDataArray->PadF3;
+  InstructionData->FPRValue = InstructionDataArray->FPRValue;
+  int index;
+  for(index = 0; index < MAXCSRS; index++){
+  InstructionData->CSR[index].CSRReg = InstructionDataArray->CSR[index].CSRReg;
+  InstructionData->CSR[index].CSRPad = InstructionDataArray->CSR[index].CSRPad;
+  InstructionData->CSR[index].CSRValue = InstructionDataArray->CSR[index].CSRValue;
+  }
   if(queue->tail == (queue->size - 1)) queue->tail = 0;
   else (queue->tail)++;
   if(queue->tail == queue->head) queue->empty = 1;
