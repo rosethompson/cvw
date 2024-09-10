@@ -1,7 +1,7 @@
 all: rvvidaemon queue_tb rvvidaemon-multithread
 
 rvvidaemon-multithread: queue.o rvvidaemon-multithread.o
-	gcc $^ -o $@
+	gcc $^ -o $@ $(RISCV)/ImperasDV-OpenHW/Imperas/lib/Linux64/ImperasLib/imperas.com/verification/riscv/1.0/model.so
 
 queue_tb: queue.o queue_tb.o
 	gcc $^ -o $@
