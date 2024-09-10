@@ -8,6 +8,7 @@
 typedef struct {
   RequiredRVVI_t *InstructionData;
   int head, tail, size;
+  bool empty;
   pthread_mutex_t lock;
 } queue_t;
 
@@ -18,5 +19,6 @@ bool IsFull(queue_t *queue);
 bool IsAlmostFull(queue_t *queue, int Threshold);
 bool IsEmpty(queue_t *queue);
 void PrintQueue(queue_t *queue);
+void PrintValidQueue(queue_t *queue);
 
 #endif
