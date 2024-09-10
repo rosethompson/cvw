@@ -20,7 +20,7 @@ int main(){
   Instruction0.PC = 0x1000;
   Instruction0.insn = 0x00003197;
   Instruction0.Mcycle = 1;
-  Instruction0.Mcycle = 1;
+  Instruction0.Minstret = 1;
   Instruction0.Trap = 0;
   Instruction0.PrivilegeMode = 3;
   Instruction0.GPREn = 1;
@@ -46,8 +46,8 @@ int main(){
 
   Instruction1.PC = 0x1004;
   Instruction1.insn = 0x00003198;
-  Instruction1.Mcycle = 1;
-  Instruction1.Mcycle = 1;
+  Instruction1.Mcycle = 100;
+  Instruction1.Minstret = 2;
   Instruction1.Trap = 0;
   Instruction1.PrivilegeMode = 3;
   Instruction1.GPREn = 1;
@@ -73,8 +73,8 @@ int main(){
 
   Instruction2.PC = 0x1008;
   Instruction2.insn = 0xdfadf198;
-  Instruction2.Mcycle = 1;
-  Instruction2.Mcycle = 1;
+  Instruction2.Mcycle = 3;
+  Instruction2.Minstret = 200;
   Instruction2.Trap = 0;
   Instruction2.PrivilegeMode = 3;
   Instruction2.GPREn = 1;
@@ -100,8 +100,8 @@ int main(){
 
   Instruction3.PC = 0x100C;
   Instruction3.insn = 0xdfadf198;
-  Instruction3.Mcycle = 1;
-  Instruction3.Mcycle = 1;
+  Instruction3.Mcycle = 300;
+  Instruction3.Minstret = 1;
   Instruction3.Trap = 0;
   Instruction3.PrivilegeMode = 3;
   Instruction3.GPREn = 1;

@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define MAXCSRS 3
+
 typedef struct __attribute__((packed)) {
   uint16_t CSRReg : 12;
   uint16_t CSRPad : 4;
@@ -27,7 +29,7 @@ typedef struct __attribute__((packed)) {
   uint8_t FPRReg : 5;
   uint8_t PadF3 : 3;
   uint64_t FPRValue;
-  CSR_t CSR[3];
+  CSR_t CSR[MAXCSRS];
 } RequiredRVVI_t; // 904 bits
 
 #endif

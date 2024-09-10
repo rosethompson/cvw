@@ -58,10 +58,33 @@ queue_t * InitQueue(int size){
 void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue){
   if(IsFull(queue)) return;
   pthread_mutex_lock(&(queue->lock));
-  queue->InstructionData[queue->head] = * NewInstructionData;
-  printf("Enqueue: head %d, tail %d\n", queue->head, queue->tail);
+  // deep copy
+  queue->InstructionData[queue->head].PC = NewInstructionData->PC;
+  queue->InstructionData[queue->head].insn = NewInstructionData->insn;
+  queue->InstructionData[queue->head].Mcycle = NewInstructionData->Mcycle;
+  queue->InstructionData[queue->head].Minstret = NewInstructionData->Minstret;
+  queue->InstructionData[queue->head].Trap = NewInstructionData->Trap;
+  queue->InstructionData[queue->head].PrivilegeMode = NewInstructionData->PrivilegeMode;
+  queue->InstructionData[queue->head].GPREn = NewInstructionData->GPREn;
+  queue->InstructionData[queue->head].FPREn = NewInstructionData->FPREn;
+  queue->InstructionData[queue->head].Pad3 = NewInstructionData->Pad3;
+  queue->InstructionData[queue->head].CSRCount = NewInstructionData->CSRCount;
+  queue->InstructionData[queue->head].Pad4 = NewInstructionData->Pad4;
+  queue->InstructionData[queue->head].GPRReg = NewInstructionData->GPRReg;
+  queue->InstructionData[queue->head].PadG3 = NewInstructionData->PadG3;
+  queue->InstructionData[queue->head].GPRValue = NewInstructionData->GPRValue;
+  queue->InstructionData[queue->head].FPRReg = NewInstructionData->FPRReg;
+  queue->InstructionData[queue->head].PadF3 = NewInstructionData->PadF3;
+  queue->InstructionData[queue->head].FPRValue = NewInstructionData->FPRValue;
+  int index;
+  for(index = 0; index < MAXCSRS; index++){
+  queue->InstructionData[queue->head].CSR[index].CSRReg = NewInstructionData->CSR[index].CSRReg;
+  queue->InstructionData[queue->head].CSR[index].CSRPad = NewInstructionData->CSR[index].CSRPad;
+  queue->InstructionData[queue->head].CSR[index].CSRValue = NewInstructionData->CSR[index].CSRValue;
+  }
+  //printf("Enqueue: head %d, tail %d\n", queue->head, queue->tail);
   if(queue->head == (queue->size - 1)) {
-    printf("End of queue wrapping around.\n");
+    //printf("End of queue wrapping around.\n");
     queue->head = 0;
   }
   else (queue->head)++;
