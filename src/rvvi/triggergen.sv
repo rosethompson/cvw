@@ -48,11 +48,18 @@ module triggergen import cvw::*; (
   logic 	    Match, Overflow, Mismatch, Threshold;
   logic 	    IlaTriggerOneCycle;
    
+/* -----\/----- EXCLUDED -----\/-----
   assign mem[0] = 32'h1111_6843; // dst mac [31:0]
   assign mem[1] = 32'h1654_4502; // src mac [15:0], dst mac [47:32]
   assign mem[2] = 32'h8f54_0000; // src mac [47:16]
   assign mem[3] = 32'h7274_005c; // "rt", ether type 005c
   assign mem[4] = 32'h6e69_6769; // "igin" (trigin)
+ -----/\----- EXCLUDED -----/\----- */
+
+  genvar	    index;
+  for(index = 0; index < 5; index = index + 1) begin
+    assign mem[index] = CompareString[(index+1)*32-1:index*32];
+  end
    
   flopenr #(32) rvviaxirdatareg(clk, reset, RvviAxiRvalid, RvviAxiRdata, RvviAxiRdataDelay);
   flopenr #(4) rvviaxirstrbreg(clk, reset, RvviAxiRvalid, RvviAxiRstrb, RvviAxiRstrbDelay);

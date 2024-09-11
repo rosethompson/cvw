@@ -277,13 +277,22 @@ void * ReceiveLoop(void * arg){
   ssize_t headerbytes, numbytes;
   queue_t * InstructionQueue = (queue_t *) arg;
   while(1) {
+    if(IsFull(InstructionQueue)){
+      printf("Critical Error!!!!!!!!! Queue is now full. Terminating receive thread.\n");
+      pthread_exit(NULL);
+    }
     if(IsAlmostFull(InstructionQueue, QUEUE_SIZE * 3 / 4)){
-      printf("WARNING the Receive Queue is Almost Full!!!!!!!!!!!!!!!!!!\n");
+      printf("WARNING the Receive Queue is Almost Full %d !!!!!!!!!!!!!!!!!!\n", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size);
       if (sendto(sockfd, slowbuf, slow_len, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
 	printf("Send failed\n");
       }else {
 	printf("send success!\n");
       }
+      /* if (sendto(sockfd, slowbuf, slow_len, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){ */
+      /* 	printf("Send failed\n"); */
+      /* }else { */
+      /* 	printf("send success!\n"); */
+      /* } */
     }
     numbytes = recvfrom(sockfd, buf, BUF_SIZ, 0, NULL, NULL);
     headerbytes = (sizeof(struct ether_header));

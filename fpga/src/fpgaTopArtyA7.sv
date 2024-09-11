@@ -504,15 +504,16 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     logic                                             valid;
     logic [72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16)-1:0] rvvi;
 
-    logic					     RVVIStall, HostStall;
+  (* mark_debug = "true" *)    logic					     RVVIStall, HostStall;
     
     logic [32*5-1:0]				     TriggerString;
     logic [32*5-1:0]				     SlowString;
-    logic					     HostRequestSlowDown;
+  (* mark_debug = "true" *)    logic					     HostRequestSlowDown;
 
     typedef enum				     {STATE_RST, STATE_COUNT} statetype;
     statetype CurrState, NextState;
-    logic [11:0]				     Count, CountThreshold;
+  (* mark_debug = "true" *)    logic [16:0]				     Count;
+    logic [16:0]				     CountThreshold;
     logic					     SlowDownThreshold, SlowDownCounterEnable, SlowDownCounterRst;
 
 
@@ -595,7 +596,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     logic                                             tx_error_underflow, tx_fifo_overflow, tx_fifo_bad_frame, tx_fifo_good_frame, rx_error_bad_frame;
     logic                                             rx_error_bad_fcs, rx_fifo_overflow, rx_fifo_bad_frame, rx_fifo_good_frame;
 
-    packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi, .valid, .m_axi_aclk(CPUCLK), .m_axi_aresetn(~bus_struct_reset), .RVVIStall,
+    packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT) packetizer(.rvvi, .valid, .m_axi_aclk(CPUCLK), .m_axi_aresetn(~bus_struct_reset), .RVVIStall,
       .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready);
 
     eth_mac_mii_fifo #(.TARGET("XILINX"), .CLOCK_INPUT_STYLE("BUFG"), .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024)) ethernet(.rst(bus_struct_reset), .logic_clk(CPUCLK), .logic_rst(bus_struct_reset),
@@ -647,13 +648,13 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
       endcase // case (CurrState)
     end
 
-    assign CountThreshold = 12'd2000;
+    assign CountThreshold = 17'd20000;
     assign SlowDownThreshold = Count >= CountThreshold;
     assign SlowDownCounterEnable = CurrState == STATE_COUNT;
     assign SlowDownCounterRst = CurrState == STATE_RST;
     assign HostStall = CurrState == STATE_COUNT;
 
-    counter #(12) SlowDownCounter(CPUCLK, SlowDownCounterRst, SlowDownCounterEnable, Count);
+    counter #(17) SlowDownCounter(CPUCLK, SlowDownCounterRst, SlowDownCounterEnable, Count);
 
     assign ExternalStall = RVVIStall | HostStall;
     

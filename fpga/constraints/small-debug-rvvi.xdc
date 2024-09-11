@@ -67,9 +67,24 @@ set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe9]
 connect_debug_port u_ila_0/probe9 [get_nets [list {ExternalStall}]]
 
 create_debug_port u_ila_0 probe
-set_property port_width 36 [get_debug_ports u_ila_0/probe10]
+set_property port_width 17 [get_debug_ports u_ila_0/probe10]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe10]
-connect_debug_port u_ila_0/probe10 [get_nets [list {rvvi_synth.rvvisynth/CSRArrayWen[0]} {rvvi_synth.rvvisynth/CSRArrayWen[1]} {rvvi_synth.rvvisynth/CSRArrayWen[2]} {rvvi_synth.rvvisynth/CSRArrayWen[3]} {rvvi_synth.rvvisynth/CSRArrayWen[4]} {rvvi_synth.rvvisynth/CSRArrayWen[5]} {rvvi_synth.rvvisynth/CSRArrayWen[6]} {rvvi_synth.rvvisynth/CSRArrayWen[7]} {rvvi_synth.rvvisynth/CSRArrayWen[8]} {rvvi_synth.rvvisynth/CSRArrayWen[9]} {rvvi_synth.rvvisynth/CSRArrayWen[10]} {rvvi_synth.rvvisynth/CSRArrayWen[11]} {rvvi_synth.rvvisynth/CSRArrayWen[12]} {rvvi_synth.rvvisynth/CSRArrayWen[13]} {rvvi_synth.rvvisynth/CSRArrayWen[14]} {rvvi_synth.rvvisynth/CSRArrayWen[15]} {rvvi_synth.rvvisynth/CSRArrayWen[16]} {rvvi_synth.rvvisynth/CSRArrayWen[17]} {rvvi_synth.rvvisynth/CSRArrayWen[17]} {rvvi_synth.rvvisynth/CSRArrayWen[19]} {rvvi_synth.rvvisynth/CSRArrayWen[20]} {rvvi_synth.rvvisynth/CSRArrayWen[21]} {rvvi_synth.rvvisynth/CSRArrayWen[22]} {rvvi_synth.rvvisynth/CSRArrayWen[23]} {rvvi_synth.rvvisynth/CSRArrayWen[24]} {rvvi_synth.rvvisynth/CSRArrayWen[25]} {rvvi_synth.rvvisynth/CSRArrayWen[26]} {rvvi_synth.rvvisynth/CSRArrayWen[27]} {rvvi_synth.rvvisynth/CSRArrayWen[28]} {rvvi_synth.rvvisynth/CSRArrayWen[29]} {rvvi_synth.rvvisynth/CSRArrayWen[30]} {rvvi_synth.rvvisynth/CSRArrayWen[31]} {rvvi_synth.rvvisynth/CSRArrayWen[32]} {rvvi_synth.rvvisynth/CSRArrayWen[33]} {rvvi_synth.rvvisynth/CSRArrayWen[34]} {rvvi_synth.rvvisynth/CSRArrayWen[35]} ]]
+connect_debug_port u_ila_0/probe10 [get_nets [list {rvvi_synth.Count[0]} {rvvi_synth.Count[1]} {rvvi_synth.Count[2]} {rvvi_synth.Count[3]} {rvvi_synth.Count[4]} {rvvi_synth.Count[5]} {rvvi_synth.Count[6]} {rvvi_synth.Count[7]} {rvvi_synth.Count[8]} {rvvi_synth.Count[9]} {rvvi_synth.Count[10]} {rvvi_synth.Count[11]} {rvvi_synth.Count[12]} {rvvi_synth.Count[13]} {rvvi_synth.Count[14]} {rvvi_synth.Count[15]} {rvvi_synth.Count[16]} ]]
+
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe11]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe11]
+connect_debug_port u_ila_0/probe11 [get_nets [list {rvvi_synth.HostStall}]]
+
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe12]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe12]
+connect_debug_port u_ila_0/probe12 [get_nets [list {rvvi_synth.RVVIStall}]]
+
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe13]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe13]
+connect_debug_port u_ila_0/probe13 [get_nets [list {rvvi_synth.HostRequestSlowDown}]]
 
 # the debug hub has issues with the clocks from the mmcm so lets give up an connect to the 100Mhz input clock.
 #connect_debug_port dbg_hub/clk [get_nets default_100mhz_clk]
