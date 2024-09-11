@@ -71,7 +71,7 @@
 
 #define DEFAULT_IF	"eno1"
 
-#define QUEUE_SIZE       1024
+#define QUEUE_SIZE       4096
 
 struct sockaddr_ll socket_address;
 uint8_t sendbuf[BUF_SIZ];
@@ -281,7 +281,7 @@ void * ReceiveLoop(void * arg){
       printf("Critical Error!!!!!!!!! Queue is now full. Terminating receive thread.\n");
       pthread_exit(NULL);
     }
-    if(IsAlmostFull(InstructionQueue, QUEUE_SIZE * 3 / 4)){
+    if(IsAlmostFull(InstructionQueue, QUEUE_SIZE * 1 / 4)){
       printf("WARNING the Receive Queue is Almost Full %d !!!!!!!!!!!!!!!!!!\n", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size);
       if (sendto(sockfd, slowbuf, slow_len, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
 	printf("Send failed\n");
