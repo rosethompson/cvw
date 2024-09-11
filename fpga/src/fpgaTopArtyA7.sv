@@ -207,7 +207,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
   logic [11:0]      device_temp;
   logic             mmcm1_locked;
 
-(* mark_debug = "true" *)  logic              RVVIStall;
+(* mark_debug = "true" *)  logic              ExternalStall;
 
   assign GPIOIN = {25'b0, SDCCD, SDCWP, 1'b0, GPI};
   assign GPO = GPIOOUT[4:0];
@@ -258,7 +258,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
                     .HADDR, .HWDATA, .HWSTRB, .HWRITE, .HSIZE, .HBURST, .HPROT,
                     .HTRANS, .HMASTLOCK, .HREADY, .TIMECLK(1'b0), 
                     .GPIOIN, .GPIOOUT, .GPIOEN,
-                    .UARTSin, .UARTSout, .SDCIn, .SDCCmd, .SDCCS(SDCCSin), .SDCCLK, .ExternalStall(RVVIStall)); 
+                    .UARTSin, .UARTSout, .SDCIn, .SDCCmd, .SDCCS(SDCCSin), .SDCCLK, .ExternalStall); 
 
 
   // ahb lite to axi bridge
@@ -504,6 +504,18 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     logic                                             valid;
     logic [72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16)-1:0] rvvi;
 
+    logic					     RVVIStall, HostStall;
+    
+    logic [32*5-1:0]				     TriggerString;
+    logic [32*5-1:0]				     SlowString;
+    logic					     HostRequestSlowDown;
+
+    typedef enum				     {STATE_RST, STATE_COUNT} statetype;
+    statetype CurrState, NextState;
+    logic [11:0]				     Count, CountThreshold;
+    logic					     SlowDownThreshold, SlowDownCounterEnable, SlowDownCounterRst;
+
+
     assign StallE         = fpgaTop.wallypipelinedsoc.core.StallE;
     assign StallM         = fpgaTop.wallypipelinedsoc.core.StallM;
     assign StallW         = fpgaTop.wallypipelinedsoc.core.StallW;
@@ -607,11 +619,47 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
       .cfg_ifg(8'd12), .cfg_tx_enable(1'b1), .cfg_rx_enable(1'b1)
       );
 
-    triggergen triggergen(.clk(CPUCLK), .reset(bus_struct_reset), .RvviAxiRdata,
+    // "igin" (trigin)__"rt", ether type 005c__src mac [47:16]__src mac [15:0], dst mac [47:32]__dst mac [31:0]
+    assign TriggerString = 160'h6e69_6769__7274_005c__8f54_0000__1654_4502__1111_6843;
+    // "emwo" (slowme)__"ls", ether type 005c__src mac [47:16]__src mac [15:0], dst mac [47:32]__dst mac [31:0]
+    assign SlowString = 160'h656D_776F__6C73_005c__8f54_0000__1654_4502__1111_6843;
+			  
+    triggergen triggergen(.clk(CPUCLK), .reset(bus_struct_reset), .CompareString(TriggerString),
+.RvviAxiRdata,
       .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger);
+
+    triggergen slowdown(.clk(CPUCLK), .reset(bus_struct_reset), .CompareString(SlowString),
+.RvviAxiRdata,
+      .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger(HostRequestSlowDown));
+
+    always_ff @(posedge CPUCLK) begin
+      if(bus_struct_reset) CurrState <= STATE_RST;
+      else CurrState <= NextState;
+    end
+
+    always_comb begin
+      case(CurrState)
+	STATE_RST: if(HostRequestSlowDown) NextState = STATE_COUNT;
+	else NextState = STATE_RST;
+	STATE_COUNT: if(SlowDownThreshold) NextState = STATE_RST;
+	else NextState = STATE_COUNT;
+	default: NextState = STATE_RST;
+      endcase // case (CurrState)
+    end
+
+    assign CountThreshold = 12'd2000;
+    assign SlowDownThreshold = Count >= CountThreshold;
+    assign SlowDownCounterEnable = CurrState == STATE_COUNT;
+    assign SlowDownCounterRst = CurrState == STATE_RST;
+    assign HostStall = CurrState == STATE_COUNT;
+
+    counter #(12) SlowDownCounter(CPUCLK, SlowDownCounterRst, SlowDownCounterEnable, Count);
+
+    assign ExternalStall = RVVIStall | HostStall;
+    
   end else begin // if (P.RVVI_SYNTH_SUPPORTED)
     assign IlaTrigger = '0;
-    assign RVVIStall = '0;
+    assign ExternalStall = '0;
   end
    
   //assign phy_reset_n = ~bus_struct_reset;

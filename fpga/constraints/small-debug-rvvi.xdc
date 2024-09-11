@@ -64,7 +64,7 @@ connect_debug_port u_ila_0/probe8 [get_nets [list {wallypipelinedsoc/core/priv.p
 create_debug_port u_ila_0 probe
 set_property port_width 1 [get_debug_ports u_ila_0/probe9]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe9]
-connect_debug_port u_ila_0/probe9 [get_nets [list {RVVIStall}]]
+connect_debug_port u_ila_0/probe9 [get_nets [list {ExternalStall}]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 36 [get_debug_ports u_ila_0/probe10]

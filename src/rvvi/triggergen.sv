@@ -29,6 +29,7 @@
 
 module triggergen import cvw::*; (
   input logic clk, reset,
+  input logic [32*5-1:0] CompareString,
   input logic [31:0] RvviAxiRdata,
   input logic [3:0] RvviAxiRstrb,
   input logic RvviAxiRlast,

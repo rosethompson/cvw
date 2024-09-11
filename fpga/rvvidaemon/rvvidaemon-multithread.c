@@ -71,7 +71,7 @@
 
 #define DEFAULT_IF	"eno1"
 
-#define QUEUE_SIZE       32
+#define QUEUE_SIZE       1024
 
 struct sockaddr_ll socket_address;
 uint8_t sendbuf[BUF_SIZ];
