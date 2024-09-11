@@ -71,7 +71,8 @@
 
 #define DEFAULT_IF	"eno1"
 
-#define QUEUE_SIZE       4096
+#define QUEUE_SIZE       16384
+#define QUEUE_THREASHOLD 4096
 
 struct sockaddr_ll socket_address;
 uint8_t sendbuf[BUF_SIZ];
@@ -84,14 +85,20 @@ uint8_t slowbuf[BUF_SIZ];
 struct ether_header *sloweh = (struct ether_header *) slowbuf;
 
 
+pthread_mutex_t SlowMessageLock;
+pthread_cond_t SlowMessageCond;
+
+// prototypes
 void PrintInstructionData(RequiredRVVI_t *InstructionData);
 void * ReceiveLoop(void * arg);
 void * ProcessLoop(void * arg);
+void * SendSlowMessage(void * arg);
 int ProcessRvviAll(RequiredRVVI_t *InstructionData);
 void set_gpr(int hart, int reg, uint64_t value);
 void set_csr(int hart, int csrIndex, uint64_t value);
 void set_fpr(int hart, int reg, uint64_t value);
 int state_compare(int hart, uint64_t Minstret);
+void WriteInstructionData(RequiredRVVI_t *InstructionData, FILE *fptr);
 
 int main(int argc, char **argv){
   
@@ -135,6 +142,20 @@ int main(int argc, char **argv){
     exit(EXIT_FAILURE);
   }
   printf("Here 4\n");
+  socklen_t RecvLen;
+  if (getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &RecvLen, &sockopt) == -1) {
+    perror("SO_RCVBUF");
+    close(sockfd);
+    exit(EXIT_FAILURE);
+  }
+  printf("Recv buffer size is: %d\n", RecvLen);
+  RecvLen = 65536;
+  if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &RecvLen, sizeof (socklen_t)) == -1) {
+    perror("SO_RCVBUF");
+    close(sockfd);
+    exit(EXIT_FAILURE);
+  }
+  printf("Recv buffer size is: %d\n", RecvLen);
 
   /* Index of the network device */
   socket_address.sll_ifindex = ifopts.ifr_ifindex;
@@ -260,9 +281,10 @@ int main(int argc, char **argv){
 
   // this loop will go into Thread T1
 
-  pthread_t ReceiveID, ProcessID;
+  pthread_t ReceiveID, ProcessID, SlowID;
   pthread_create(&ReceiveID, NULL, &ReceiveLoop, (void *) InstructionQueue);
   pthread_create(&ProcessID, NULL, &ProcessLoop, (void *) InstructionQueue);
+  pthread_create(&SlowID, NULL, &SendSlowMessage, (void *) InstructionQueue);
   //pthread_join(ReceiveID, NULL);
   pthread_join(ProcessID, NULL);
 
@@ -276,18 +298,24 @@ void * ReceiveLoop(void * arg){
   struct ether_header *eh = (struct ether_header *) buf;
   ssize_t headerbytes, numbytes;
   queue_t * InstructionQueue = (queue_t *) arg;
+
+  FILE *LogFile;
+  LogFile = fopen("receive-log.txt", "w");
+  if(LogFile == NULL) {
+    printf("Error opening receive.txt for writing!");   
+    exit(1);             
+  }
+
   while(1) {
     if(IsFull(InstructionQueue)){
       printf("Critical Error!!!!!!!!! Queue is now full. Terminating receive thread.\n");
-      pthread_exit(NULL);
+      //pthread_exit(NULL);
+      exit(-1);
     }
-    if(IsAlmostFull(InstructionQueue, QUEUE_SIZE * 1 / 4)){
-      printf("WARNING the Receive Queue is Almost Full %d !!!!!!!!!!!!!!!!!!\n", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size);
-      if (sendto(sockfd, slowbuf, slow_len, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
-	printf("Send failed\n");
-      }else {
-	printf("send success!\n");
-      }
+    if(IsAlmostFull(InstructionQueue, QUEUE_THREASHOLD)){
+      //pthread_mutex_lock(&SlowMessageLock);
+      pthread_cond_signal(&SlowMessageCond);
+      //pthread_mutex_lock(&SlowMessageLock);
       /* if (sendto(sockfd, slowbuf, slow_len, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){ */
       /* 	printf("Send failed\n"); */
       /* }else { */
@@ -310,9 +338,10 @@ void * ReceiveLoop(void * arg){
       //printf("Before Enqueue\n");
       Enqueue(InstructionDataPtr, InstructionQueue);
       //printf("After Enqueue\n");
-      //PrintInstructionData(InstructionDataPtr);
+      //WriteInstructionData(InstructionDataPtr, LogFile);
     }
   }
+  fclose(LogFile);
   pthread_exit(NULL);
 }
 
@@ -320,18 +349,44 @@ void * ProcessLoop(void * arg){
   queue_t * InstructionQueue = (queue_t *) arg;
   RequiredRVVI_t  InstructionDataPtr;
   int result;
+  uint64_t last = 0;
+  uint64_t current;
   while(1) {
     if(!IsEmpty(InstructionQueue)){
       //printf("Before Dequeue\n");
       Dequeue(&InstructionDataPtr, InstructionQueue);
       //printf("After Dequeue\n");
       PrintInstructionData(&InstructionDataPtr);
+      /* current = InstructionDataPtr.Minstret; */
+      /* if(current != last + 1){ */
+      /* 	printf("Error!\n"); */
+      /* 	exit(-1); */
+      /* } */
+      /* last = current; */
       result = ProcessRvviAll(&InstructionDataPtr);
+      //result = 0;
       if(result == -1) break;
     }
   }
   pthread_exit(NULL);
 }
+
+void * SendSlowMessage(void * arg){
+  queue_t * InstructionQueue = (queue_t *) arg;
+  while(1){
+    pthread_mutex_lock(&SlowMessageLock);
+    pthread_cond_wait(&SlowMessageCond, &SlowMessageLock);
+    pthread_mutex_unlock(&SlowMessageLock);
+    printf("WARNING the Receive Queue is Almost Full %d !!!!!!!!!!!!!!!!!!\n", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size);
+    if (sendto(sockfd, slowbuf, slow_len, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
+      printf("Send failed\n");
+    }else {
+      printf("send success!\n");
+    }
+  }
+  
+}
+
 
 int ProcessRvviAll(RequiredRVVI_t *InstructionData){
   long int found;
@@ -430,5 +485,26 @@ void PrintInstructionData(RequiredRVVI_t *InstructionData){
     }
   }
   printf("\n");
+}
+
+void WriteInstructionData(RequiredRVVI_t *InstructionData, FILE *fptr){
+  int CSRIndex;
+  fprintf(fptr, "PC = %lx, insn = %x, Mcycle = %lx, Minstret = %lx, Trap = %hhx, PrivilegeMode = %hhx",
+	  InstructionData->PC, InstructionData->insn, InstructionData->Mcycle, InstructionData->Minstret, InstructionData->Trap, InstructionData->PrivilegeMode);
+  if(InstructionData->GPREn){
+    fprintf(fptr, ", GPR[%d] = %lx", InstructionData->GPRReg, InstructionData->GPRValue);
+  }
+  if(InstructionData->FPREn){
+    fprintf(fptr, ", FPR[%d] = %lx", InstructionData->FPRReg, InstructionData->FPRValue);
+  }
+  if(InstructionData->CSRCount > 0) {
+    fprintf(fptr, ", Num CSR = %d", InstructionData->CSRCount);
+    for(CSRIndex = 0; CSRIndex < 3; CSRIndex++){
+      if(InstructionData->CSR[CSRIndex].CSRReg != 0){
+	fprintf(fptr, ", CSR[%x] = %lx", InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
+      }
+    }
+  }
+  fprintf(fptr, "\n");
 }
 

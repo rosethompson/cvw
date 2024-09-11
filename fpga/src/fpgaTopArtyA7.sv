@@ -484,7 +484,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     localparam MAX_CSRS = 3;
     localparam TOTAL_CSRS = 36;
     localparam [31:0] RVVI_INIT_TIME_OUT = 32'd100000000;
-    localparam [31:0] RVVI_PACKET_DELAY = 32'd800;
+    localparam [31:0] RVVI_PACKET_DELAY = 32'd2;
     
     // pipeline controlls
     logic                                             StallE, StallM, StallW, FlushE, FlushM, FlushW;
@@ -510,7 +510,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     logic [32*5-1:0]				     SlowString;
   (* mark_debug = "true" *)    logic					     HostRequestSlowDown;
 
-    typedef enum				     {STATE_RST, STATE_COUNT} statetype;
+    typedef enum				     {STATE_RST, STATE_PRE_COUNT, STATE_COUNT} statetype;
     statetype CurrState, NextState;
   (* mark_debug = "true" *)    logic [16:0]				     Count;
     logic [16:0]				     CountThreshold;
@@ -596,7 +596,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     logic                                             tx_error_underflow, tx_fifo_overflow, tx_fifo_bad_frame, tx_fifo_good_frame, rx_error_bad_frame;
     logic                                             rx_error_bad_fcs, rx_fifo_overflow, rx_fifo_bad_frame, rx_fifo_good_frame;
 
-    packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT) packetizer(.rvvi, .valid, .m_axi_aclk(CPUCLK), .m_axi_aresetn(~bus_struct_reset), .RVVIStall,
+    packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi, .valid, .m_axi_aclk(CPUCLK), .m_axi_aresetn(~bus_struct_reset), .RVVIStall,
       .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready);
 
     eth_mac_mii_fifo #(.TARGET("XILINX"), .CLOCK_INPUT_STYLE("BUFG"), .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024)) ethernet(.rst(bus_struct_reset), .logic_clk(CPUCLK), .logic_rst(bus_struct_reset),
@@ -640,15 +640,17 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
 
     always_comb begin
       case(CurrState)
-	STATE_RST: if(HostRequestSlowDown) NextState = STATE_COUNT;
+	STATE_RST: if(HostRequestSlowDown) NextState = STATE_PRE_COUNT;
 	else NextState = STATE_RST;
+	STATE_PRE_COUNT: if(RVVIStall) NextState = STATE_COUNT;  // *** try this to avoid the strange spi issue?
+	else NextState = STATE_PRE_COUNT;
 	STATE_COUNT: if(SlowDownThreshold) NextState = STATE_RST;
 	else NextState = STATE_COUNT;
 	default: NextState = STATE_RST;
       endcase // case (CurrState)
     end
 
-    assign CountThreshold = 17'd20000;
+    assign CountThreshold = 17'd2000;
     assign SlowDownThreshold = Count >= CountThreshold;
     assign SlowDownCounterEnable = CurrState == STATE_COUNT;
     assign SlowDownCounterRst = CurrState == STATE_RST;
