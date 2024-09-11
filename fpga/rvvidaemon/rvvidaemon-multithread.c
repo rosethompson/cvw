@@ -71,11 +71,18 @@
 
 #define DEFAULT_IF	"eno1"
 
+#define QUEUE_SIZE       32
+
 struct sockaddr_ll socket_address;
 uint8_t sendbuf[BUF_SIZ];
 struct ether_header *sendeh = (struct ether_header *) sendbuf;
 int tx_len = 0;
+int slow_len = 0;
 int sockfd;
+
+uint8_t slowbuf[BUF_SIZ];
+struct ether_header *sloweh = (struct ether_header *) slowbuf;
+
 
 void PrintInstructionData(RequiredRVVI_t *InstructionData);
 void * ReceiveLoop(void * arg);
@@ -143,9 +150,10 @@ int main(int argc, char **argv){
 
   // queue to store incoming instructions
   queue_t * InstructionQueue;
-  InstructionQueue = InitQueue(1024);
+  InstructionQueue = InitQueue(QUEUE_SIZE);
 
-    /* Construct the Ethernet header */
+  // frame to send on mismatch
+  /* Construct the Ethernet header */
   memset(sendbuf, 0, BUF_SIZ);
   sendbuf[0] = DEST_MAC0;
   sendbuf[1] = DEST_MAC1;
@@ -170,25 +178,33 @@ int main(int argc, char **argv){
   sendbuf[tx_len++] = 'i';
   sendbuf[tx_len++] = 'n';
 
-  sendeh->ether_type = htons(ETHER_TYPE);
-  tx_len += sizeof(struct ether_header);
+  // frame to send to slow down the fpga
+  /* Construct the Ethernet header */
+  memset(slowbuf, 0, BUF_SIZ);
+  slowbuf[0] = DEST_MAC0;
+  slowbuf[1] = DEST_MAC1;
+  slowbuf[2] = DEST_MAC2;
+  slowbuf[3] = DEST_MAC3;
+  slowbuf[4] = DEST_MAC4;
+  slowbuf[5] = DEST_MAC5;
+  slowbuf[6] = SRC_MAC0;
+  slowbuf[7] = SRC_MAC1;
+  slowbuf[8] = SRC_MAC2;
+  slowbuf[9] = SRC_MAC3;
+  slowbuf[10] = SRC_MAC4;
+  slowbuf[11] = SRC_MAC5;
+
+  sloweh->ether_type = htons(ETHER_TYPE);
+  slow_len += sizeof(struct ether_header);
   /* Packet data */
-  sendbuf[tx_len++] = 't';
-  sendbuf[tx_len++] = 'r';
-  sendbuf[tx_len++] = 'i';
-  sendbuf[tx_len++] = 'g';
-  sendbuf[tx_len++] = 'i';
-  sendbuf[tx_len++] = 'n';
+  slowbuf[slow_len++] = 's';
+  slowbuf[slow_len++] = 'l';
+  slowbuf[slow_len++] = 'o';
+  slowbuf[slow_len++] = 'w';
+  slowbuf[slow_len++] = 'm';
+  slowbuf[slow_len++] = 'e';
 
-  int i;
-  printf("buffer: ");
-  for(i=0;i<tx_len;i++){
-    printf("%02hhx ", sendbuf[i]);
-  }
-  printf("\n");
-  printf("sockfd %x\n", sockfd);
   // imperasdv
-
   if(!rvviVersionCheck(RVVI_API_VERSION)){
     printf("Bad RVVI_API_VERSION\n");
   }
@@ -261,6 +277,14 @@ void * ReceiveLoop(void * arg){
   ssize_t headerbytes, numbytes;
   queue_t * InstructionQueue = (queue_t *) arg;
   while(1) {
+    if(IsAlmostFull(InstructionQueue, QUEUE_SIZE * 3 / 4)){
+      printf("WARNING the Receive Queue is Almost Full!!!!!!!!!!!!!!!!!!\n");
+      if (sendto(sockfd, slowbuf, slow_len, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
+	printf("Send failed\n");
+      }else {
+	printf("send success!\n");
+      }
+    }
     numbytes = recvfrom(sockfd, buf, BUF_SIZ, 0, NULL, NULL);
     headerbytes = (sizeof(struct ether_header));
     int result;
