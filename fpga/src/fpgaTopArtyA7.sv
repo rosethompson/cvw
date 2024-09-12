@@ -521,6 +521,8 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
 (* mark_debug = "true" *)    logic HostRequestSlowDownDelay, HostRequestSlowDownEdge;
 (* mark_debug = "true" *)    logic DidHostRequest;
 (* mark_debug = "true" *)    logic PendingHostRequest;
+    logic					     ClearHostRequested;
+    
     
     assign StallE         = fpgaTop.wallypipelinedsoc.core.StallE;
     assign StallM         = fpgaTop.wallypipelinedsoc.core.StallM;
@@ -670,6 +672,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     assign HostRequestSlowDownEdge = HostRequestSlowDown & ~HostRequestSlowDownDelay;
 
     flopenrc #(1) didhostrequestslowdownreg(CPUCLK, bus_struct_reset, ClearHostRequested, (ClearHostRequested | HostRequestSlowDownEdge), 1'b1, DidHostRequest);
+    assign ClearHostRequested = CurrState == STATE_COUNT & SlowDownThreshold;
     
     counter #(17) SlowDownCounter(CPUCLK, SlowDownCounterRst, SlowDownCounterEnable, Count);
 
