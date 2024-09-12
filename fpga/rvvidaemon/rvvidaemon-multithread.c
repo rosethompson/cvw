@@ -71,8 +71,8 @@
 
 #define DEFAULT_IF	"eno1"
 
-#define QUEUE_SIZE       16384
-#define QUEUE_THREASHOLD 4096
+#define QUEUE_SIZE       1024
+#define QUEUE_THREASHOLD 64
 
 struct sockaddr_ll socket_address;
 uint8_t sendbuf[BUF_SIZ];

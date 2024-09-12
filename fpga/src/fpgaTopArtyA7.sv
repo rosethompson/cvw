@@ -516,7 +516,12 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     logic [16:0]				     CountThreshold;
     logic					     SlowDownThreshold, SlowDownCounterEnable, SlowDownCounterRst;
 
-
+    logic [9:0]					     ConcurrentCount;
+(* mark_debug = "true" *)    logic					     ConcurrentSlowDownCounterRst,  ConcurrentSlowDownCounterEnable, ConcurrentSlowDownCounterEnableUp, ConcurrentSlowDownCounterEnableDown;
+(* mark_debug = "true" *)    logic HostRequestSlowDownDelay, HostRequestSlowDownEdge;
+(* mark_debug = "true" *)    logic DidHostRequest;
+(* mark_debug = "true" *)    logic PendingHostRequest;
+    
     assign StallE         = fpgaTop.wallypipelinedsoc.core.StallE;
     assign StallM         = fpgaTop.wallypipelinedsoc.core.StallM;
     assign StallW         = fpgaTop.wallypipelinedsoc.core.StallW;
@@ -640,7 +645,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
 
     always_comb begin
       case(CurrState)
-	STATE_RST: if(HostRequestSlowDown) NextState = STATE_PRE_COUNT;
+	STATE_RST: if(HostRequestSlowDown | PendingHostRequest) NextState = STATE_PRE_COUNT;
 	else NextState = STATE_RST;
 	STATE_PRE_COUNT: if(RVVIStall) NextState = STATE_COUNT;  // *** try this to avoid the strange spi issue?
 	else NextState = STATE_PRE_COUNT;
@@ -655,9 +660,23 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     assign SlowDownCounterEnable = CurrState == STATE_COUNT;
     assign SlowDownCounterRst = CurrState == STATE_RST;
     assign HostStall = CurrState == STATE_COUNT;
+    assign ConcurrentSlowDownCounterRst = bus_struct_reset;
+    assign ConcurrentSlowDownCounterEnableUp = HostRequestSlowDownEdge & CurrState == STATE_COUNT;
+    assign ConcurrentSlowDownCounterEnable = ConcurrentSlowDownCounterEnableUp | ConcurrentSlowDownCounterEnableDown;
+    assign ConcurrentSlowDownCounterEnableDown = CurrState == STATE_COUNT & (SlowDownThreshold) & ~DidHostRequest & PendingHostRequest;
+    
+    
+    flopr #(1) hostrequestslowdowndelayreg(CPUCLK, bus_struct_reset, HostRequestSlowDown, HostRequestSlowDownDelay);
+    assign HostRequestSlowDownEdge = HostRequestSlowDown & ~HostRequestSlowDownDelay;
 
+    flopenrc #(1) didhostrequestslowdownreg(CPUCLK, bus_struct_reset, ClearHostRequested, (ClearHostRequested | HostRequestSlowDownEdge), 1'b1, DidHostRequest);
+    
     counter #(17) SlowDownCounter(CPUCLK, SlowDownCounterRst, SlowDownCounterEnable, Count);
 
+    updowncounter #(10) ConcurrentSlowDownCounter(CPUCLK, ConcurrentSlowDownCounterRst, ConcurrentSlowDownCounterEnable, ConcurrentSlowDownCounterEnableDown, ConcurrentCount);
+
+    assign PendingHostRequest = (ConcurrentCount != '0);
+    
     assign ExternalStall = RVVIStall | HostStall;
     
   end else begin // if (P.RVVI_SYNTH_SUPPORTED)
