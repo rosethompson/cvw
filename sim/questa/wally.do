@@ -73,7 +73,6 @@ set FCdefineCOVER_EXTS {}
 set lockstep 0
 set lockstepvlog ""
 set SVLib ""
-set OtherFlags ""
 
 set GUI 0
 set accFlag ""
@@ -115,8 +114,8 @@ if {[lcheck lst "--fcovrvvi"]} {
     set FCdefineRVVI_COVERAGE "+define+RVVI_COVERAGE"
 }
 
-# if --fcov found set flag and remove from list
-if {[lcheck lst "--fcov"]} {
+# if --fcovimp found set flag and remove from list
+if {[lcheck lst "--fcovimp"]} {
     set FunctCoverage 1
     set FCvlog "+define+INCLUDE_TRACE2COV \
                 +define+IDV_INCLUDE_TRACE2COV \
@@ -135,25 +134,17 @@ if {[lcheck lst "--fcov"]} {
 
 }
 
-# if --fcov2 found set flag and remove from list
-if {[lcheck lst "--fcov2"]} {
+# if --fcov found set flag and remove from list
+if {[lcheck lst "--fcov"]} {
     set FunctCoverage 1
+    # COVER_BASE_RV32I is just needed to keep riscvISACOV happy, but no longer affects tests
     set FCvlog "+define+INCLUDE_TRACE2COV \
                 +define+IDV_INCLUDE_TRACE2COV \
                 +define+COVER_BASE_RV32I \
-                +define+COVER_LEVEL_DV_PR_EXT \
                 +incdir+$env(WALLY)/addins/riscvISACOV/source \
-		+incdir+$env(WALLY)/addins/cvw-arch-verif/fcov/RV32"
+		"
     set FCvopt "+TRACE2COV_ENABLE=1 +IDV_TRACE2COV=1"
-    # Uncomment various cover statements below to control which extensions get functional coverage
-    lappend FCdefineCOVER_EXTS "+define+COVER_RV32I"
-    lappend FCdefineCOVER_EXTS "+define+COVER_RV32M"
-    #lappend FCdefineCOVER_EXTS "+define+COVER_RV64M"
-    #lappend FCdefineCOVER_EXTS "+define+COVER_RV64A"
-    #lappend FCdefineCOVER_EXTS "+define+COVER_RV64F"
-    #lappend FCdefineCOVER_EXTS "+define+COVER_RV64D"
-    #lappend FCdefineCOVER_EXTS "+define+COVER_RV64ZICSR"
-    #lappend FCdefineCOVER_EXTS "+define+COVER_RV64C"
+
 }
 
 # if --lockstep or --fcov found set flag and remove from list
@@ -165,7 +156,6 @@ if {[lcheck lst "--lockstep"] || $FunctCoverage == 1} {
                       ${IMPERAS_HOME}/ImpPublic/source/host/rvvi/*.sv \
                       ${IMPERAS_HOME}/ImpProprietary/source/host/idv/*.sv"
     set SVLib "-sv_lib ${IMPERAS_HOME}/lib/Linux64/ImperasLib/imperas.com/verification/riscv/1.0/model"
-    #set OtherFlags $::env(OTHERFLAGS)  # not working 7/15/24 dh; this should be the way to pass things like --verbose (Issue 871)
 }
 
 # Set PlusArgs passed using the --args flag
@@ -202,7 +192,7 @@ if {$DEBUG > 0} {
 # suppress spurious warnngs about
 # "Extra checking for conflicts with always_comb done at vopt time"
 # because vsim will run vopt
-set INC_DIRS "+incdir+${CONFIG}/${CFG} +incdir+${CONFIG}/deriv/${CFG} +incdir+${CONFIG}/shared +incdir+${FCRVVI}/common +incdir+${FCRVVI}"
+set INC_DIRS "+incdir+${CONFIG}/${CFG} +incdir+${CONFIG}/deriv/${CFG} +incdir+${CONFIG}/shared +incdir+${FCRVVI} +incdir+${FCRVVI}/rv32 +incdir+${FCRVVI}/rv64 +incdir+${FCRVVI}/common +incdir+${FCRVVI}"
 set SOURCES "${SRC}/cvw.sv ${TB}/${TESTBENCH}.sv ${TB}/common/*.sv ${SRC}/*/*.sv ${SRC}/*/*/*.sv ${WALLY}/addins/verilog-ethernet/*/*.sv ${WALLY}/addins/verilog-ethernet/*/*/*/*.sv"
 vlog -lint +nowarnRDGN -work ${WKDIR} {*}${INC_DIRS} {*}${FCvlog} {*}${FCdefineCOVER_EXTS} {*}${lockstepvlog} ${FCdefineRVVI_COVERAGE} {*}${SOURCES} -suppress 2244 -suppress 2282 -suppress 2583 -suppress 7063,2596,13286
 
@@ -210,7 +200,7 @@ vlog -lint +nowarnRDGN -work ${WKDIR} {*}${INC_DIRS} {*}${FCvlog} {*}${FCdefineC
 # remove +acc flag for faster sim during regressions if there is no need to access internal signals
 vopt $accFlag wkdir/${CFG}_${TESTSUITE}.${TESTBENCH} -work ${WKDIR} {*}${ExpandedParamArgs} -o testbenchopt ${CoverageVoptArg}
 
-vsim -lib ${WKDIR} testbenchopt +TEST=${TESTSUITE} {*}${PlusArgs} -fatal 7 {*}${SVLib} ${OtherFlags} {*}${FCvopt} -suppress 3829 ${CoverageVsimArg}
+vsim -lib ${WKDIR} testbenchopt +TEST=${TESTSUITE} {*}${PlusArgs} -fatal 7 {*}${SVLib} {*}${FCvopt} -suppress 3829 ${CoverageVsimArg}
 
 # power add generates the logging necessary for saif generation.
 # power add -r /dut/core/*
