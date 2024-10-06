@@ -72,7 +72,7 @@
 #define DEFAULT_IF	"eno1"
 
 #define QUEUE_SIZE       16384
-#define QUEUE_THREASHOLD 1024
+#define QUEUE_THREASHOLD 16
 
 struct sockaddr_ll socket_address;
 uint8_t sendbuf[BUF_SIZ];
@@ -83,6 +83,7 @@ int sockfd;
 
 uint8_t slowbuf[BUF_SIZ];
 struct ether_header *sloweh = (struct ether_header *) slowbuf;
+int PercentFullx10;
 
 
 pthread_mutex_t SlowMessageLock;
@@ -306,12 +307,10 @@ void * ReceiveLoop(void * arg){
     exit(1);             
   }
 
+  int Emptiness = QUEUE_SIZE;
   while(1) {
-    if(IsFull(InstructionQueue)){
-      printf("Critical Error!!!!!!!!! Queue is now full. Terminating receive thread.\n");
-      //pthread_exit(NULL);
-      exit(-1);
-    }
+    Emptiness = HowFull(InstructionQueue);
+    PercentFullx10 = (Emptiness * 10) / QUEUE_SIZE;
     if(IsAlmostFull(InstructionQueue, QUEUE_THREASHOLD)){
       //pthread_mutex_lock(&SlowMessageLock);
       pthread_cond_signal(&SlowMessageCond);
@@ -321,6 +320,11 @@ void * ReceiveLoop(void * arg){
       /* }else { */
       /* 	printf("send success!\n"); */
       /* } */
+      if(IsFull(InstructionQueue)){
+        printf("Critical Error!!!!!!!!! Queue is now full. Terminating receive thread.\n");
+        //pthread_exit(NULL);
+        exit(-1);
+      }
     }
     numbytes = recvfrom(sockfd, buf, BUF_SIZ, 0, NULL, NULL);
     headerbytes = (sizeof(struct ether_header));

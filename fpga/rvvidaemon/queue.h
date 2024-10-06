@@ -17,6 +17,7 @@ void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue);
 void Dequeue(RequiredRVVI_t * InstructionData, queue_t *queue);
 bool IsFull(queue_t *queue);
 bool IsAlmostFull(queue_t *queue, int Threshold);
+int HowFull(queue_t *queue);
 bool IsEmpty(queue_t *queue);
 void PrintQueue(queue_t *queue);
 void PrintValidQueue(queue_t *queue);
