@@ -71,8 +71,8 @@
 
 #define DEFAULT_IF	"eno1"
 
-#define QUEUE_SIZE       16384
-#define QUEUE_THREASHOLD 16
+#define QUEUE_SIZE       1024
+#define QUEUE_THREASHOLD 64
 
 struct sockaddr_ll socket_address;
 uint8_t sendbuf[BUF_SIZ];
@@ -83,7 +83,7 @@ int sockfd;
 
 uint8_t slowbuf[BUF_SIZ];
 struct ether_header *sloweh = (struct ether_header *) slowbuf;
-int PercentFullx10;
+int PercentFull;
 
 
 pthread_mutex_t SlowMessageLock;
@@ -310,8 +310,8 @@ void * ReceiveLoop(void * arg){
   int Emptiness = QUEUE_SIZE;
   while(1) {
     Emptiness = HowFull(InstructionQueue);
-    PercentFullx10 = (Emptiness * 10) / QUEUE_SIZE;
-    if(IsAlmostFull(InstructionQueue, QUEUE_THREASHOLD)){
+    PercentFull = (Emptiness * 100) / QUEUE_SIZE;
+    if(IsAlmostFull(InstructionQueue, QUEUE_SIZE / 64)){
       //pthread_mutex_lock(&SlowMessageLock);
       pthread_cond_signal(&SlowMessageCond);
       //pthread_mutex_lock(&SlowMessageLock);
@@ -381,12 +381,13 @@ void * SendSlowMessage(void * arg){
     pthread_mutex_lock(&SlowMessageLock);
     pthread_cond_wait(&SlowMessageCond, &SlowMessageLock);
     pthread_mutex_unlock(&SlowMessageLock);
-    printf("WARNING the Receive Queue is Almost Full %d !!!!!!!!!!!!!!!!!!\n", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size);
-    if (sendto(sockfd, slowbuf, slow_len, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
+    ((uint32_t*) (slowbuf + slow_len))[0] = PercentFull;
+    if (sendto(sockfd, slowbuf, slow_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
       printf("Send failed\n");
     }else {
       printf("send success!\n");
     }
+    printf("WARNING the Receive Queue is Almost Full %d !!!!!!!!!!!!!!!!!!\n", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size);
   }
   
 }
