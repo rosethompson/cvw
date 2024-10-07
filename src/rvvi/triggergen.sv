@@ -48,7 +48,7 @@ module triggergen import cvw::*; (
   logic 	    RvviAxiRvalidDelay;
   logic 	    Match, Overflow, Mismatch, Threshold;
   logic 	    IlaTriggerOneCycle;
-  logic         MessageEn;
+  logic         MessageEn, MessageEnDelay, MessageEnClear;
   
    
 /* -----\/----- EXCLUDED -----\/-----
@@ -100,7 +100,8 @@ module triggergen import cvw::*; (
   assign IlaTriggerOneCycle = CurrState == STATE_TRIGGER;
   assign CounterRst = CurrState == STATE_RST;
   assign CounterEn = RvviAxiRvalid;
-  assign MessageEn = (CurrState == STATE_TRIGGER_DONE) & RvviAxiRvalid;
+  assign MessageEn = (CurrState == STATE_TRIGGER_DONE) & RvviAxiRvalidDelay;
+  assign MessageEnClear = CurrState == STATE_RST;
 
 /* -----\/----- EXCLUDED -----\/-----
   always_ff @(posedge clk) begin
@@ -119,6 +120,8 @@ module triggergen import cvw::*; (
   assign TriggerEn = IlaTriggerOneCycle | (TriggerCount != 4'd0 & TriggerCount < 4'd10);
   assign IlaTrigger = TriggerEn;
 
-  flopenr #(32) triggermessagereg(clk, reset, MessageEn, RvviAxiRdataDelay, TriggerMessage);
+  flopenr #(1)  onecyclemessagereg(clk, MessageEnClear, MessageEn, 1'b1, MessageEnDelay);
+  flopenr #(32) triggermessagereg(clk, reset, MessageEn & ~MessageEnDelay, RvviAxiRdataDelay, TriggerMessage);
+  
 
 endmodule
