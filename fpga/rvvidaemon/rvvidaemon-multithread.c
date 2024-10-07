@@ -354,13 +354,17 @@ void * ProcessLoop(void * arg){
   RequiredRVVI_t  InstructionDataPtr;
   int result;
   uint64_t last = 0;
-  uint64_t current;
+  uint64_t count = 0;
   while(1) {
     if(!IsEmpty(InstructionQueue)){
       //printf("Before Dequeue\n");
       Dequeue(&InstructionDataPtr, InstructionQueue);
       //printf("After Dequeue\n");
-      PrintInstructionData(&InstructionDataPtr);
+      count++;
+      if(count == 1024){
+        PrintInstructionData(&InstructionDataPtr);
+        count = 0;
+      }
       /* current = InstructionDataPtr.Minstret; */
       /* if(current != last + 1){ */
       /* 	printf("Error!\n"); */
@@ -369,7 +373,10 @@ void * ProcessLoop(void * arg){
       /* last = current; */
       result = ProcessRvviAll(&InstructionDataPtr);
       //result = 0;
-      if(result == -1) break;
+      if(result == -1) {
+        PrintInstructionData(&InstructionDataPtr);
+        break;
+      }
     }
   }
   pthread_exit(NULL);
