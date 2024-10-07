@@ -514,7 +514,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     statetype CurrState, NextState;
   (* mark_debug = "true" *)    logic [16:0]				     Count;
     logic [16:0]				     CountThreshold;
-    logic [31:0]                     HostFiFoFillAmt;
+  (* mark_debug = "true" *)        logic [31:0]                     HostFiFoFillAmt;
     logic					     SlowDownThreshold, SlowDownCounterEnable, SlowDownCounterRst;
 
     logic [9:0]                      ConcurrentCount;
@@ -598,8 +598,8 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
 
     logic [31:0] RvviAxiRdata;
     logic [3:0]                                       RvviAxiRstrb;
-    logic RvviAxiRlast;
-    logic RvviAxiRvalid;
+(* mark_debug = "true" *)    logic RvviAxiRlast;
+(* mark_debug = "true" *)    logic RvviAxiRvalid;
 
     logic                                             tx_error_underflow, tx_fifo_overflow, tx_fifo_bad_frame, tx_fifo_good_frame, rx_error_bad_frame;
     logic                                             rx_error_bad_fcs, rx_fifo_overflow, rx_fifo_bad_frame, rx_fifo_good_frame;
