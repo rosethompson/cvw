@@ -592,6 +592,11 @@ module testbench;
     assign SDCDat = sd_dat_reg_t ? sd_dat_reg_o : sd_dat_i;
     assign SDCDatIn = SDCDat;
     -----/\----- EXCLUDED -----/\----- */
+    tri SDCCmdtri;
+    tri [3:0] SDCDattri;
+    assign SDCCmdtri = SDCCmd;
+    assign SDCIn = SDCDattri[0];
+    sdModel sdcard (.sdClk(SDCCLK), .cmd(SDCCmdtri), .dat(SDCDattri));
   end else begin
     assign SDCIn = 1'b1;
 

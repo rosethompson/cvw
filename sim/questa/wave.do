@@ -215,13 +215,11 @@ add wave -noupdate -group lsu /testbench/dut/core/lsu/WriteDataM
 add wave -noupdate -group lsu /testbench/dut/core/lsu/FWriteDataM
 add wave -noupdate -group lsu /testbench/dut/core/lsu/ReadDataWordMuxM
 add wave -noupdate -group lsu -group stalls /testbench/dut/core/lsu/bus/dcache/dcache/CacheStall
-add wave -noupdate -group lsu -group stalls /testbench/dut/core/lsu/IgnoreRequestTLB
 add wave -noupdate -group lsu -group stalls /testbench/dut/core/lsu/SelHPTW
 add wave -noupdate -group lsu -group stalls /testbench/dut/core/lsu/LSUStallM
 add wave -noupdate -group lsu -expand -group bus /testbench/dut/core/ebu/ebu/HCLK
 add wave -noupdate -group lsu -expand -group bus -color Gold /testbench/dut/core/lsu/bus/dcache/ahbcacheinterface/AHBBuscachefsm/CurrState
 add wave -noupdate -group lsu -expand -group bus /testbench/dut/core/lsu/bus/dcache/ahbcacheinterface/AHBBuscachefsm/HREADY
-add wave -noupdate -group lsu -expand -group bus /testbench/dut/core/lsu/BusStall
 add wave -noupdate -group lsu -expand -group bus /testbench/dut/core/lsu/bus/dcache/ahbcacheinterface/HTRANS
 add wave -noupdate -group lsu -expand -group bus /testbench/dut/core/lsu/bus/dcache/ahbcacheinterface/FetchBuffer
 add wave -noupdate -group lsu -expand -group bus /testbench/dut/core/lsu/bus/dcache/ahbcacheinterface/HRDATA
@@ -666,8 +664,14 @@ add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/ShiftEdge
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/Active
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/TransmitData
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/TransmitShiftReg
+add wave -noupdate -expand -group {sd card} -expand -group spi /testbench/sdcard/sdcard/sdClk
+add wave -noupdate -expand -group {sd card} -expand -group spi /testbench/sdcard/sdcard/cmd
+add wave -noupdate -expand -group {sd card} -expand -group spi /testbench/sdcard/sdcard/dat
+add wave -noupdate -expand -group {sd card} -color Gold /testbench/sdcard/sdcard/state
+add wave -noupdate /testbench/sdcard/sdcard/ValidCmd
+add wave -noupdate /testbench/sdcard/sdcard/inValidCmd
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {640 ns} 1} {{Cursor 4} {2400 ns} 1} {{Cursor 3} {1197 ns} 0} {{Cursor 4} {223860 ns} 1}
+WaveRestoreCursors {{Cursor 4} {640 ns} 1} {{Cursor 4} {2400 ns} 1} {{Cursor 3} {12544770 ns} 0} {{Cursor 4} {223860 ns} 1}
 quietly wave cursor active 3
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -683,4 +687,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1130 ns} {1230 ns}
+WaveRestoreZoom {12535356 ns} {12554184 ns}

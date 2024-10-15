@@ -80,24 +80,15 @@ module    sdModel
 
    parameter SIZE = 10;
    parameter CONTENT_SIZE = 40;
-   parameter 
-     IDLE   =  10'b0000_0000_01,
-     READ_CMD       =  10'b0000_0000_10,
-     ANALYZE_CMD    =  10'b0000_0001_00,
-     SEND_CMD	    =  10'b0000_0010_00;
-   reg [SIZE-1:0] state;
-   reg [SIZE-1:0] next_state;
+  typedef enum    {IDLE, READ_CMD, ANALYZE_CMD, SEND_CMD} statetype;
+  statetype state, next_state;
+  
 
-   parameter 
-     DATA_IDLE   =10'b0000_0000_01,    
-     READ_WAITS  =10'b0000_0000_10,
-     READ_DATA   =10'b0000_0001_00,
-     WRITE_FLASH =10'b0000_0010_00,
-     WRITE_DATA  =10'b0000_0100_00;
+  typedef enum {DATA_IDLE, READ_WAITS, READ_DATA, WRITE_FLASH, WRITE_DATA} datastatetype;
+  datastatetype dataState, next_datastate;
+  
    parameter okcrctoken = 4'b0101;
    parameter invalidcrctoken = 4'b1111;
-   reg [SIZE-1:0] dataState;
-   reg [SIZE-1:0] next_datastate;
 
    reg 		  ValidCmd;
    reg 		  inValidCmd;
@@ -346,7 +337,7 @@ module    sdModel
 
    always @ (state or cmd or cmdRead or ValidCmd or inValidCmd or cmdWrite or outDelayCnt)
      begin : FSM_COMBO
-	next_state  = 0;   
+	next_state  = IDLE;   
 	case(state)  
 	  IDLE: begin
 	     if (!cmd) 
@@ -382,7 +373,7 @@ module    sdModel
 
    always @ (dataState or CardStatus or crc_c or flash_write_cnt or dat[0] )
      begin : FSM_COMBODAT
-	next_datastate  = 0;   
+	next_datastate  = DATA_IDLE;   
 	case(dataState)  
 	  DATA_IDLE: begin
 	     if ((CardStatus[12:9]==`RCV) |  (mult_write == 1'b1) )  
