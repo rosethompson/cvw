@@ -335,44 +335,39 @@ module    sdModel
 
    //CARD logic
 
-   always @ (state or cmd or cmdRead or ValidCmd or inValidCmd or cmdWrite or outDelayCnt)
-     begin : FSM_COMBO
-	next_state  = IDLE;   
-	case(state)  
-	  IDLE: begin
+   always_comb begin : FSM_COMBO
+	 case(state)  
+	   IDLE: begin
 	     if (!cmd) 
 	       next_state = READ_CMD;
 	     else
 	       next_state = IDLE; 
-	  end  
-	  READ_CMD: begin
+	   end  
+	   READ_CMD: begin
 	     if (cmdRead>= 47) 
 	       next_state = ANALYZE_CMD;
 	     else
 	       next_state =  READ_CMD; 
-	  end
-	  ANALYZE_CMD: begin
+	   end
+	   ANALYZE_CMD: begin
 	     if ((ValidCmd  )   & (outDelayCnt >= `outDelay )) // outDelayCnt >= 4 (NCR)
 	       next_state = SEND_CMD;
 	     else if (inValidCmd)
 	       next_state =  IDLE; 
 	     else
 	       next_state =  ANALYZE_CMD; 
-	  end 
-	  SEND_CMD: begin
+	   end 
+	   SEND_CMD: begin
 	     if (cmdWrite>= response_S) 
 	       next_state = IDLE;
 	     else
 	       next_state =  SEND_CMD; 
-	     
-	  end
-	  
-	  
-	endcase
-     end
+	   end
+	   default: next_state = IDLE;
+	 endcase
+   end
 
-   always @ (dataState or CardStatus or crc_c or flash_write_cnt or dat[0] )
-     begin : FSM_COMBODAT
+   always_comb begin : FSM_COMBODAT
 	next_datastate  = DATA_IDLE;   
 	case(dataState)  
 	  DATA_IDLE: begin
@@ -425,330 +420,326 @@ module    sdModel
 	endcase
      end
 
-   always @ (posedge sdClk  )
-     begin 
-	
-	q_start_bit <= dat[0];
-     end
+   always @ (posedge sdClk) begin 
+	 q_start_bit <= dat[0];
+   end
 
-   always @ (posedge sdClk  )
-     begin : FSM_SEQ
-	state <= next_state; 
-     end
+   always @ (posedge sdClk) begin : FSM_SEQ
+	 state <= next_state; 
+   end
 
-   always @ (posedge sdClk  )
-     begin : FSM_SEQDAT
-	dataState <= next_datastate; 
-     end
+   always @ (posedge sdClk) begin : FSM_SEQDAT
+	 dataState <= next_datastate; 
+   end
 
    always @ (posedge sdClk) begin
-      if (CardTransferActive) begin
-	 if (InbuffStatus==0) //empty
+     if (CardTransferActive) begin
+	   if (InbuffStatus==0) //empty
+	     CardStatus[8]<=1;
+	   else
+	     CardStatus[8]<=0;
+     end
+     else
 	   CardStatus[8]<=1;
-	 else
-	   CardStatus[8]<=0;
-      end
-      else
-	CardStatus[8]<=1;
-      startUppCnt<=startUppCnt+1;
-      OCR[31]<=Busy; // THERE IS NO TILDA "OCR[31]<=~BUSY", BUSY is OCR[31]
-      if (startUppCnt == `TIME_BUSY) // startUppCnt == 63 (counts until ACMD41 valid)
-	Busy <=1;
+     startUppCnt<=startUppCnt+1;
+     OCR[31]<=Busy; // THERE IS NO TILDA "OCR[31]<=~BUSY", BUSY is OCR[31]
+     if (startUppCnt == `TIME_BUSY) // startUppCnt == 63 (counts until ACMD41 valid)
+	   Busy <=1;
    end // always @ (posedge sdClk)
    
 
-   always @ (posedge sdClk) begin
-      qCmd<=cmd;
-   end
+  always @ (posedge sdClk) begin
+    qCmd<=cmd;
+  end
 
-   //read data and cmd on rising edge
-   always @ (posedge sdClk) begin
-      case(state)
-	IDLE: begin
-	   mult_write <= 0; 
-	   mult_read <=0; 
-	   crcIn<=0;
-	   crcEn<=0;
-	   crcRst<=1;
-	   oeCmd<=0;
-	   stop<=0;
-	   cmdRead<=0;
-	   appendCrc<=0;
-	   ValidCmd<=0;
-	   inValidCmd=0;
-	   cmdWrite<=0;
-	   crcCnt<=0;
-	   response_CMD<=0;
-	   response_S<=0;
-	   outDelayCnt<=0;
-	   responseType=0;      
-	end // case: IDLE
+  //read data and cmd on rising edge
+  always @ (posedge sdClk) begin
+    case(state)
+	  IDLE: begin
+	    mult_write <= 0; 
+	    mult_read <=0; 
+	    crcIn<=0;
+	    crcEn<=0;
+	    crcRst<=1;
+	    oeCmd<=0;
+	    stop<=0;
+	    cmdRead<=0;
+	    appendCrc<=0;
+	    ValidCmd<=0;
+	    inValidCmd=0;
+	    cmdWrite<=0;
+	    crcCnt<=0;
+	    response_CMD<=0;
+	    response_S<=0;
+	    outDelayCnt<=0;
+	    responseType=0;      
+	  end // case: IDLE
 	
-	READ_CMD: begin //read cmd
-	   crcEn<=1;
-	   crcRst<=0;
-	   crcIn <= #`tIH qCmd; // tIH 0
-	   inCmd[47-cmdRead]  <= #`tIH qCmd;    // tIH 0
-	   cmdRead <= cmdRead+1;
-	   if (cmdRead >= 40) 
-             crcEn<=0;
-           
-	   if (cmdRead == 46) begin
-              oeCmd<=1;
-	      cmdOut<=1;
-	   end
-	end // case: READ_CMD
-	
+	  READ_CMD: begin //read cmd
+	    crcEn<=1;
+	    crcRst<=0;
+	    crcIn <= #`tIH qCmd; // tIH 0
+	    inCmd[47-cmdRead]  <= #`tIH qCmd;    // tIH 0
+	    cmdRead <= cmdRead+1;
+	    if (cmdRead >= 40) 
+          crcEn<=0;
         
-	ANALYZE_CMD: begin//check for valid cmd
-	   //Wrong CRC go idle
-	   if (inCmd[46] == 0) //start
-	     inValidCmd=1;
-	   else if (inCmd[7:1] != crcOut) begin
+	    if (cmdRead == 46) begin
+          oeCmd<=1;
+	      cmdOut<=1;
+	    end
+	  end // case: READ_CMD
+	
+      
+	  ANALYZE_CMD: begin//check for valid cmd
+	    //Wrong CRC go idle
+	    if (inCmd[46] == 0) //start
+	      inValidCmd=1;
+	    else if (inCmd[7:1] != crcOut) begin
 	      inValidCmd=1;
 	      $fdisplay(sdModel_file_desc, "**sd_Model Command Packet - CRC Error") ;
-	      $display(sdModel_file_desc, "**sd_Model Command Packet - CRC Error") ;
-	   end  
-	   else if  (inCmd[0] != 1)  begin//stop 
+	      $display("**sd_Model Command Packet - CRC Error") ;
+	    end  
+	    else if  (inCmd[0] != 1)  begin//stop 
 	      inValidCmd=1;
 	      $fdisplay(sdModel_file_desc, "**sd_Model Command Packet - No Stop Bit Error") ;
-	      $display(sdModel_file_desc, "**sd_Model Command Packet - No Stop Bit Error") ;
-	   end  
-	   else begin
+	      $display("**sd_Model Command Packet - No Stop Bit Error") ;
+	    end  
+	    else begin
 	      if(outDelayCnt ==0 )
-		CardStatus[3]<=0; // AKE_SEQ_ERROR = no error in sequence of authentication process, until I say otherwise
+		    CardStatus[3]<=0; // AKE_SEQ_ERROR = no error in sequence of authentication process, until I say otherwise
 	      case(inCmd[45:40])
-		0 : response_S <= 0; // GO_IDLE_STATE
-		2 : response_S <= 136; //ALL_SEND_CARD_ID (CID)
-		3 : response_S <= 48; //SEND_RELATIVE_CARD_ADDRESS (RCA)
-		7 : response_S <= 48; // SELECT_CARD
-		8 : response_S <= 48; // SEND_INTERFACE_CONDITION (IC)
-		9 : response_S <= 136; // SEND_CARD_SPECIFIC_DATA (CSD)
-		14 : response_S <= 0; // reserved (why is this even here?)
-		16 : response_S <= 48; // SET_BLOCK_LENGTH (Does nothing for SDHC/SDXC)
-		17 : response_S <= 48; // READ_SINGLE_BLOCK of data from card
-		18 : response_S <= 48; // READ_MULTIPLE_BLOCKS of data from card
-		24 : response_S <= 48; // WRITE_BLOCK of data to card
-		25 : response_S <= 48; // WRITE_MULTIPLE_BLOCKS of data to card
-		33 : response_S <= 48; // ERASE_WR_BLK_END
-		55 : response_S <= 48; // APP_CMD
-		41 : response_S <= 48; // CMD41 - SD_SEND_OCR
+		    0 : response_S <= 0; // GO_IDLE_STATE
+		    2 : response_S <= 136; //ALL_SEND_CARD_ID (CID)
+		    3 : response_S <= 48; //SEND_RELATIVE_CARD_ADDRESS (RCA)
+		    7 : response_S <= 48; // SELECT_CARD
+		    8 : response_S <= 48; // SEND_INTERFACE_CONDITION (IC)
+		    9 : response_S <= 136; // SEND_CARD_SPECIFIC_DATA (CSD)
+		    14 : response_S <= 0; // reserved (why is this even here?)
+		    16 : response_S <= 48; // SET_BLOCK_LENGTH (Does nothing for SDHC/SDXC)
+		    17 : response_S <= 48; // READ_SINGLE_BLOCK of data from card
+		    18 : response_S <= 48; // READ_MULTIPLE_BLOCKS of data from card
+		    24 : response_S <= 48; // WRITE_BLOCK of data to card
+		    25 : response_S <= 48; // WRITE_MULTIPLE_BLOCKS of data to card
+		    33 : response_S <= 48; // ERASE_WR_BLK_END
+		    55 : response_S <= 48; // APP_CMD
+		    41 : response_S <= 48; // CMD41 - SD_SEND_OCR
 	      endcase // case (inCmd[45:40])
 	      
-              case(inCmd[45:40])
-		0 : begin // GO_IDLE_STATE
-		   response_CMD <= 0;
-		   cardIdentificationState<=1;
-		   ResetCard;
-		end    
-		2 : begin //ALL_SEND_CARD_ID (CID)
-		   if (lastCMD != 41 & outDelayCnt==0) begin
-		      $fdisplay(sdModel_file_desc, "**Error in sequence, ACMD 41 should precede 2 in Start-up state") ;
-		      //$display(sdModel_file_desc, "**Error in sequence, ACMD 41 should precede 2 in Start-up state") ;
-		      CardStatus[3]<=1; // AKE_SEQ_ERROR = ERROR in sequence of authentication process
-		   end  
-		   response_CMD[127:8] <= CID;
-		   appendCrc<=0; 
-		   CardStatus[12:9] <=2;
-		end
-		3 :  begin //SEND_RELATIVE_CARD_ADDRESS (RCA)
-		   if (lastCMD != 2 & outDelayCnt==0 ) begin
-		      $fdisplay(sdModel_file_desc, "**Error in sequence, CMD 2 should precede 3 in Start-up state") ;
-		      //$display(sdModel_file_desc, "**Error in sequence, CMD 2 should precede 3 in Start-up state") ;
-		      CardStatus[3]<=1; // AKE_SEQ_ERROR = ERROR in sequence of authentication process
-		   end  
-		   response_CMD[127:112] <= RCA[15:0] ;
-		   response_CMD[111:96] <= CardStatus[15:0] ;
-		   appendCrc<=1;
-		   CardStatus[12:9] <=3;
-		   cardIdentificationState<=0;
-		end
-		6 : begin         
-		   if (lastCMD == 55 & outDelayCnt==0) begin //ACMD6 - SET_BUS_WIDTH
-		      if (inCmd[9:8] == 2'b10) begin
-			 BusWidth <=4;      
-			 $display(sdModel_file_desc, "**BUS WIDTH 4 ") ;
-		      end
-		      else
-			BusWidth <=1;               
-		      
+          case(inCmd[45:40])
+		    0 : begin // GO_IDLE_STATE
+		      response_CMD <= 0;
+		      cardIdentificationState<=1;
+		      ResetCard;
+		    end    
+		    2 : begin //ALL_SEND_CARD_ID (CID)
+		      if (lastCMD != 41 & outDelayCnt==0) begin
+		        $fdisplay(sdModel_file_desc, "**Error in sequence, ACMD 41 should precede 2 in Start-up state") ;
+		        //$display(sdModel_file_desc, "**Error in sequence, ACMD 41 should precede 2 in Start-up state") ;
+		        CardStatus[3]<=1; // AKE_SEQ_ERROR = ERROR in sequence of authentication process
+		      end  
+		      response_CMD[127:8] <= CID;
+		      appendCrc<=0; 
+		      CardStatus[12:9] <=2;
+		    end
+		    3 :  begin //SEND_RELATIVE_CARD_ADDRESS (RCA)
+		      if (lastCMD != 2 & outDelayCnt==0 ) begin
+		        $fdisplay(sdModel_file_desc, "**Error in sequence, CMD 2 should precede 3 in Start-up state") ;
+		        //$display(sdModel_file_desc, "**Error in sequence, CMD 2 should precede 3 in Start-up state") ;
+		        CardStatus[3]<=1; // AKE_SEQ_ERROR = ERROR in sequence of authentication process
+		      end  
+		      response_CMD[127:112] <= RCA[15:0] ;
+		      response_CMD[111:96] <= CardStatus[15:0] ;
+		      appendCrc<=1;
+		      CardStatus[12:9] <=3;
+		      cardIdentificationState<=0;
+		    end
+		    6 : begin         
+		      if (lastCMD == 55 & outDelayCnt==0) begin //ACMD6 - SET_BUS_WIDTH
+		        if (inCmd[9:8] == 2'b10) begin
+			      BusWidth <=4;      
+			      $display(sdModel_file_desc, "**BUS WIDTH 4 ") ;
+		        end
+		        else
+			      BusWidth <=1;               
+		        
+		        response_S<=48;
+		        response_CMD[127:96] <= CardStatus; 
+		      end   
+		      else if (outDelayCnt==0) begin //CMD6 - SWITCH_CARD_FUNCTION (Clock speed) 
+		        if (CardStatus[12:9] == `TRAN) begin //If card is in transfer state                               
+			      CardStatus[12:9] <=`DATAS;//Put card in data state
+			      response_CMD[127:96] <= CardStatus ;
+			      response_S<=48;
+			      BLOCK_WIDTH <= 11'd148;
+			      $fdisplay(sdModel_file_desc, "**Error Invalid CMD, %h",inCmd[45:40]);
+			      $display(sdModel_file_desc, "**Error Invalid CMD, %h",inCmd[45:40]);         
+		        end
+		        else begin
+			      response_S <= 0;
+			      response_CMD[127:96] <= 0;
+			      $fdisplay(sdModel_file_desc, "**Error Invalid CMD, %h, card not in transfer state",inCmd[45:40]);
+			      $display(sdModel_file_desc,  "**Error Invalid CMD, %h, card not in transfer state",inCmd[45:40]);
+		        end // else: !if(CardStatus[12:9] == `TRAN)
+		      end // if (outDelayCnt==0)
+		    end // case: 6
+		    
+		    7: begin // SELECT_CARD
+		      if (outDelayCnt==0) begin 
+		        if (inCmd[39:24]== RCA[15:0]) begin
+			      CardTransferActive <= 1;
+			      response_CMD[127:96] <= CardStatus ; 
+			      CardStatus[12:9] <=`TRAN;                            
+		        end
+		        else begin
+			      CardTransferActive <= 0;
+			      response_CMD[127:96] <= CardStatus ; 
+			      CardStatus[12:9] <=3;  
+		        end          
+		      end        
+		    end // case: 7
+		    
+            
+		    8 : begin // SEND_INTERFACE_CONDITION (IC)
+		      response_CMD[127:96] <= {20'h00000 , inCmd[19:8]}; //not supported by V1.0 card
 		      response_S<=48;
-		      response_CMD[127:96] <= CardStatus; 
-		   end   
-		   else if (outDelayCnt==0) begin //CMD6 - SWITCH_CARD_FUNCTION (Clock speed) 
-		      if (CardStatus[12:9] == `TRAN) begin //If card is in transfer state                               
-			 CardStatus[12:9] <=`DATAS;//Put card in data state
-			 response_CMD[127:96] <= CardStatus ;
-			 response_S<=48;
-			 BLOCK_WIDTH <= 11'd148;
-			 $fdisplay(sdModel_file_desc, "**Error Invalid CMD, %h",inCmd[45:40]);
-			 $display(sdModel_file_desc, "**Error Invalid CMD, %h",inCmd[45:40]);         
-		      end
-		      else begin
-			 response_S <= 0;
-			 response_CMD[127:96] <= 0;
-			 $fdisplay(sdModel_file_desc, "**Error Invalid CMD, %h, card not in transfer state",inCmd[45:40]);
-			 $display(sdModel_file_desc,  "**Error Invalid CMD, %h, card not in transfer state",inCmd[45:40]);
-		      end // else: !if(CardStatus[12:9] == `TRAN)
-		   end // if (outDelayCnt==0)
-		end // case: 6
-		
-		7: begin // SELECT_CARD
-		   if (outDelayCnt==0) begin 
-		      if (inCmd[39:24]== RCA[15:0]) begin
-			 CardTransferActive <= 1;
-			 response_CMD[127:96] <= CardStatus ; 
-			 CardStatus[12:9] <=`TRAN;                            
-		      end
-		      else begin
-			 CardTransferActive <= 0;
-			 response_CMD[127:96] <= CardStatus ; 
-			 CardStatus[12:9] <=3;  
-		      end          
-		   end        
-		end // case: 7
-		
-      
-		8 : begin // SEND_INTERFACE_CONDITION (IC)
-		   response_CMD[127:96] <= {20'h00000 , inCmd[19:8]}; //not supported by V1.0 card
-		   response_S<=48;
-		   
-		   $fdisplay(sdModel_file_desc, "**Warning Unofficially Supported CMD, %h",inCmd[45:40]);
-		   $display(sdModel_file_desc, "**Warning Unofficially Supported CMD, %h",inCmd[45:40]);
-		end
-		
-		9 : begin // SEND_CARD_SPECIFIC_DATA (CSD)
-		   if (lastCMD != 41 & outDelayCnt==0) begin
-		      $fdisplay(sdModel_file_desc, "**Error in sequence, ACMD 41 should precede 9 in Start-up state") ;
-		      //$display(sdModel_file_desc, "**Error in sequence, ACMD 41 should precede 9 in Start-up state") ;
-		      CardStatus[3]<=1; // AKE_SEQ_ERROR = ERROR in sequence of authentication process
-		   end  
-		   response_CMD[127:8] <= CSD;
-		   appendCrc<=0; 
-		   CardStatus[12:9] <=2;
-		end
-		
-		12: begin // STOP_TRANSMISSION
-		   response_CMD[127:96] <= CardStatus ;
-		   stop<=1;
-		   mult_write <= 0; 
-		   mult_read <=0; 
-		   CardStatus[12:9] <= `TRAN;
-		end 
+		      
+		      $fdisplay(sdModel_file_desc, "**Warning Unofficially Supported CMD, %h",inCmd[45:40]);
+		      $display(sdModel_file_desc, "**Warning Unofficially Supported CMD, %h",inCmd[45:40]);
+		    end
+		    
+		    9 : begin // SEND_CARD_SPECIFIC_DATA (CSD)
+		      if (lastCMD != 41 & outDelayCnt==0) begin
+		        $fdisplay(sdModel_file_desc, "**Error in sequence, ACMD 41 should precede 9 in Start-up state") ;
+		        //$display(sdModel_file_desc, "**Error in sequence, ACMD 41 should precede 9 in Start-up state") ;
+		        CardStatus[3]<=1; // AKE_SEQ_ERROR = ERROR in sequence of authentication process
+		      end  
+		      response_CMD[127:8] <= CSD;
+		      appendCrc<=0; 
+		      CardStatus[12:9] <=2;
+		    end
+		    
+		    12: begin // STOP_TRANSMISSION
+		      response_CMD[127:96] <= CardStatus ;
+		      stop<=1;
+		      mult_write <= 0; 
+		      mult_read <=0; 
+		      CardStatus[12:9] <= `TRAN;
+		    end 
 
-		16 : begin // SET_BLOCK_LENGTH (Does nothing for SDHC/SDXC)
-		   response_CMD[127:96] <= CardStatus ;
-		end 
+		    16 : begin // SET_BLOCK_LENGTH (Does nothing for SDHC/SDXC)
+		      response_CMD[127:96] <= CardStatus ;
+		    end 
 
-		17 :  begin // READ_SINGLE_BLOCK of data from card
-		   if (outDelayCnt==0) begin 
-		      if (CardStatus[12:9] == `TRAN) begin //If card is in transfer state                               
-			 CardStatus[12:9] <=`DATAS;//Put card in data state
-			 response_CMD[127:96] <= CardStatus ;
-			 BLOCK_WIDTH <= 11'd1044;
-			 
-			 ByteAddr = inCmd[39:8] << 9;
-			 if (ByteAddr%512 !=0)
-			   $display("**Block Misalign Error");         
-		      end
-		      else begin
-			 response_S <= 0;
-			 response_CMD[127:96] <= 0; 
-		      end
-		   end		   
-		end 
+		    17 :  begin // READ_SINGLE_BLOCK of data from card
+		      if (outDelayCnt==0) begin 
+		        if (CardStatus[12:9] == `TRAN) begin //If card is in transfer state                               
+			      CardStatus[12:9] <=`DATAS;//Put card in data state
+			      response_CMD[127:96] <= CardStatus ;
+			      BLOCK_WIDTH <= 11'd1044;
+			      
+			      ByteAddr = inCmd[39:8] << 9;
+			      if (ByteAddr%512 !=0)
+			        $display("**Block Misalign Error");         
+		        end
+		        else begin
+			      response_S <= 0;
+			      response_CMD[127:96] <= 0; 
+		        end
+		      end		   
+		    end 
 
-		18 :  begin // READ_MULTIPLE_BLOCKS of data from card
-		   if (outDelayCnt==0) begin 
-		      if (CardStatus[12:9] == `TRAN) begin //If card is in transfer state                               
-			 CardStatus[12:9] <=`DATAS;//Put card in data state
-			 response_CMD[127:96] <= CardStatus ;
-			 mult_read <= 1;
-			 ByteAddr = inCmd[39:8] << 9;
-			 if (ByteAddr%512 !=0)
-			   $display("**Block Misalign Error");         
+		    18 :  begin // READ_MULTIPLE_BLOCKS of data from card
+		      if (outDelayCnt==0) begin 
+		        if (CardStatus[12:9] == `TRAN) begin //If card is in transfer state                               
+			      CardStatus[12:9] <=`DATAS;//Put card in data state
+			      response_CMD[127:96] <= CardStatus ;
+			      mult_read <= 1;
+			      ByteAddr = inCmd[39:8] << 9;
+			      if (ByteAddr%512 !=0)
+			        $display("**Block Misalign Error");         
+		        end
+		        else begin
+			      response_S <= 0;
+			      response_CMD[127:96] <= 0; 			 
+		        end
+		      end		   
+		    end 
+		    
+		    24 : begin // WRITE_BLOCK of data to card
+		      if (outDelayCnt==0) begin 
+		        if (CardStatus[12:9] == `TRAN) begin //If card is in transfer state
+			      if (CardStatus[8]) begin //If Free write buffer           
+			        CardStatus[12:9] <=`RCV;//Put card in Rcv state
+			        response_CMD[127:96] <= CardStatus ;
+			        ByteAddr = inCmd[39:8] << 9;
+			        if (ByteAddr%512 !=0)
+			          $display("**Block Misalign Error");
+			      end
+			      else begin
+			        response_CMD[127:96] <= CardStatus;
+			        $fdisplay(sdModel_file_desc, "**Error Try to blockwrite when No Free Writebuffer") ;
+			        $display("**Error Try to blockwrite when No Free Writebuffer") ;
+			      end
+		        end
+		        else begin
+			      response_S <= 0;
+			      response_CMD[127:96] <= 0; 
+		        end
 		      end
-		      else begin
-			 response_S <= 0;
-			 response_CMD[127:96] <= 0; 			 
-		      end
-		   end		   
-		end 
-		
-		24 : begin // WRITE_BLOCK of data to card
-		   if (outDelayCnt==0) begin 
-		      if (CardStatus[12:9] == `TRAN) begin //If card is in transfer state
-			 if (CardStatus[8]) begin //If Free write buffer           
-			    CardStatus[12:9] <=`RCV;//Put card in Rcv state
-			    response_CMD[127:96] <= CardStatus ;
-			    ByteAddr = inCmd[39:8] << 9;
-			    if (ByteAddr%512 !=0)
-			      $display("**Block Misalign Error");
-			 end
-			 else begin
-			    response_CMD[127:96] <= CardStatus;
-			    $fdisplay(sdModel_file_desc, "**Error Try to blockwrite when No Free Writebuffer") ;
-			    $display("**Error Try to blockwrite when No Free Writebuffer") ;
-			 end
-		      end
-		      else begin
-			 response_S <= 0;
-			 response_CMD[127:96] <= 0; 
-		      end
-		   end
-		end // case: 24
-		
-		25 : begin // WRITE_MULTIPLE_BLOCKS of data to card
-		   if (outDelayCnt==0) begin 
-		      if (CardStatus[12:9] == `TRAN) begin //If card is in transfer state
-			 if (CardStatus[8]) begin //If Free write buffer           
-			    CardStatus[12:9] <=`RCV;//Put card in Rcv state
-			    response_CMD[127:96] <= CardStatus ;
-			    ByteAddr = inCmd[39:8] << 9;
-			    mult_write <= 1;
-			    if (ByteAddr%512 !=0)
-			      $display("**Block Misalign Error");
-			 end
-			 else begin
-			    response_CMD[127:96] <= CardStatus;
-			    $fdisplay(sdModel_file_desc, "**Error Try to blockwrite when No Free Writebuffer") ;
-			    $display("**Error Try to blockwrite when No Free Writebuffer") ;
-			 end // else: !if(CardStatus[8])
-		      end // if (CardStatus[12:9] == `TRAN)
-		      else begin
-			 response_S <= 0;
-			 response_CMD[127:96] <= 0; 
-		      end // else: !if(CardStatus[12:9] == `TRAN)
-		   end // if (outDelayCnt==0)
-		end // case: 25
+		    end // case: 24
+		    
+		    25 : begin // WRITE_MULTIPLE_BLOCKS of data to card
+		      if (outDelayCnt==0) begin 
+		        if (CardStatus[12:9] == `TRAN) begin //If card is in transfer state
+			      if (CardStatus[8]) begin //If Free write buffer           
+			        CardStatus[12:9] <=`RCV;//Put card in Rcv state
+			        response_CMD[127:96] <= CardStatus ;
+			        ByteAddr = inCmd[39:8] << 9;
+			        mult_write <= 1;
+			        if (ByteAddr%512 !=0)
+			          $display("**Block Misalign Error");
+			      end
+			      else begin
+			        response_CMD[127:96] <= CardStatus;
+			        $fdisplay(sdModel_file_desc, "**Error Try to blockwrite when No Free Writebuffer") ;
+			        $display("**Error Try to blockwrite when No Free Writebuffer") ;
+			      end // else: !if(CardStatus[8])
+		        end // if (CardStatus[12:9] == `TRAN)
+		        else begin
+			      response_S <= 0;
+			      response_CMD[127:96] <= 0; 
+		        end // else: !if(CardStatus[12:9] == `TRAN)
+		      end // if (outDelayCnt==0)
+		    end // case: 25
 
-		33 : response_CMD[127:96] <= 48; // ERASE_WR_BLK_END
-		
-		55 : 
-		  begin // APP_CMD
-		     response_CMD[127:96] <= CardStatus ;         
-		     CardStatus[5] <=1;      //Next CMD is AP specific CMD
-		     appendCrc<=1;         
-		  end
-		
-		41 : // CMD41 - SD_SEND_OCR
-		  begin  
-		     if (cardIdentificationState) begin
-			if (lastCMD != 55 & outDelayCnt==0) begin // CMD41 - Reserved/Invalid
-			   $fdisplay(sdModel_file_desc, "**Error in sequence, CMD 55 should precede 41 in Start-up state") ;
-			   $display( "**Error in sequence, CMD 55 should precede 41 in Start-up state") ;
-			   CardStatus[3]<=1; // AKE_SEQ_ERROR = ERROR in sequence of authentication process
-			end
-			else begin // CMD41 - SD_SEND_OCR
-			   responseType=3; 
-			   response_CMD[127:96] <= OCR;   
-			   appendCrc<=0;
-			   CardStatus[5] <=0;  // not expecting next command to be ACMD
-			   if (Busy==1)
-			     CardStatus[12:9] <=1; // READY
-			end // else: !if(lastCMD != 55 & outDelayCnt==0)
-		     end // if (cardIdentificationState)
-		  end // case: 41
+		    33 : response_CMD[127:96] <= 48; // ERASE_WR_BLK_END
+		    
+		    55 : 
+		      begin // APP_CMD
+		        response_CMD[127:96] <= CardStatus ;         
+		        CardStatus[5] <=1;      //Next CMD is AP specific CMD
+		        appendCrc<=1;         
+		      end
+		    
+		    41 : // CMD41 - SD_SEND_OCR
+		      begin  
+		        if (cardIdentificationState) begin
+			      if (lastCMD != 55 & outDelayCnt==0) begin // CMD41 - Reserved/Invalid
+			        $fdisplay(sdModel_file_desc, "**Error in sequence, CMD 55 should precede 41 in Start-up state") ;
+			        $display( "**Error in sequence, CMD 55 should precede 41 in Start-up state") ;
+			        CardStatus[3]<=1; // AKE_SEQ_ERROR = ERROR in sequence of authentication process
+			      end
+			      else begin // CMD41 - SD_SEND_OCR
+			        responseType=3; 
+			        response_CMD[127:96] <= OCR;   
+			        appendCrc<=0;
+			        CardStatus[5] <=0;  // not expecting next command to be ACMD
+			        if (Busy==1)
+			          CardStatus[12:9] <=1; // READY
+			      end // else: !if(lastCMD != 55 & outDelayCnt==0)
+		        end // if (cardIdentificationState)
+		      end // case: 41
 	      endcase // case (inCmd[45:40])
 	      
 	      ValidCmd<=1;  
@@ -756,7 +747,7 @@ module    sdModel
 	      
 	      outDelayCnt<=outDelayCnt+1;
 	      if (outDelayCnt==`outDelay)       // if (outDelayCnt == 4)
-		crcRst<=1;
+		    crcRst<=1;
 	      
 	      oeCmd<=1;
 	      cmdOut<=1;
@@ -764,56 +755,56 @@ module    sdModel
 
 	      // for those who aren't keeping track, we are still in 'else: !if(inCmd[0] != 1)'
 	      if (responseType != 3)
-		if (!add_wrong_cmd_indx)
-		  response_CMD[133:128] <=inCmd[45:40];
-		else
-		  response_CMD[133:128] <=0;
-              
+		    if (!add_wrong_cmd_indx)
+		      response_CMD[133:128] <=inCmd[45:40];
+		    else
+		      response_CMD[133:128] <=0;
+          
 	      if (responseType == 3)
-		response_CMD[133:128] <=6'b111111;
+		    response_CMD[133:128] <=6'b111111;
 	      
 	      lastCMD <=inCmd[45:40];
-	   end // else: !if(inCmd[0] != 1)
-	end // case: ANALYZE_CMD
-      endcase // case (state)
-   end // always @ (posedge sdClk)
+	    end // else: !if(inCmd[0] != 1)
+	  end // case: ANALYZE_CMD
+    endcase // case (state)
+  end // always @ (posedge sdClk)
 
-   always @ ( negedge sdClk) begin
-      case(state)
+  always @ ( negedge sdClk) begin
+    case(state)
 
-	SEND_CMD: begin
-	   crcRst<=0;
-	   crcEn<=1;
-	   cmdWrite<=cmdWrite+1;    
-	   if (response_S!=0)
-	     cmdOut<=0;   
-	   else
-	     cmdOut<=1;  
-	   
-	   if ((cmdWrite>0) &  (cmdWrite < response_S-8)) begin
+	  SEND_CMD: begin
+	    crcRst<=0;
+	    crcEn<=1;
+	    cmdWrite<=cmdWrite+1;    
+	    if (response_S!=0)
+	      cmdOut<=0;   
+	    else
+	      cmdOut<=1;  
+	    
+	    if ((cmdWrite>0) &  (cmdWrite < response_S-8)) begin
 	      cmdOut<=response_CMD[135-cmdWrite];
 	      crcIn<=response_CMD[134-cmdWrite];
 	      if (cmdWrite >= response_S-9)
-		crcEn<=0;
-	   end
-	   else if (cmdWrite!=0) begin
+		    crcEn<=0;
+	    end
+	    else if (cmdWrite!=0) begin
 	      crcEn<=0;
 	      if (add_wrong_cmd_crc) begin
-		 cmdOut<=0;
-		 crcCnt<=crcCnt+1; 
+		    cmdOut<=0;
+		    crcCnt<=crcCnt+1; 
 	      end
 	      else begin   
-		 cmdOut<=crcOut[6-crcCnt];
-		 crcCnt<=crcCnt+1; 
-		 if (responseType == 3)
-		   cmdOut<=1;
+		    cmdOut<=crcOut[6-crcCnt];
+		    crcCnt<=crcCnt+1; 
+		    if (responseType == 3)
+		      cmdOut<=1;
 	      end     
-	   end // if (cmdWrite!=0)
-	   if (cmdWrite == response_S-1)
-	     cmdOut<=1;
-	end // case: SEND_CMD
-      endcase // case (state)
-   end // always @ ( negedge sdClk)
+	    end // if (cmdWrite!=0)
+	    if (cmdWrite == response_S-1)
+	      cmdOut<=1;
+	  end // case: SEND_CMD
+    endcase // case (state)
+  end // always @ ( negedge sdClk)
 
    integer outdly_cnt;
 

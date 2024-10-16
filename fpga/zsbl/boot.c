@@ -217,7 +217,7 @@ void copyFlash(QWORD address, QWORD * Dst, DWORD numBlocks) {
   init_uart(SYSTEMCLOCK, 115200);
   
   // Print the wally banner
-  print_uart(BANNER);
+  //print_uart(BANNER);
 
   /* print_uart("System clock speed: "); */
   /* print_uart_dec(SYSTEMCLOCK); */

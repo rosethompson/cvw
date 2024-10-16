@@ -667,11 +667,18 @@ add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/TransmitShiftReg
 add wave -noupdate -expand -group {sd card} -expand -group spi /testbench/sdcard/sdcard/sdClk
 add wave -noupdate -expand -group {sd card} -expand -group spi /testbench/sdcard/sdcard/cmd
 add wave -noupdate -expand -group {sd card} -expand -group spi /testbench/sdcard/sdcard/dat
+add wave -noupdate -expand -group {sd card} /testbench/sdcard/sdcard/next_state
 add wave -noupdate -expand -group {sd card} -color Gold /testbench/sdcard/sdcard/state
 add wave -noupdate /testbench/sdcard/sdcard/ValidCmd
 add wave -noupdate /testbench/sdcard/sdcard/inValidCmd
+add wave -noupdate /testbench/sdcard/sdcard/inCmd
+add wave -noupdate /testbench/sdcard/sdcard/outDelayCnt
+add wave -noupdate /testbench/sdcard/sdcard/cmdRead
+add wave -noupdate /testbench/sdcard/sdcard/CardStatus
+add wave -noupdate /testbench/sdcard/sdcard/response_S
+add wave -noupdate /testbench/sdcard/sdcard/response_CMD
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {640 ns} 1} {{Cursor 4} {2400 ns} 1} {{Cursor 3} {12544770 ns} 0} {{Cursor 4} {223860 ns} 1}
+WaveRestoreCursors {{Cursor 4} {640 ns} 1} {{Cursor 4} {2400 ns} 1} {{Cursor 3} {1849221 ns} 0} {{Cursor 4} {223860 ns} 1}
 quietly wave cursor active 3
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -687,4 +694,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {12535356 ns} {12554184 ns}
+WaveRestoreZoom {1848136 ns} {1850306 ns}
