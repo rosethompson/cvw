@@ -1,5 +1,6 @@
 onerror {resume}
 quietly virtual signal -install /testbench/dut/core/ifu/bpred/bpred { /testbench/dut/core/ifu/bpred/bpred/PostSpillInstrRawF[11:7]} rd
+quietly virtual signal -install /testbench {/testbench/SDCCS[0]  } cs
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/clk
 add wave -noupdate /testbench/reset
@@ -652,34 +653,53 @@ add wave -noupdate -group wfi /testbench/dut/core/priv/priv/pmd/WFITimeoutM
 add wave -noupdate -group testbench /testbench/DCacheFlushStart
 add wave -noupdate /testbench/dut/core/lsu/hptw/hptw/HPTWLoadPageFault
 add wave -noupdate /testbench/dut/core/lsu/hptw/hptw/HPTWLoadPageFaultDelay
-add wave -noupdate -group spi /testbench/dut/uncoregen/uncore/spi/spi/PCLK
-add wave -noupdate -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPICLK
-add wave -noupdate -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPICS
-add wave -noupdate -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPIOut
-add wave -noupdate -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPIIn
-add wave -noupdate -group spi /testbench/dut/uncoregen/uncore/spi/spi/ChipSelectMode
-add wave -noupdate -group spi /testbench/dut/uncoregen/uncore/spi/spi/SckMode
+add wave -noupdate -expand -group spi /testbench/dut/uncoregen/uncore/spi/spi/PCLK
+add wave -noupdate -expand -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPICLK
+add wave -noupdate -expand -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPICS
+add wave -noupdate -expand -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPIOut
+add wave -noupdate -expand -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPIIn
+add wave -noupdate -expand -group spi /testbench/dut/uncoregen/uncore/spi/spi/ChipSelectMode
+add wave -noupdate -expand -group spi /testbench/dut/uncoregen/uncore/spi/spi/SckMode
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/TransmitShiftRegLoad
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/ShiftEdge
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/Active
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/TransmitData
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/TransmitShiftReg
-add wave -noupdate -expand -group {sd card} -expand -group spi /testbench/sdcard/sdcard/sdClk
-add wave -noupdate -expand -group {sd card} -expand -group spi /testbench/sdcard/sdcard/cmd
-add wave -noupdate -expand -group {sd card} -expand -group spi /testbench/sdcard/sdcard/dat
-add wave -noupdate -expand -group {sd card} /testbench/sdcard/sdcard/next_state
-add wave -noupdate -expand -group {sd card} -color Gold /testbench/sdcard/sdcard/state
-add wave -noupdate /testbench/sdcard/sdcard/ValidCmd
-add wave -noupdate /testbench/sdcard/sdcard/inValidCmd
-add wave -noupdate /testbench/sdcard/sdcard/inCmd
-add wave -noupdate /testbench/sdcard/sdcard/outDelayCnt
-add wave -noupdate /testbench/sdcard/sdcard/cmdRead
-add wave -noupdate /testbench/sdcard/sdcard/CardStatus
-add wave -noupdate /testbench/sdcard/sdcard/response_S
-add wave -noupdate /testbench/sdcard/sdcard/response_CMD
+add wave -noupdate -group {sd card} -expand -group {sd spi} /testbench/SDCCLK
+add wave -noupdate -group {sd card} -expand -group {sd spi} /testbench/cs
+add wave -noupdate -group {sd card} -expand -group {sd spi} /testbench/SDCIn
+add wave -noupdate -group {sd card} -expand -group {sd spi} /testbench/SDCCmd
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/CLK
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/MOSI
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/CS
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/MISO
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/CurrState
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/Count
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/CommandEn
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/Command
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/AddressEn
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/Address
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/ReadData
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/WriteData
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/WriteArray
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/mem
+add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/SckDiv
+add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/SckMode
+add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/ChipSelectID
+add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/ChipSelectDef
+add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/ChipSelectMode
+add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/Delay0
+add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/Delay1
+add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/Format
+add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/ReceiveData
+add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/TransmitWatermark
+add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/ReceiveWatermark
+add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/TransmitData
+add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/InterruptEnable
+add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/InterruptPending
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {640 ns} 1} {{Cursor 4} {2400 ns} 1} {{Cursor 3} {1849221 ns} 0} {{Cursor 4} {223860 ns} 1}
-quietly wave cursor active 3
+WaveRestoreCursors {{Cursor 4} {45611 ns} 0} {{Cursor 4} {2410 ns} 1} {{Cursor 3} {2090 ns} 1} {{Cursor 4} {223860 ns} 1}
+quietly wave cursor active 1
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
 configure wave -justifyvalue left
@@ -694,4 +714,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1848136 ns} {1850306 ns}
+WaveRestoreZoom {48576 ns} {53192 ns}

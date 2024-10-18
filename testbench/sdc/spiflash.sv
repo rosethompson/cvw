@@ -36,11 +36,15 @@ module spiflash import cvw::*; #(parameter CLK_PHA = 0, CLK_POL = 0)(
   logic [7:0]  Command;
   logic [31:0] Address;
   logic [7:0]  ReadData, WriteData;
-  logic [31:0] mem [7:0];
+  logic [7:0] mem [2048:0];
   logic        CntReset, CntEn;
   logic [4:0]  Count;
   logic        LastBit, LastBitAdr;
   logic        CommandEn, AddressEn;
+  logic        WriteEn;
+  logic        WriteArray;
+  logic        ReadArray;
+  
   
   typedef enum {STATE_RDY, STATE_ADR, STATE_CMD, STATE_DATA} statetype;
   statetype CurrState, NextState;
@@ -50,6 +54,7 @@ module spiflash import cvw::*; #(parameter CLK_PHA = 0, CLK_POL = 0)(
 
   initial begin
     CurrState = STATE_RDY;
+    ReadData = 0;
     
   end
 
@@ -67,25 +72,43 @@ module spiflash import cvw::*; #(parameter CLK_PHA = 0, CLK_POL = 0)(
       else NextState = STATE_ADR;
       STATE_CMD: if (~CS & LastBit) NextState = STATE_DATA;
       else NextState = STATE_CMD;
-      STATE_DATA: if (LastBit) NextState = STATE_RDY;
-      else NextState = STATE_CMD;
+      STATE_DATA: if (LastBit & CS) NextState = STATE_RDY;
+      else if (~LastBit & ~CS) NextState = STATE_DATA;
+      else if (LastBit & ~CS) NextState = STATE_ADR;
       default NextState = STATE_RDY;
     endcase
   end
 
-  assign CntReset = (CurrState == STATE_RDY) | (CurrState == STATE_ADR & LastBitAdr) | (CurrState == STATE_CMD & LastBit);
+  assign CntReset = (CurrState == STATE_RDY) | (CurrState == STATE_ADR & LastBitAdr) | (CurrState == STATE_CMD & LastBit) | (CurrState == STATE_DATA & LastBit);
   assign CntEn = (CurrState == STATE_ADR) | (CurrState == STATE_CMD) | (CurrState == STATE_DATA);
   counter #(5) counter(CLK, CntReset, CntEn, Count);
   assign LastBit    = Count == 5'b00111;  
   assign LastBitAdr = Count == 5'b11111;
 
-  assign CommandEn = CurrState == STATE_CMD & ~CS;
-  flopen #(8) commandreg(CLK, CommandEn, {MOSI, Command[6:0]}, Command);
+  assign CommandEn = NextState == STATE_CMD & ~CS;
+  flopen #(8) commandreg(CLK, CommandEn, {Command[6:0], MOSI}, Command);
+  assign ReadArray = CurrState == STATE_CMD & ~CS & LastBit & Command == 8'b1;
 
-  assign AddressEn = CurrState == STATE_ADR & ~CS;
-  flopen #(32) addressreg(CLK, AddressEn, {MOSI, Address[30:0]}, Address);
+  assign AddressEn = NextState == STATE_ADR & ~CS;
+  flopen #(32) addressreg(CLK, AddressEn, {Address[30:0], MOSI}, Address);
+
+  assign WriteEn = (NextState == STATE_DATA) & ~CS & (Command == 8'b10);
+  flopen #(8) writedatareg(CLK, WriteEn, {WriteData[6:0], MOSI}, WriteData);
+  assign WriteArray = (CurrState == STATE_DATA) & ~CS & (Command == 8'b10) & LastBit;
+
+  always_ff @(posedge CLK) begin
+    if(~CS & WriteArray) begin
+      mem[Address] <= WriteData;
+    end
+    if(~CS & ReadArray) begin
+      ReadData <= mem[Address];
+    end else if (CurrState == STATE_DATA & ~CS & Command == 8'b1) begin
+      ReadData <= {ReadData[6:0], 1'b0};
+    end
+  end
+
+  assign MISO = ReadData[7];
   
-
 endmodule
 
 
