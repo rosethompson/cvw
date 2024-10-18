@@ -181,7 +181,7 @@ void main() {
   while(read_reg(SPI_TXDATA) & 0x100);
   spi_sendbyte(0x01);
   data = spi_readbyte();
-  print_uart("first data received =");
+  print_uart("second data received =");
   print_uart_dec(data);
   print_uart("\r\n");
 // 
