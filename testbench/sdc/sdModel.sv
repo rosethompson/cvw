@@ -66,7 +66,8 @@ module    sdModel
 
    reg [3:0]   CurrentState; 
    reg [3:0]   DataCurrentState;
-   
+  logic [7:0]  R1Response;
+  
 `define RCASTART 16'h2000
 `define OCRSTART 32'h40ff8000 // SDHC
 `define STATUSSTART 32'h0
@@ -454,6 +455,7 @@ module    sdModel
 
   //read data and cmd on rising edge
   always @ (posedge sdClk) begin
+    R1Response <= 8'b10000000;
     case(state)
 	  IDLE: begin
 	    mult_write <= 0; 
@@ -530,6 +532,7 @@ module    sdModel
 		    0 : begin // GO_IDLE_STATE
 		      response_CMD <= 0;
 		      cardIdentificationState<=1;
+              R1Response <= 8'b00000001;
 		      ResetCard;
 		    end    
 		    2 : begin //ALL_SEND_CARD_ID (CID)

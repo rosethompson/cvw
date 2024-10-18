@@ -568,7 +568,6 @@ module testbench;
   // instantiate device to be tested
   assign GPIOIN = '0;
   assign UARTSin = 1'b1;
-  assign SPIIn = 1'b0;
 
   if(P.EXT_MEM_SUPPORTED) begin
     ram_ahb #(.P(P), .BASE(P.EXT_MEM_BASE), .RANGE(P.EXT_MEM_RANGE))
@@ -600,6 +599,12 @@ module testbench;
   end else begin
     assign SDCIn = 1'b1;
 
+  end
+
+  if(P.SPI_SUPPORTED & ~SPI_LOOPBACK_TEST) begin : spi
+    spiflash #(.CLK_PHA(0), .CLK_POL(0)) spiflash(.CLK(SPICLK), .MOSI(SPIOut), .MISO(SPIIn), .CS(SPICS[0]));
+  end else begin
+    assign SPIIn = 1'b0;
   end
 
   wallypipelinedsoc  #(P) dut(.clk, .reset_ext, .reset, .ExternalStall(RVVIStall),
