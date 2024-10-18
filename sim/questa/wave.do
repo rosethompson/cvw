@@ -673,7 +673,7 @@ add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/CLK
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/MOSI
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/CS
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/MISO
-add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/CurrState
+add wave -noupdate -expand -group spiflash -color Gold /testbench/spi/spiflash/CurrState
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/Count
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/CommandEn
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/Command
@@ -683,6 +683,8 @@ add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/ReadData
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/WriteData
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/WriteArray
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/mem
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/LastBit
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/LastBitAdr
 add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/SckDiv
 add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/SckMode
 add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/ChipSelectID
@@ -698,7 +700,7 @@ add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/T
 add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/InterruptEnable
 add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/InterruptPending
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {45611 ns} 0} {{Cursor 4} {2410 ns} 1} {{Cursor 3} {2090 ns} 1} {{Cursor 4} {223860 ns} 1}
+WaveRestoreCursors {{Cursor 4} {49187 ns} 0} {{Cursor 4} {2410 ns} 1} {{Cursor 3} {2090 ns} 1} {{Cursor 4} {223860 ns} 1}
 quietly wave cursor active 1
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -714,4 +716,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {48576 ns} {53192 ns}
+WaveRestoreZoom {44349 ns} {50709 ns}

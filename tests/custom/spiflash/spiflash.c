@@ -162,10 +162,12 @@ void main() {
   while(read_reg(SPI_TXDATA) & 0x100);
   spi_sendbyte(0x25);
   // send command 0x1 to read
-  //print_uart("first data received =");
+  while(read_reg(SPI_TXDATA) & 0x100);
+  spi_sendbyte(0x01);
+  print_uart("first data received =");
   uint8_t data = spi_readbyte();
   print_uart_dec(data);
-  print_uart("help!\r\n");
+  print_uart("\r\n");
 
   while(read_reg(SPI_TXDATA) & 0x100);
   spi_sendbyte(0x00);
