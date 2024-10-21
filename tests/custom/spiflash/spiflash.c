@@ -29,6 +29,7 @@
 
 #include "spi.h"
 #include "uart.h"
+#include "norflash.h"
 
 // Testing SPI peripheral in loopback mode
 // TODO: Need to make sure the configuration I'm using uses loopback
@@ -77,55 +78,6 @@ void spi_init(uint32_t clkin) {
   write_reg(SPI_SCKDIV, 0x18); 
 }
 
-void NorFlashWrite(uint32_t adr, uint8_t data){
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte((adr >> 24) & 0xFF);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte((adr >> 16) & 0xFF);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte((adr >> 8) & 0xFF);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(adr & 0xFF);
-  // send command 0x2 to write
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x02);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(data);
-}
-
-
-uint8_t NorFlashRead(uint32_t adr){
-  // read address 0x25
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte((adr >> 24) & 0xFF);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte((adr >> 16) & 0xFF);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte((adr >> 8) & 0xFF);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(adr & 0xFF);
-  // send command 0x1 to read
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x01);
-
-  // before reading this byte we need to read the junk in the receive fifo
-  uint32_t res = 0;
-  do {
-    res = read_reg(SPI_RXDATA);
-    res = res & 0xC0000000;
-    if(res) {
-      spi_readbyte();
-    }
-  } while (res);
-  //  while ((read_reg(SPI_IP) & 2)) {
-  //    volatile int delay;
-  //    for (delay = 0; delay < 10; delay++); // Ugh. the SiFive spec is terrible. There is a trace between the fifo empty (or IP) and receiving another byte.
-    
-  //    spi_readbyte();}
-  spi_dummy();
-  while (!(read_reg(SPI_IP) & 2)) {}
-  return spi_readbyte();
-}
 
 void main() {
   spi_init(100000000);
