@@ -164,11 +164,18 @@ void main() {
   // send command 0x1 to read
   while(read_reg(SPI_TXDATA) & 0x100);
   spi_sendbyte(0x01);
-  print_uart("first data received =");
-  uint8_t data = spi_readbyte();
+  print_uart("first data received = ");
+
+  // before reading this byte we need to read the junk in the receive fifo
+  while ((read_reg(SPI_IP) & 2)) {spi_readbyte();}
+  uint8_t data;
+  spi_dummy();
+  while (!(read_reg(SPI_IP) & 2)) {}
+  data = spi_readbyte();
   print_uart_dec(data);
   print_uart("\r\n");
 
+    // read address 0x25
   while(read_reg(SPI_TXDATA) & 0x100);
   spi_sendbyte(0x00);
   while(read_reg(SPI_TXDATA) & 0x100);
@@ -180,10 +187,16 @@ void main() {
   // send command 0x1 to read
   while(read_reg(SPI_TXDATA) & 0x100);
   spi_sendbyte(0x01);
+  print_uart("second data received = ");
+
+  // before reading this byte we need to read the junk in the receive fifo
+  while ((read_reg(SPI_IP) & 2)) {spi_readbyte();}
+  spi_dummy();
+  while (!(read_reg(SPI_IP) & 2)) {}
   data = spi_readbyte();
-  print_uart("second data received =");
   print_uart_dec(data);
   print_uart("\r\n");
+
 // 
   /* n = 4; */
   /* do { */

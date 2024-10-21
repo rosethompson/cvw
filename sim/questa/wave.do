@@ -704,13 +704,18 @@ add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/R
 add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/TransmitData
 add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/InterruptEnable
 add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/InterruptPending
-add wave -noupdate -expand /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/mem
+add wave -noupdate -expand -group {receive fifo} /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/rptr
+add wave -noupdate -expand -group {receive fifo} /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/wptr
+add wave -noupdate -expand -group {receive fifo} /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/rempty
+add wave -noupdate -expand -group {receive fifo} /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/wfull
+add wave -noupdate -expand -group {receive fifo} /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/wdata
+add wave -noupdate -expand -group {receive fifo} -expand /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/mem
+add wave -noupdate -expand -group {receive fifo} /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/rdata
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/PCLK
-add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/wdata
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/wen
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/winc
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {87667 ns} 0} {{Cursor 4} {2410 ns} 1} {{Cursor 3} {2090 ns} 1} {{Cursor 4} {223860 ns} 1}
+WaveRestoreCursors {{Cursor 4} {82300 ns} 0} {{Cursor 4} {2410 ns} 1} {{Cursor 3} {2090 ns} 1} {{Cursor 4} {223860 ns} 1}
 quietly wave cursor active 1
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -726,4 +731,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {87256 ns} {88176 ns}
+WaveRestoreZoom {81564 ns} {83036 ns}
