@@ -716,8 +716,8 @@ add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/PCLK
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/wen
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/winc
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {90280 ns} 0} {{Cursor 4} {2410 ns} 1} {{Cursor 3} {2090 ns} 1} {{Cursor 4} {223860 ns} 1}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 4} {139240 ns} 1} {{Cursor 4} {138170 ns} 0} {{Cursor 3} {2090 ns} 1} {{Cursor 4} {223860 ns} 1}
+quietly wave cursor active 2
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
 configure wave -justifyvalue left
@@ -732,4 +732,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {89915 ns} {91787 ns}
+WaveRestoreZoom {138052 ns} {138288 ns}

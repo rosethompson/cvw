@@ -109,7 +109,10 @@ uint8_t NorFlashRead(uint32_t adr){
   spi_sendbyte(0x01);
 
   // before reading this byte we need to read the junk in the receive fifo
-  while ((read_reg(SPI_IP) & 2)) {spi_readbyte();}
+  while ((read_reg(SPI_IP) & 2)) {
+    volatile int delay;
+    for (delay = 0; delay < 10; delay++); // Ugh. the SiFive spec is terrible. There is a race between the fifo empty (or IP) and receiving another byte.
+    spi_readbyte();}
   spi_dummy();
   while (!(read_reg(SPI_IP) & 2)) {}
   return spi_readbyte();

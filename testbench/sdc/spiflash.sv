@@ -96,6 +96,7 @@ module spiflash import cvw::*; #(parameter CLK_PHA = 0, CLK_POL = 0)(
   flopen #(8) writedatareg(CLK, WriteEn, {WriteData[6:0], MOSI}, WriteData);
   assign WriteArray = (CurrState == STATE_DATA) & ~CS & (Command == 8'b10) & LastBit;
 
+  /* verilator lint_off MULTIDRIVEN */
   always_ff @(posedge CLK) begin
     if(~CS & WriteArray) begin
       mem[Address] <= WriteData;
@@ -110,6 +111,7 @@ module spiflash import cvw::*; #(parameter CLK_PHA = 0, CLK_POL = 0)(
       ReadData <= {ReadData[6:0], 1'b0};
     end
   end
+  /* verilator lint_on MULTIDRIVEN */
 
   assign MISO = ReadData[7];
   
