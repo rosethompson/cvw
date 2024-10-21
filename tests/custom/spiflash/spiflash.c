@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "spi.h"
+#include "uart.h"
 
 // Testing SPI peripheral in loopback mode
 // TODO: Need to make sure the configuration I'm using uses loopback
@@ -76,6 +77,44 @@ void spi_init(uint32_t clkin) {
   write_reg(SPI_SCKDIV, 0x18); 
 }
 
+void NorFlashWrite(uint32_t adr, uint8_t data){
+  while(read_reg(SPI_TXDATA) & 0x100);
+  spi_sendbyte((adr >> 24) & 0xFF);
+  while(read_reg(SPI_TXDATA) & 0x100);
+  spi_sendbyte((adr >> 16) & 0xFF);
+  while(read_reg(SPI_TXDATA) & 0x100);
+  spi_sendbyte((adr >> 8) & 0xFF);
+  while(read_reg(SPI_TXDATA) & 0x100);
+  spi_sendbyte(adr & 0xFF);
+  // send command 0x2 to write
+  while(read_reg(SPI_TXDATA) & 0x100);
+  spi_sendbyte(0x02);
+  while(read_reg(SPI_TXDATA) & 0x100);
+  spi_sendbyte(data);
+}
+
+
+uint8_t NorFlashRead(uint32_t adr){
+  // read address 0x25
+  while(read_reg(SPI_TXDATA) & 0x100);
+  spi_sendbyte((adr >> 24) & 0xFF);
+  while(read_reg(SPI_TXDATA) & 0x100);
+  spi_sendbyte((adr >> 16) & 0xFF);
+  while(read_reg(SPI_TXDATA) & 0x100);
+  spi_sendbyte((adr >> 8) & 0xFF);
+  while(read_reg(SPI_TXDATA) & 0x100);
+  spi_sendbyte(adr & 0xFF);
+  // send command 0x1 to read
+  while(read_reg(SPI_TXDATA) & 0x100);
+  spi_sendbyte(0x01);
+
+  // before reading this byte we need to read the junk in the receive fifo
+  while ((read_reg(SPI_IP) & 2)) {spi_readbyte();}
+  spi_dummy();
+  while (!(read_reg(SPI_IP) & 2)) {}
+  return spi_readbyte();
+}
+
 void main() {
   spi_init(100000000);
 
@@ -84,118 +123,40 @@ void main() {
   volatile uint8_t *p = (uint8_t *)(0x8F000000);
   int j;
   uint64_t n = 0;
+  uint8_t data;
 
   write_reg(SPI_CSMODE, SIFIVE_SPI_CSMODE_MODE_HOLD);
   //n = 512/8;
 
-  // write address 0x25
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x25);
-  // send command 0x2 to write
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x02);
-  // send write data 0x25+5 = 0x2A
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x2A);
+  NorFlashWrite(0x0, 0x10);
+  NorFlashWrite(0x1, 0x11);
+  NorFlashWrite(0x2, 0x12);
+  NorFlashWrite(0x3, 0x13);
+  NorFlashWrite(0x25, 0x2A);
+  NorFlashWrite(0x26, 0x2B);
+  NorFlashWrite(0x27, 0x2C);
+  NorFlashWrite(0x28, 0x2D);
 
-  // write address 0x26
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x26);
-  // send command 0x2 to write
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x02);
-  // send write data 0x26+5 = 0x2B
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x2B);
-
-  // write address 0x27
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x27);
-  // send command 0x2 to write
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x02);
-  // send write data 0x26+5 = 0x2B
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x2C);
-
-  // write address 0x28
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x28);
-  // send command 0x2 to write
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x02);
-  // send write data 0x26+5 = 0x2B
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x2D);
-  
-  // read address 0x25
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x25);
-  // send command 0x1 to read
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x01);
   print_uart("first data received = ");
-
-  // before reading this byte we need to read the junk in the receive fifo
-  while ((read_reg(SPI_IP) & 2)) {spi_readbyte();}
-  uint8_t data;
-  spi_dummy();
-  while (!(read_reg(SPI_IP) & 2)) {}
-  data = spi_readbyte();
+  data = NorFlashRead(0x25);
   print_uart_dec(data);
   print_uart("\r\n");
 
-    // read address 0x25
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x00);
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x26);
-  // send command 0x1 to read
-  while(read_reg(SPI_TXDATA) & 0x100);
-  spi_sendbyte(0x01);
   print_uart("second data received = ");
-
-  // before reading this byte we need to read the junk in the receive fifo
-  while ((read_reg(SPI_IP) & 2)) {spi_readbyte();}
-  spi_dummy();
-  while (!(read_reg(SPI_IP) & 2)) {}
-  data = spi_readbyte();
+  data = NorFlashRead(0x26);
   print_uart_dec(data);
   print_uart("\r\n");
+
+  print_uart("third data received = ");
+  data = NorFlashRead(0x27);
+  print_uart_dec(data);
+  print_uart("\r\n");
+
+  print_uart("fourth data received = ");
+  data = NorFlashRead(0x28);
+  print_uart_dec(data);
+  print_uart("\r\n");
+
 
 // 
   /* n = 4; */

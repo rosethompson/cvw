@@ -685,6 +685,7 @@ add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/WriteArray
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/mem
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/LastBit
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/LastBitAdr
+add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/ReadArray
 add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/ShiftIn
 add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/ReceiveShiftReg
 add wave -noupdate -expand -group spi0 /testbench/dut/uncoregen/uncore/spi/spi/ReceiveFiFoWriteInc
@@ -715,7 +716,7 @@ add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/PCLK
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/wen
 add wave -noupdate /testbench/dut/uncoregen/uncore/spi/spi/rxFIFO/winc
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {82300 ns} 0} {{Cursor 4} {2410 ns} 1} {{Cursor 3} {2090 ns} 1} {{Cursor 4} {223860 ns} 1}
+WaveRestoreCursors {{Cursor 4} {90280 ns} 0} {{Cursor 4} {2410 ns} 1} {{Cursor 3} {2090 ns} 1} {{Cursor 4} {223860 ns} 1}
 quietly wave cursor active 1
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -731,4 +732,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {81564 ns} {83036 ns}
+WaveRestoreZoom {89915 ns} {91787 ns}
