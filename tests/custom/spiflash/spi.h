@@ -85,32 +85,10 @@ uint8_t spi_dummy();
 void spi_init();
 void spi_set_clock(uint32_t clkin, uint32_t clkout);
 
-static inline void write_reg(uintptr_t addr, uint32_t value) {
-  volatile uint32_t * loc = (volatile uint32_t *) addr;
-  *loc = value;
-}
-
-// Read a register
-static inline uint32_t read_reg(uintptr_t addr) {
-  return *(volatile uint32_t *) addr;
-}
-
-// Queues a single byte in the transfer fifo
-static inline void spi_sendbyte(uint8_t byte) {
-  // Write byte to transfer fifo
-  write_reg(SPI_TXDATA, byte);
-}
-
-static inline void waittx() {
-  while(!(read_reg(SPI_IP) & 1)) {}
-}
-
-static inline void waitrx() {
-  while(read_reg(SPI_IP) & 2) {}
-}
-
-static inline uint8_t spi_readbyte() {
-  return read_reg(SPI_RXDATA);
-}
-
+void write_reg(uintptr_t addr, uint32_t value);
+uint32_t read_reg(uintptr_t addr);
+void spi_sendbyte(uint8_t byte);
+void waittx();
+void waitrx();
+uint8_t spi_readbyte();
 #endif

@@ -36,7 +36,7 @@ module spiflash import cvw::*; #(parameter CLK_PHA = 0, CLK_POL = 0)(
   logic [7:0]  Command;
   logic [31:0] Address;
   logic [7:0]  ReadData, WriteData;
-  logic [7:0] mem [2048:0];
+  logic [7:0] mem [63:0];
   logic        CntReset, CntEn;
   logic [4:0]  Count;
   logic        LastBit, LastBitAdr;

@@ -109,10 +109,19 @@ uint8_t NorFlashRead(uint32_t adr){
   spi_sendbyte(0x01);
 
   // before reading this byte we need to read the junk in the receive fifo
-  while ((read_reg(SPI_IP) & 2)) {
-    volatile int delay;
-    for (delay = 0; delay < 10; delay++); // Ugh. the SiFive spec is terrible. There is a race between the fifo empty (or IP) and receiving another byte.
-    spi_readbyte();}
+  uint32_t res = 0;
+  do {
+    res = read_reg(SPI_RXDATA);
+    res = res & 0xC0000000;
+    if(res) {
+      spi_readbyte();
+    }
+  } while (res);
+  //  while ((read_reg(SPI_IP) & 2)) {
+  //    volatile int delay;
+  //    for (delay = 0; delay < 10; delay++); // Ugh. the SiFive spec is terrible. There is a trace between the fifo empty (or IP) and receiving another byte.
+    
+  //    spi_readbyte();}
   spi_dummy();
   while (!(read_reg(SPI_IP) & 2)) {}
   return spi_readbyte();
@@ -122,6 +131,7 @@ void main() {
   spi_init(100000000);
 
   spi_set_clock(100000000,25000000);
+  //spi_set_clock(100000000,50000000);
   
   volatile uint8_t *p = (uint8_t *)(0x8F000000);
   int j;
