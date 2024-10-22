@@ -102,8 +102,8 @@ void main() {
   NorFlashWrite(0x27, 0x2C);
   NorFlashWrite(0x28, 0x2D);
 
-  print_uart("first data received = ");
   data = NorFlashRead(0x25);
+  print_uart("first data received = ");
   print_uart_dec(data);
   print_uart("\r\n");
 
