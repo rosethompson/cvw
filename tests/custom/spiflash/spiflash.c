@@ -269,36 +269,5 @@ void main() {
   if(res) print_uart("no!\n");
   else print_uart("yes!\n");
 
-  /* NorFlashWrite(0x0, 0x10); */
-  /* NorFlashWrite(0x1, 0x11); */
-  /* NorFlashWrite(0x2, 0x12); */
-  /* NorFlashWrite(0x3, 0x13); */
-  /* NorFlashWrite(0x25, 0x2A); */
-  /* NorFlashWrite(0x26, 0x2B); */
-  /* NorFlashWrite(0x27, 0x2C); */
-  /* NorFlashWrite(0x28, 0x2D); */
-
-  /* data = NorFlashRead(0x25); */
-  /* print_uart("first data received = "); */
-  /* print_uart_dec(data); */
-  /* print_uart("\r\n"); */
-
-  /* print_uart("second data received = "); */
-  /* data = NorFlashRead(0x26); */
-  /* print_uart_dec(data); */
-  /* print_uart("\r\n"); */
-
-  /* print_uart("third data received = "); */
-  /* data = NorFlashRead(0x27); */
-  /* print_uart_dec(data); */
-  /* print_uart("\r\n"); */
-
-  /* print_uart("fourth data received = "); */
-  /* data = NorFlashRead(0x28); */
-  /* print_uart_dec(data); */
-  /* print_uart("\r\n"); */
-
-
-
   write_reg(SPI_CSMODE, SIFIVE_SPI_CSMODE_MODE_AUTO);
 }

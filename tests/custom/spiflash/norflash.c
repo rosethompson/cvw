@@ -45,7 +45,9 @@ uint8_t NorFlashRead(uint32_t adr){
   spi_sendbyte(0x01);
     
   //    spi_readbyte();}
-  //while((read_reg(SPI_RXDATA) & 0xC0000000) != 0xC0000000);
+  // must empty the fifo before calling spi_dummy because waitrx will not
+  // actually wait if there is something in already in the fifo.
+  while((read_reg(SPI_RXDATA) & 0xC0000000) != 0xC0000000);
   spi_dummy();
   uint32_t res;
 
