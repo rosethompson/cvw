@@ -101,12 +101,12 @@ module spiflash import cvw::*; #(parameter CLK_PHA = 0, CLK_POL = 0)(
     if(~CS & WriteArray) begin
       mem[Address] <= WriteData;
     end
-    if(~CS & ReadArray) begin
-      ReadData <= mem[Address];
-    end 
   end
 
   always_ff @(negedge CLK) begin
+    if(~CS & ReadArray) begin
+      ReadData <= mem[Address];
+    end 
     if (CurrState == STATE_DATA & ~CS & Command == 8'b1) begin
       ReadData <= {ReadData[6:0], 1'b0};
     end
