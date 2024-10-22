@@ -24,7 +24,7 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-module spiflash import cvw::*; #(parameter CLK_PHA = 0, CLK_POL = 0, SIZE = 8)(
+module spiflash import cvw::*; #(parameter CLK_PHA = 0, CLK_POL = 0, SIZE = 20)(
   input logic  CLK,
   output logic MISO,
   input logic  MOSI,

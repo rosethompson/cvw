@@ -22,7 +22,7 @@ inline void waittx() {
 }
 
 inline void waitrx() {
-  while(read_reg(SPI_IP) & 2) {}
+  while(!(read_reg(SPI_IP) & 2)) {}
 }
 
 inline uint8_t spi_readbyte() {

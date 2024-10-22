@@ -24,8 +24,7 @@ LIBRARY_FILES	:=
 MARCH           :=-march=rv64imfdc
 MABI            :=-mabi=lp64d
 LINK_FLAGS      :=$(MARCH) $(MABI) -nostartfiles
-LINKER		:=$(ROOT)/linker8000-0000.x
-
+LINKER		:=elf64lriscv.x
 
 AFLAGS =$(MARCH) $(MABI) -W
 CFLAGS =$(MARCH) $(MABI) -mcmodel=medany  -O2
