@@ -17,6 +17,19 @@ void NorFlashWrite(uint32_t adr, uint8_t data){
   spi_sendbyte(data);
 }
 
+void NorFlashWriteArray(uint32_t adr, char * src, int length){
+  int index;
+  for(index = 0; index < length; index++){
+    NorFlashWrite(index, src[index]);
+  }
+}
+
+void NorFlashReadArray(uint32_t adr, char *dst, int length){
+  int index;
+  for(index = 0; index < length; index++){
+    dst[index] = NorFlashRead(index);
+  }
+}
 
 uint8_t NorFlashRead(uint32_t adr){
   // read address 0x25

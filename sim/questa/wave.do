@@ -682,7 +682,6 @@ add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/Address
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/ReadData
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/WriteData
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/WriteArray
-add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/mem
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/LastBit
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/LastBitAdr
 add wave -noupdate -expand -group spiflash /testbench/spi/spiflash/ReadArray
@@ -734,4 +733,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {62972 ns} {63472 ns}
+WaveRestoreZoom {1619112 ns} {1779279 ns}

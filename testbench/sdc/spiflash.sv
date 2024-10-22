@@ -24,7 +24,7 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-module spiflash import cvw::*; #(parameter CLK_PHA = 0, CLK_POL = 0)(
+module spiflash import cvw::*; #(parameter CLK_PHA = 0, CLK_POL = 0, SIZE = 8)(
   input logic  CLK,
   output logic MISO,
   input logic  MOSI,
@@ -36,7 +36,7 @@ module spiflash import cvw::*; #(parameter CLK_PHA = 0, CLK_POL = 0)(
   logic [7:0]  Command;
   logic [31:0] Address;
   logic [7:0]  ReadData, WriteData;
-  logic [7:0] mem [63:0];
+  logic [7:0]  mem [2**SIZE-1:0];
   logic        CntReset, CntEn;
   logic [4:0]  Count;
   logic        LastBit, LastBitAdr;
@@ -44,7 +44,6 @@ module spiflash import cvw::*; #(parameter CLK_PHA = 0, CLK_POL = 0)(
   logic        WriteEn;
   logic        WriteArray;
   logic        ReadArray;
-  
   
   typedef enum {STATE_RDY, STATE_ADR, STATE_CMD, STATE_DATA} statetype;
   statetype CurrState, NextState;

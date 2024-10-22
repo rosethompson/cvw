@@ -30,6 +30,7 @@
 #include "spi.h"
 #include "uart.h"
 #include "norflash.h"
+#include <string.h>
 
 // Testing SPI peripheral in loopback mode
 // TODO: Need to make sure the configuration I'm using uses loopback
@@ -79,6 +80,24 @@ void spi_init(uint32_t clkin) {
 }
 
 
+char romeo_and_juliet [] = "Two households, both alike in dignity\
+(In fair Verona, where we lay our scene),\
+From ancient grudge break to new mutiny,\
+Where civil blood makes civil hands unclean.\
+From forth the fatal loins of these two foes\
+A pair of star-crossed lovers take their life;\
+Whose misadventured piteous overthrows\
+Doth with their death bury their parents’ strife.\
+The fearful passage of their death-marked love\
+And the continuance of their parents’ rage,\
+Which, but their children’s end, naught could remove,\
+Is now the two hours’ traffic of our stage;\
+The which, if you with patient ears attend,\
+What here shall miss, our toil shall strive to mend.";
+
+char dst [128];
+
+
 void main() {
   spi_init(100000000);
 
@@ -93,51 +112,43 @@ void main() {
   write_reg(SPI_CSMODE, SIFIVE_SPI_CSMODE_MODE_HOLD);
   //n = 512/8;
 
-  NorFlashWrite(0x0, 0x10);
-  NorFlashWrite(0x1, 0x11);
-  NorFlashWrite(0x2, 0x12);
-  NorFlashWrite(0x3, 0x13);
-  NorFlashWrite(0x25, 0x2A);
-  NorFlashWrite(0x26, 0x2B);
-  NorFlashWrite(0x27, 0x2C);
-  NorFlashWrite(0x28, 0x2D);
+  NorFlashWriteArray(0x0, romeo_and_juliet, 128);
+  NorFlashReadArray(0x0, dst, 128);
+  int res = strncmp(romeo_and_juliet, dst, 128);
+  print_uart("romeo and juliet are same? ");
+  if(res) print_uart("no!\n");
+  //else print_uart("yes!\n");
 
-  data = NorFlashRead(0x25);
-  print_uart("first data received = ");
-  print_uart_dec(data);
-  print_uart("\r\n");
+  /* NorFlashWrite(0x0, 0x10); */
+  /* NorFlashWrite(0x1, 0x11); */
+  /* NorFlashWrite(0x2, 0x12); */
+  /* NorFlashWrite(0x3, 0x13); */
+  /* NorFlashWrite(0x25, 0x2A); */
+  /* NorFlashWrite(0x26, 0x2B); */
+  /* NorFlashWrite(0x27, 0x2C); */
+  /* NorFlashWrite(0x28, 0x2D); */
 
-  print_uart("second data received = ");
-  data = NorFlashRead(0x26);
-  print_uart_dec(data);
-  print_uart("\r\n");
+  /* data = NorFlashRead(0x25); */
+  /* print_uart("first data received = "); */
+  /* print_uart_dec(data); */
+  /* print_uart("\r\n"); */
 
-  print_uart("third data received = ");
-  data = NorFlashRead(0x27);
-  print_uart_dec(data);
-  print_uart("\r\n");
+  /* print_uart("second data received = "); */
+  /* data = NorFlashRead(0x26); */
+  /* print_uart_dec(data); */
+  /* print_uart("\r\n"); */
 
-  print_uart("fourth data received = ");
-  data = NorFlashRead(0x28);
-  print_uart_dec(data);
-  print_uart("\r\n");
+  /* print_uart("third data received = "); */
+  /* data = NorFlashRead(0x27); */
+  /* print_uart_dec(data); */
+  /* print_uart("\r\n"); */
+
+  /* print_uart("fourth data received = "); */
+  /* data = NorFlashRead(0x28); */
+  /* print_uart_dec(data); */
+  /* print_uart("\r\n"); */
 
 
-// 
-  /* n = 4; */
-  /* do { */
-  /*   // Send 8 dummy bytes (fifo should be empty) */
-  /*   for (j = 0; j < 8; j++) { */
-  /*     spi_sendbyte(0xaa + j); */
-  /*   } */
-    
-  /*   // Reset counter. Process bytes AS THEY COME IN. */
-  /*   for (j = 0; j < 8; j++) { */
-  /*     while (!(read_reg(SPI_IP) & 2)) {} */
-  /*     uint8_t x = spi_readbyte(); */
-  /*     *p++ = x;       */
-  /*   } */
-  /* } while(--n > 0); */
 
   write_reg(SPI_CSMODE, SIFIVE_SPI_CSMODE_MODE_AUTO);
 }
