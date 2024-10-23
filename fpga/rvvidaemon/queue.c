@@ -147,6 +147,19 @@ bool IsAlmostFull(queue_t *queue, int Threshold){
   int diff = head - tail;
   return (diff >= Threshold) | IsFull(queue); 
 }
+int HowFull(queue_t *queue){
+  // probably a better solution
+  pthread_mutex_lock(&(queue->lock));
+  int head = queue->head;
+  int tail = queue->tail;
+  int size = queue->size;
+  pthread_mutex_unlock(&(queue->lock));
+  if (head < tail){ // head pointer wrapped around
+    head += size;
+  }
+  int diff = head - tail;
+  return diff; 
+}
 
 bool IsEmpty(queue_t *queue){
   bool result;

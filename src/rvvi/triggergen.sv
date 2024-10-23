@@ -34,7 +34,8 @@ module triggergen import cvw::*; (
   input logic [3:0] RvviAxiRstrb,
   input logic RvviAxiRlast,
   input logic RvviAxiRvalid,
-  output logic IlaTrigger);
+  output logic IlaTrigger,
+  output logic [31:0] TriggerMessage);
 
   typedef enum              {STATE_RST, STATE_COMPARE, STATE_MISMATCH, STATE_TRIGGER, STATE_TRIGGER_DONE} statetype;
 (* mark_debug = "true" *)  statetype CurrState, NextState;
@@ -47,6 +48,8 @@ module triggergen import cvw::*; (
   logic 	    RvviAxiRvalidDelay;
   logic 	    Match, Overflow, Mismatch, Threshold;
   logic 	    IlaTriggerOneCycle;
+  logic         MessageEn, MessageEnDelay, MessageEnClear;
+  
    
 /* -----\/----- EXCLUDED -----\/-----
   assign mem[0] = 32'h1111_6843; // dst mac [31:0]
@@ -97,6 +100,8 @@ module triggergen import cvw::*; (
   assign IlaTriggerOneCycle = CurrState == STATE_TRIGGER;
   assign CounterRst = CurrState == STATE_RST;
   assign CounterEn = RvviAxiRvalid;
+  assign MessageEn = (CurrState == STATE_TRIGGER_DONE) & RvviAxiRvalidDelay;
+  assign MessageEnClear = CurrState == STATE_RST;
 
 /* -----\/----- EXCLUDED -----\/-----
   always_ff @(posedge clk) begin
@@ -114,5 +119,9 @@ module triggergen import cvw::*; (
   assign TriggerReset = TriggerCount == 4'd10;
   assign TriggerEn = IlaTriggerOneCycle | (TriggerCount != 4'd0 & TriggerCount < 4'd10);
   assign IlaTrigger = TriggerEn;
+
+  flopenr #(1)  onecyclemessagereg(clk, MessageEnClear, MessageEn, 1'b1, MessageEnDelay);
+  flopenr #(32) triggermessagereg(clk, reset, MessageEn & ~MessageEnDelay, RvviAxiRdataDelay, TriggerMessage);
+  
 
 endmodule

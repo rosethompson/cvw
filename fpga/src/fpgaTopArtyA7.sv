@@ -514,9 +514,10 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     statetype CurrState, NextState;
   (* mark_debug = "true" *)    logic [16:0]				     Count;
     logic [16:0]				     CountThreshold;
+  (* mark_debug = "true" *)        logic [31:0]                     HostFiFoFillAmt;
     logic					     SlowDownThreshold, SlowDownCounterEnable, SlowDownCounterRst;
 
-    logic [9:0]					     ConcurrentCount;
+    logic [9:0]                      ConcurrentCount;
 (* mark_debug = "true" *)    logic					     ConcurrentSlowDownCounterRst,  ConcurrentSlowDownCounterEnable, ConcurrentSlowDownCounterEnableUp, ConcurrentSlowDownCounterEnableDown;
 (* mark_debug = "true" *)    logic HostRequestSlowDownDelay, HostRequestSlowDownEdge;
 (* mark_debug = "true" *)    logic DidHostRequest;
@@ -597,8 +598,8 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
 
     logic [31:0] RvviAxiRdata;
     logic [3:0]                                       RvviAxiRstrb;
-    logic RvviAxiRlast;
-    logic RvviAxiRvalid;
+(* mark_debug = "true" *)    logic RvviAxiRlast;
+(* mark_debug = "true" *)    logic RvviAxiRvalid;
 
     logic                                             tx_error_underflow, tx_fifo_overflow, tx_fifo_bad_frame, tx_fifo_good_frame, rx_error_bad_frame;
     logic                                             rx_error_bad_fcs, rx_fifo_overflow, rx_fifo_bad_frame, rx_fifo_good_frame;
@@ -634,11 +635,11 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
 			  
     triggergen triggergen(.clk(CPUCLK), .reset(bus_struct_reset), .CompareString(TriggerString),
 .RvviAxiRdata,
-      .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger);
+      .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger, .TriggerMessage());
 
     triggergen slowdown(.clk(CPUCLK), .reset(bus_struct_reset), .CompareString(SlowString),
 .RvviAxiRdata,
-      .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger(HostRequestSlowDown));
+      .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger(HostRequestSlowDown), .TriggerMessage(HostFiFoFillAmt));
 
     always_ff @(posedge CPUCLK) begin
       if(bus_struct_reset) CurrState <= STATE_RST;
@@ -657,7 +658,22 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
       endcase // case (CurrState)
     end
 
-    assign CountThreshold = 17'd2000;
+    always_comb begin
+      casez(HostFiFoFillAmt[31:24]) 
+        8'b0: CountThreshold = 17'd800;
+        8'b1: CountThreshold = 17'd1600;
+        8'b10: CountThreshold = 17'd3200;
+        8'b11: CountThreshold = 17'd6400;
+        8'b1??: CountThreshold = 17'd12800;
+        8'b1???: CountThreshold = 17'd25600;
+        8'b1????: CountThreshold = 17'd51200;
+        8'b1?????: CountThreshold = 17'd51200;
+        8'b1??????: CountThreshold = 17'd51200;
+        8'b1???????: CountThreshold = 17'd51200;
+        default: CountThreshold = 17'd51200;
+      endcase
+    end
+    //assign CountThreshold = 17'd4000;
     assign SlowDownThreshold = Count >= CountThreshold;
     assign SlowDownCounterEnable = CurrState == STATE_COUNT;
     assign SlowDownCounterRst = CurrState == STATE_RST;
