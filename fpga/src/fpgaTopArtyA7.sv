@@ -501,8 +501,8 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     logic [P.XLEN-1:0]                                GPRValue, FPRValue;
     logic [P.XLEN-1:0]                                CSRArray [TOTAL_CSRS-1:0];
 
-    logic                                             valid;
-    logic [72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16)-1:0] rvvi;
+  (* mark_debug = "true" *)    logic                                             valid;
+  (* mark_debug = "true" *)    logic [72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16)-1:0] rvvi;
 
   (* mark_debug = "true" *)    logic					     RVVIStall, HostStall;
     
@@ -590,11 +590,11 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
       .valid, .rvvi);
 
     // axi 4 write data channel
-    logic [31:0]                                      RvviAxiWdata;
+(* mark_debug = "true" *)    logic [31:0]                                      RvviAxiWdata;
     logic [3:0]                                       RvviAxiWstrb;
-    logic                                             RvviAxiWlast;
-    logic                                             RvviAxiWvalid;
-    logic                                             RvviAxiWready;
+(* mark_debug = "true" *)    logic                                             RvviAxiWlast;
+(* mark_debug = "true" *)    logic                                             RvviAxiWvalid;
+(* mark_debug = "true" *)    logic                                             RvviAxiWready;
 
     logic [31:0] RvviAxiRdata;
     logic [3:0]                                       RvviAxiRstrb;
@@ -658,6 +658,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
       endcase // case (CurrState)
     end
 
+/* -----\/----- EXCLUDED -----\/-----
     always_comb begin
       casez(HostFiFoFillAmt[31:24]) 
         8'b0: CountThreshold = 17'd800;
@@ -673,7 +674,8 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
         default: CountThreshold = 17'd51200;
       endcase
     end
-    //assign CountThreshold = 17'd4000;
+ -----/\----- EXCLUDED -----/\----- */
+    assign CountThreshold = 17'd4000;
     assign SlowDownThreshold = Count >= CountThreshold;
     assign SlowDownCounterEnable = CurrState == STATE_COUNT;
     assign SlowDownCounterRst = CurrState == STATE_RST;
