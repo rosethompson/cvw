@@ -135,16 +135,16 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   assign CSRArray[34] = dut.core.priv.priv.csr.csru.csru.FRM_REGW; // 12'h002
   assign CSRArray[35] = {dut.core.priv.priv.csr.csru.csru.FRM_REGW, dut.core.priv.priv.csr.csru.csru.FFLAGS_REGW}; // 12'h003
 
-    acev #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) acev(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+    acev #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, "GENERIC") acev(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
-      .mii_rx_clk(clk),
-      .mii_rxd('0),
-      .mii_rx_dv('0),
-      .mii_rx_er('0),
-      .mii_tx_clk(clk),
-      .mii_txd(),
-      .mii_tx_en(),
+      .phy_rx_clk(clk),
+      .phy_rxd('0),
+      .phy_rx_dv('0),
+      .phy_rx_er('0),
+      .phy_tx_clk(clk),
+      .phy_txd(),
+      .phy_tx_en(),
       .ExternalStall, .IlaTrigger);
 /* -----\/----- EXCLUDED -----\/-----
   

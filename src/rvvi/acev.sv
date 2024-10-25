@@ -31,7 +31,8 @@ module acev import cvw::*; #(parameter cvw_t P,
                              parameter integer MAX_CSRS = 5, 
                              parameter integer TOTAL_CSRS = 36,
                              parameter integer RVVI_INIT_TIME_OUT = 32'd100000000,
-                             parameter integer RVVI_PACKET_DELAY = 32'd2
+                             parameter integer RVVI_PACKET_DELAY = 32'd2,
+                             parameter string  TARGET = "GENERIC"
 )(
   input logic              clk, reset,
   input logic              StallE, StallM, StallW, FlushE, FlushM, FlushW,
@@ -97,7 +98,7 @@ module acev import cvw::*; #(parameter cvw_t P,
     packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi, .valid, .m_axi_aclk(clk), .m_axi_aresetn(~reset), .RVVIStall,
       .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready);
 
-    eth_mac_mii_fifo #(.TARGET("XILINX"), .CLOCK_INPUT_STYLE("BUFG"), .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024)) ethernet(.rst(reset), .logic_clk(clk), .logic_rst(reset),
+    eth_mac_mii_fifo #(.TARGET(TARGET), .CLOCK_INPUT_STYLE("BUFG"), .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024)) ethernet(.rst(reset), .logic_clk(clk), .logic_rst(reset),
       .tx_axis_tdata(RvviAxiWdata), .tx_axis_tkeep(RvviAxiWstrb), .tx_axis_tvalid(RvviAxiWvalid), .tx_axis_tready(RvviAxiWready),
       .tx_axis_tlast(RvviAxiWlast), .tx_axis_tuser('0), .rx_axis_tdata(RvviAxiRdata),
       .rx_axis_tkeep(RvviAxiRstrb), .rx_axis_tvalid(RvviAxiRvalid), .rx_axis_tready(1'b1),
