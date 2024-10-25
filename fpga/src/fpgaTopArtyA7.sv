@@ -575,13 +575,13 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     acev #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, "XILINX") acev(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
-      .mii_rx_clk(phy_rx_clk),
-      .mii_rxd(phy_rxd),
-      .mii_rx_dv(phy_rx_dv),
-      .mii_rx_er(phy_rx_er),
-      .mii_tx_clk(phy_tx_clk),
-      .mii_txd(phy_txd),
-      .mii_tx_en(phy_tx_en),
+      .phy_rx_clk(phy_rx_clk),
+      .phy_rxd(phy_rxd),
+      .phy_rx_dv(phy_rx_dv),
+      .phy_rx_er(phy_rx_er),
+      .phy_tx_clk(phy_tx_clk),
+      .phy_txd(phy_txd),
+      .phy_tx_en(phy_tx_en),
       .ExternalStall, .IlaTrigger);
     
 /* -----\/----- EXCLUDED -----\/-----
