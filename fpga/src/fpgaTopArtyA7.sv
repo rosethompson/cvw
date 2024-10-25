@@ -572,6 +572,20 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     assign CSRArray[34] = fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FRM_REGW; // 12'h002
     assign CSRArray[35] = {fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FRM_REGW, fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FFLAGS_REGW}; // 12'h003
 
+    acev #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) acev(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+      .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
+      .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
+      .mii_rx_clk(phy_rx_clk),
+      .mii_rxd(phy_rxd),
+      .mii_rx_dv(phy_rx_dv),
+      .mii_rx_er(phy_rx_er),
+      .mii_tx_clk(phy_tx_clk),
+      .mii_txd(phy_txd),
+      .mii_tx_en(phy_tx_en),
+      .ExternalStall, .IlaTrigger);
+    
+/* -----\/----- EXCLUDED -----\/-----
+
     rvvisynth #(P, MAX_CSRS) rvvisynth(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
@@ -629,9 +643,10 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
 .RvviAxiRdata,
       .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger(HostRequestSlowDown), .TriggerMessage(HostFiFoFillAmt));
 
-    genslowframe genslowframe(.HostRequestSlowDown, .RVVIStall, .HostFiFoFillAmt, .HostStall);
+    genslowframe genslowframe(.clk(CPUCLK), .reset(bus_struct_reset), .HostRequestSlowDown, .RVVIStall, .HostFiFoFillAmt, .HostStall);
     
     assign ExternalStall = RVVIStall | HostStall;
+ -----/\----- EXCLUDED -----/\----- */
     
   end else begin // if (P.RVVI_SYNTH_SUPPORTED)
     assign IlaTrigger = '0;

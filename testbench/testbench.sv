@@ -123,7 +123,7 @@ module testbench;
   logic SelectTest;
   logic TestComplete;
   logic PrevPCZero;
-  logic RVVIStall;
+  logic ExternalStall;
 
   initial begin
     // look for arguments passed to simulation, or use defaults
@@ -610,7 +610,7 @@ module testbench;
     
   end
 
-  wallypipelinedsoc  #(P) dut(.clk, .reset_ext, .reset, .ExternalStall(RVVIStall), 
+  wallypipelinedsoc  #(P) dut(.clk, .reset_ext, .reset, .ExternalStall, 
     .HRDATAEXT, .HREADYEXT, .HRESPEXT, .HSELEXT,
     .HCLK, .HRESETn, .HADDR, .HWDATA, .HWSTRB, .HWRITE, .HSIZE, .HBURST, .HPROT,
     .HTRANS, .HMASTLOCK, .HREADY, .TIMECLK(1'b0), .GPIOIN, .GPIOOUT, .GPIOEN,
@@ -630,10 +630,10 @@ module testbench;
     logic                                             mii_tx_en, mii_tx_er;
 
     rvvitbwrapper #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) 
-    rvvitbwrapper(.clk, .reset, .RVVIStall, .mii_tx_clk(clk), .mii_txd, .mii_tx_en, .mii_tx_er,
+    rvvitbwrapper(.clk, .reset, .ExternalStall, .mii_tx_clk(clk), .mii_txd, .mii_tx_en, .mii_tx_er,
                   .mii_rx_clk(clk), .mii_rxd('0), .mii_rx_dv('0), .mii_rx_er('0));
   end else begin
-    assign RVVIStall = '0;
+    assign ExternalStall = '0;
   end
   
 

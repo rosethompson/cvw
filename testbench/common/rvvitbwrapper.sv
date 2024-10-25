@@ -30,7 +30,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
                                 parameter logic [31:0] RVVI_PACKET_DELAY = 32'd2)(
   input  logic clk,
   input  logic reset,
-  output logic RVVIStall,
+  output logic ExternalStall,
   input  logic mii_tx_clk,
   output logic [3:0] mii_txd,
   output logic mii_tx_en, mii_tx_er,
@@ -73,6 +73,8 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   logic                                             MiiTxEnDelay;
   logic                                             EthernetTXCounterEn;
   logic [31:0]                                      EthernetTXCount;
+  logic                                             IlaTrigger;
+  
 
   assign StallE         = dut.core.StallE;
   assign StallM         = dut.core.StallM;
@@ -133,6 +135,20 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   assign CSRArray[34] = dut.core.priv.priv.csr.csru.csru.FRM_REGW; // 12'h002
   assign CSRArray[35] = {dut.core.priv.priv.csr.csru.csru.FRM_REGW, dut.core.priv.priv.csr.csru.csru.FFLAGS_REGW}; // 12'h003
 
+    acev #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) acev(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+      .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
+      .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
+      .mii_rx_clk(clk),
+      .mii_rxd('0),
+      .mii_rx_dv('0),
+      .mii_rx_er('0),
+      .mii_tx_clk(clk),
+      .mii_txd(),
+      .mii_tx_en(),
+      .ExternalStall, .IlaTrigger);
+/* -----\/----- EXCLUDED -----\/-----
+  
+
   rvvisynth #(P, MAX_CSRS, TOTAL_CSRS) rvvisynth(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
                                                  .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
                                                  .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
@@ -160,6 +176,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
     .rx_error_bad_fcs, .rx_fifo_overflow, .rx_fifo_bad_frame, .rx_fifo_good_frame, 
     .cfg_ifg(8'd12), .cfg_tx_enable(1'b1), .cfg_rx_enable(1'b1));
 
+ -----/\----- EXCLUDED -----/\----- */
   flopr #(1) txedgereg(clk, reset, mii_tx_en, MiiTxEnDelay);
   assign EthernetTXCounterEn = ~mii_tx_en & MiiTxEnDelay;
   counter #(32) ethernexttxcounter(clk, reset, EthernetTXCounterEn, EthernetTXCount);

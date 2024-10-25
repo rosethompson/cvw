@@ -1,5 +1,5 @@
 ///////////////////////////////////////////
-// rvvisynth.sv
+// genslowframe.sv
 //
 // Written: Rose Thompson rosethompson.net
 // Created: 24 October 2024
@@ -29,6 +29,7 @@
 
 module genslowframe import cvw::*;
   (
+  input logic        clk, reset,
   input logic        HostRequestSlowDown,
   input logic        RVVIStall,
   input logic [31:0] HostFiFoFillAmt,
@@ -49,8 +50,8 @@ module genslowframe import cvw::*;
     typedef enum				     {STATE_RST, STATE_PRE_COUNT, STATE_COUNT} statetype;
     statetype CurrState, NextState;
 
-    always_ff @(posedge CPUCLK) begin
-      if(bus_struct_reset) CurrState <= STATE_RST;
+    always_ff @(posedge clk) begin
+      if(reset) CurrState <= STATE_RST;
       else CurrState <= NextState;
     end
 
@@ -88,21 +89,21 @@ module genslowframe import cvw::*;
     assign SlowDownCounterEnable = CurrState == STATE_COUNT;
     assign SlowDownCounterRst = CurrState == STATE_RST;
     assign HostStall = CurrState == STATE_COUNT;
-    assign ConcurrentSlowDownCounterRst = bus_struct_reset;
+    assign ConcurrentSlowDownCounterRst = reset;
     assign ConcurrentSlowDownCounterEnableUp = HostRequestSlowDownEdge & CurrState == STATE_COUNT;
     assign ConcurrentSlowDownCounterEnable = ConcurrentSlowDownCounterEnableUp | ConcurrentSlowDownCounterEnableDown;
     assign ConcurrentSlowDownCounterEnableDown = CurrState == STATE_COUNT & (SlowDownThreshold) & ~DidHostRequest & PendingHostRequest;
     
     
-    flopr #(1) hostrequestslowdowndelayreg(CPUCLK, bus_struct_reset, HostRequestSlowDown, HostRequestSlowDownDelay);
+    flopr #(1) hostrequestslowdowndelayreg(clk, reset, HostRequestSlowDown, HostRequestSlowDownDelay);
     assign HostRequestSlowDownEdge = HostRequestSlowDown & ~HostRequestSlowDownDelay;
 
-    flopenrc #(1) didhostrequestslowdownreg(CPUCLK, bus_struct_reset, ClearHostRequested, (ClearHostRequested | HostRequestSlowDownEdge), 1'b1, DidHostRequest);
+    flopenrc #(1) didhostrequestslowdownreg(clk, reset, ClearHostRequested, (ClearHostRequested | HostRequestSlowDownEdge), 1'b1, DidHostRequest);
     assign ClearHostRequested = CurrState == STATE_COUNT & SlowDownThreshold;
     
-    counter #(17) SlowDownCounter(CPUCLK, SlowDownCounterRst, SlowDownCounterEnable, Count);
+    counter #(17) SlowDownCounter(clk, SlowDownCounterRst, SlowDownCounterEnable, Count);
 
-    updowncounter #(10) ConcurrentSlowDownCounter(CPUCLK, ConcurrentSlowDownCounterRst, ConcurrentSlowDownCounterEnable, ConcurrentSlowDownCounterEnableDown, ConcurrentCount);
+    updowncounter #(10) ConcurrentSlowDownCounter(clk, ConcurrentSlowDownCounterRst, ConcurrentSlowDownCounterEnable, ConcurrentSlowDownCounterEnableDown, ConcurrentCount);
 
     assign PendingHostRequest = (ConcurrentCount != '0);
   
