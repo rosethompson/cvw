@@ -8,7 +8,7 @@ lsu/lsu.sv: logic        ReadDataM
 lsu/lsu.sv: logic        WriteDataM
 lsu/lsu.sv: logic       MemRWM
 privileged/csrc.sv: logic      HPMCOUNTER_REGW
-rvvi/rvvisynth.sv: logic CSRArrayWen
+mmu/hptw.sv: logic	   SATP_REGW
 uncore/spi_apb.sv: logic ShiftIn
 uncore/spi_apb.sv: logic  ReceiveShiftReg
 uncore/spi_apb.sv: logic  SCLKenable
@@ -23,7 +23,7 @@ uncore/spi_apb.sv: logic SckMode
 uncore/spi_apb.sv: logic SckDiv
 uncore/spi_apb.sv: logic ShiftEdge
 uncore/spi_apb.sv: logic TransmitShiftRegLoadSingleCycle
-uncore/spi_apb.sv: logic TransmitShiftReg
+uncore/spi_apb.sv: logic TransmitShiftRegLoad
 uncore/spi_apb.sv: logic TransmitData
 uncore/spi_apb.sv: logic ReceiveData
 uncore/spi_apb.sv: logic ReceiveShiftRegEndian
@@ -38,3 +38,4 @@ uncore/spi_apb.sv: logic TransmitFIFOWriteIncrement
 uncore/spi_apb.sv: logic TransmitFIFOReadIncrement
 uncore/spi_apb.sv: logic TransmitFIFOWriteFull
 uncore/spi_apb.sv: logic TransmitFIFOReadEmpty
+uncore/spi_apb.sv: logic ASR
