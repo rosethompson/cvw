@@ -612,12 +612,12 @@ module testbench;
     localparam logic [31:0] RVVI_INIT_TIME_OUT = 32'd4;
     localparam logic [31:0] RVVI_PACKET_DELAY = 32'd2;
 
-    logic [3:0]                                       mii_txd;
-    logic                                             mii_tx_en, mii_tx_er;
+    logic [3:0]                                       phy_txd;
+    logic                                             phy_tx_en, phy_tx_er;
 
     rvvitbwrapper #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) 
-    rvvitbwrapper(.clk, .reset, .ExternalStall, .mii_tx_clk(clk), .mii_txd, .mii_tx_en, .mii_tx_er,
-                  .mii_rx_clk(clk), .mii_rxd('0), .mii_rx_dv('0), .mii_rx_er('0));
+    rvvitbwrapper(.clk, .reset, .ExternalStall, .phy_tx_clk(clk), .phy_txd, .phy_tx_en, .phy_tx_er,
+                  .phy_rx_clk(clk), .phy_rxd('0), .phy_rx_dv('0), .phy_rx_er('0));
   end else begin
     assign ExternalStall = '0;
   end

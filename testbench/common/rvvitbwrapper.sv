@@ -31,13 +31,13 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   input  logic clk,
   input  logic reset,
   output logic ExternalStall,
-  input  logic mii_tx_clk,
-  output logic [3:0] mii_txd,
-  output logic mii_tx_en, mii_tx_er,
-  input  logic mii_rx_clk,
-  input  logic [3:0] mii_rxd,
-  input  logic mii_rx_dv,
-  input  logic mii_rx_er
+  input  logic phy_tx_clk,
+  output logic [3:0] phy_txd,
+  output logic phy_tx_en, phy_tx_er,
+  input  logic phy_rx_clk,
+  input  logic [3:0] phy_rxd,
+  input  logic phy_rx_dv,
+  input  logic phy_rx_er
 );
 
   logic        valid;
@@ -138,13 +138,14 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
     acev #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, "GENERIC") acev(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
-      .phy_rx_clk(clk),
-      .phy_rxd('0),
-      .phy_rx_dv('0),
-      .phy_rx_er('0),
-      .phy_tx_clk(clk),
-      .phy_txd(),
-      .phy_tx_en(),
+      .phy_rx_clk,
+      .phy_rxd,
+      .phy_rx_dv,
+      .phy_rx_er,
+      .phy_tx_clk,
+      .phy_txd,
+      .phy_tx_en,
+      .phy_tx_er,
       .ExternalStall, .IlaTrigger);
 /* -----\/----- EXCLUDED -----\/-----
   

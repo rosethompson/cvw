@@ -57,6 +57,7 @@ module acev import cvw::*; #(parameter cvw_t P,
   input logic              phy_tx_clk,
   output logic [3:0]       phy_txd,
   output logic             phy_tx_en,
+  output logic             phy_tx_er,
 
   // feedback
   output logic             ExternalStall,
@@ -111,7 +112,7 @@ module acev import cvw::*; #(parameter cvw_t P,
       .mii_tx_clk(phy_tx_clk),
       .mii_txd(phy_txd),
       .mii_tx_en(phy_tx_en),
-      .mii_tx_er(),
+      .mii_tx_er(phy_tx_er),
 
       // status
       .tx_error_underflow, .tx_fifo_overflow, .tx_fifo_bad_frame, .tx_fifo_good_frame, .rx_error_bad_frame,
