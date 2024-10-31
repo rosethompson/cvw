@@ -582,6 +582,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
       .phy_tx_clk(phy_tx_clk),
       .phy_txd(phy_txd),
       .phy_tx_en(phy_tx_en),
+      .phy_tx_er(),
       .ExternalStall, .IlaTrigger);
     
 /* -----\/----- EXCLUDED -----\/-----
