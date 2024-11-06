@@ -103,7 +103,7 @@ if {$board=="ArtyA7"} {
     #source ../constraints/vcu-small-debug.xdc
     #source ../constraints/small-debug.xdc
     #source ../constraints/small-debug.xdc
-    source ../constraints/big-debug-spi.xdc
+    source ../constraints/big-debug-spi-rvvi.xdc
 }
 
 
