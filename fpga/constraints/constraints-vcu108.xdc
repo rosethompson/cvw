@@ -236,6 +236,21 @@ set_property PACKAGE_PIN M27 [get_ports {c0_ddr4_dm_dbi_n[5]}]
 set_property PACKAGE_PIN G26 [get_ports {c0_ddr4_dm_dbi_n[6]}]
 set_property PACKAGE_PIN D27 [get_ports {c0_ddr4_dm_dbi_n[7]}]
 
+# Gigabit Ethernet SGMII PHY
+set_property -dict {LOC AR24 IOSTANDARD DIFF_HSTL_I_18} [get_ports phy_sgmii_rx_p]
+set_property -dict {LOC AT24 IOSTANDARD DIFF_HSTL_I_18} [get_ports phy_sgmii_rx_n]
+set_property -dict {LOC AR23 IOSTANDARD DIFF_HSTL_I_18} [get_ports phy_sgmii_tx_p]
+set_property -dict {LOC AR22 IOSTANDARD DIFF_HSTL_I_18} [get_ports phy_sgmii_tx_n]
+set_property -dict {LOC AT22 IOSTANDARD LVDS_25} [get_ports phy_sgmii_clk_p]
+set_property -dict {LOC AU22 IOSTANDARD LVDS_25} [get_ports phy_sgmii_clk_n]
+set_property -dict {LOC AU21 IOSTANDARD LVCMOS18 SLEW SLOW DRIVE 8} [get_ports phy_reset_n]
+set_property -dict {LOC AT21 IOSTANDARD LVCMOS18} [get_ports phy_int_n]
+#set_property -dict {LOC AV24 IOSTANDARD LVCMOS18 SLEW SLOW DRIVE 8} [get_ports phy_mdio]
+#set_property -dict {LOC AV21 IOSTANDARD LVCMOS18 SLEW SLOW DRIVE 8} [get_ports phy_mdc]
+
+# 625 MHz ref clock from SGMII PHY
+# done with the IP
+#create_clock -period 1.600 -name phy_sgmii_clk [get_ports phy_sgmii_clk_p]
 
 
 

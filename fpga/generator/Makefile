@@ -2,7 +2,7 @@ dst := IP
 
 all: ArtyA7
 
-.PHONY: ArtyA7 ArtyA7rvvi vcu118 vcu108
+.PHONY: ArtyA7 ArtyA7rvvi vcu118 vcu118rvvi vcu108
 
 ArtyA7: export XILINX_PART := xc7a100tcsg324-1
 ArtyA7: export XILINX_BOARD := digilentinc.com:arty-a7-100:part0:1.1
@@ -31,6 +31,13 @@ vcu108: export board := vcu108
 vcu108: export SYSTEMCLOCK := 50000000
 vcu108: export MAXSDCCLOCK  := 12500000
 vcu108: FPGA_VCU
+
+vcu108rvvi: export XILINX_PART := xcvu095-ffva2104-2-e
+vcu108rvvi: export XILINX_BOARD := xilinx.com:vcu108:part0:1.7
+vcu108rvvi: export board := vcu108
+vcu108rvvi: export SYSTEMCLOCK := 50000000
+vcu108rvvi: export MAXSDCCLOCK  := 12500000
+vcu108rvvi: FPGA_VCU
 
 # variables computed from config
 EXT_MEM_BASE = $(shell grep 'EXT_MEM_BASE' ../../config/deriv/fpga$(board)/config.vh | sed 's/.*=.*h\([[:alnum:]]*\);/0x\1/g')

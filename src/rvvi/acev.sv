@@ -47,17 +47,18 @@ module acev import cvw::*; #(parameter cvw_t P,
   input logic              GPRWen, FPRWen,
   input logic [4:0]        GPRAddr, FPRAddr,
   input logic [P.XLEN-1:0] GPRValue, FPRValue,
-  input var [P.XLEN-1:0]       CSRArray [TOTAL_CSRS-1:0],
+  input var [P.XLEN-1:0]   CSRArray [TOTAL_CSRS-1:0],
   
   // ethernet phy
-  input logic              phy_rx_clk,
-  input logic [3:0]        phy_rxd,
-  input logic              phy_rx_dv,
-  input logic              phy_rx_er,
-  input logic              phy_tx_clk,
-  output logic [3:0]       phy_txd,
-  output logic             phy_tx_en,
-  output logic             phy_tx_er,
+  input logic               phy_clk, // separate for mii, phy_rx_clk and phy_tx_clk
+  input logic               phy_rst, // not present for mii
+  input logic               phy_clk_en, // not present for mii
+  input logic [7:0]         phy_rxd,    // only 4 bits for mii
+  input logic               phy_rx_dv,
+  input logic               phy_rx_er,
+  output logic [7:0]        phy_txd,   // only 4 bits for mii
+  output logic              phy_tx_en,
+  output logic              phy_tx_er,
 
   // feedback
   output logic             ExternalStall,
@@ -96,23 +97,27 @@ module acev import cvw::*; #(parameter cvw_t P,
       .valid, .rvvi);
 
 
-    packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi, .valid, .m_axi_aclk(clk), .m_axi_aresetn(~reset), .RVVIStall,
+  packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi, .valid, .m_axi_aclk(clk), .m_axi_aresetn(~reset), .RVVIStall,
       .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready);
 
-    eth_mac_mii_fifo #(.TARGET(TARGET), .CLOCK_INPUT_STYLE("BUFG"), .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024)) ethernet(.rst(reset), .logic_clk(clk), .logic_rst(reset),
+  eth_mac_1g_gmii_fifo #( .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024)) 
+  ethernet(.rst(reset), .logic_clk(clk), .logic_rst(reset),
       .tx_axis_tdata(RvviAxiWdata), .tx_axis_tkeep(RvviAxiWstrb), .tx_axis_tvalid(RvviAxiWvalid), .tx_axis_tready(RvviAxiWready),
       .tx_axis_tlast(RvviAxiWlast), .tx_axis_tuser('0), .rx_axis_tdata(RvviAxiRdata),
       .rx_axis_tkeep(RvviAxiRstrb), .rx_axis_tvalid(RvviAxiRvalid), .rx_axis_tready(1'b1),
       .rx_axis_tlast(RvviAxiRlast), .rx_axis_tuser(),
-
-      .mii_rx_clk(phy_rx_clk),
-      .mii_rxd(phy_rxd),
-      .mii_rx_dv(phy_rx_dv),
-      .mii_rx_er(phy_rx_er),
-      .mii_tx_clk(phy_tx_clk),
-      .mii_txd(phy_txd),
-      .mii_tx_en(phy_tx_en),
-      .mii_tx_er(phy_tx_er),
+           .rx_clk(phy_clk), .rx_rst(phy_rst), .tx_clk(phy_clk) .tx_rst(phy_rst),
+           .gmii_rxd(phy_rxd),
+           .gmii_rx_dv(phy_rx_dv),
+           .gmii_rx_er(phy_rx_er),
+           .gmii_tx_clk(phy_tx_clk),
+           .gmii_txd(phy_txd),
+           .gmii_tx_en(phy_tx_en),
+           .gmii_tx_er(phy_tx_er),
+           .rx_clk_enable(phy_clk_en), 
+           .tx_clk_enable(phy_clk_en), 
+           .rx_mii_select(1'b0),
+           .tx_mii_select(1'b0),
 
       // status
       .tx_error_underflow, .tx_fifo_overflow, .tx_fifo_bad_frame, .tx_fifo_good_frame, .rx_error_bad_frame,
