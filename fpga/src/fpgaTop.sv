@@ -48,23 +48,18 @@ module fpgaTop  #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
    input              SDCCD,
    input              SDCWP,
 
-   // replace with 1G BASE-T GMII
-    /*
-     * Ethernet: 100BASE-T MII
-     */
-   output logic       phy_ref_clk,
-   input logic        phy_rx_clk,
-   input logic [3:0]  phy_rxd,
-   input logic        phy_rx_dv,
-   input logic        phy_rx_er,
-   input logic        phy_tx_clk,
-   output logic [3:0] phy_txd,
-   output logic       phy_tx_en,
-   input logic        phy_col, // nc
-   input logic        phy_crs, // nc
-   output logic       phy_reset_n,
-   
 
+    /*
+     * Ethernet: 1000BASE-T SGMII
+     */
+    input  logic       phy_sgmii_rx_p,
+    input  logic       phy_sgmii_rx_n,
+    output logic       phy_sgmii_tx_p,
+    output logic       phy_sgmii_tx_n,
+    input  logic       phy_sgmii_clk_p,
+    input  logic       phy_sgmii_clk_n,
+    output logic       phy_reset_n,
+   
    output             cpu_reset,
    output             ahblite_resetn,
 
@@ -467,19 +462,42 @@ module fpgaTop  #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     logic [P.XLEN-1:0]                                GPRValue, FPRValue;
     logic [P.XLEN-1:0]                                CSRArray [TOTAL_CSRS-1:0];
 
-  (* mark_debug = "true" *)    logic                                             valid;
-  (* mark_debug = "true" *)    logic [72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16)-1:0] rvvi;
+    (* mark_debug = "true" *)    logic                                             valid;
+    (* mark_debug = "true" *)    logic [72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16)-1:0] rvvi;
 
-  (* mark_debug = "true" *)    logic					     RVVIStall, HostStall;
+    (* mark_debug = "true" *)    logic					     RVVIStall, HostStall;
     
-    logic [32*5-1:0]				     TriggerString;
-    logic [32*5-1:0]				     SlowString;
-  (* mark_debug = "true" *)    logic					     HostRequestSlowDown;
+    logic [32*5-1:0]                                  TriggerString;
+    logic [32*5-1:0]                                  SlowString;
+    (* mark_debug = "true" *)    logic					     HostRequestSlowDown;
 
-  (* mark_debug = "true" *)        logic [31:0]                     HostFiFoFillAmt;
-    logic [4:0]                           pcspma_config_vector;
-    logic [15:0]                          pcspma_an_config_vector;
+    (* mark_debug = "true" *)        logic [31:0]                     HostFiFoFillAmt;
+    logic [4:0]                                       pcspma_config_vector;
+    logic [15:0]                                      pcspma_an_config_vector;
+    logic [15:0]                                       pcspma_status_vector;
     
+    logic [7:0]                                       phy_rxd;
+    logic                                             phy_rx_dv;
+    logic                                             phy_rx_er;
+    logic [7:0]                                       phy_txd;
+    logic                                             phy_tx_en;
+    logic                                             phy_tx_er;
+    logic                                             pcspma_status_link_status;
+    logic                                             pcspma_status_link_synchronization;
+    logic                                             pcspma_status_rudi_c;
+    logic                                             pcspma_status_rudi_i;
+    logic                                             pcspma_status_rudi_invalid;
+    logic                                             pcspma_status_rxdisperr;
+    logic                                             pcspma_status_rxnotintable;
+    logic                                             pcspma_status_phy_link_status;
+    logic [1:0]                                       pcspma_status_remote_fault_encdg;
+    logic [1:0]                                       pcspma_status_speed;
+    logic                                             pcspma_status_duplex;
+    logic                                             pcspma_status_remote_fault;
+    logic [1:0]                                       pcspma_status_pause;
+    logic                                             phy_gmii_clk_int;
+    logic                                             phy_gmii_rst_int;
+    logic                                             phy_gmii_clk_en;
     
     assign StallE         = fpgaTop.wallypipelinedsoc.core.StallE;
     assign StallM         = fpgaTop.wallypipelinedsoc.core.StallM;
@@ -543,14 +561,15 @@ module fpgaTop  #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     acev #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, "XILINX") acev(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
-      .phy_rx_clk(phy_rx_clk),
+      .phy_clk(phy_gmii_clk_int),
+      .phy_rst(phy_gmii_rst_int),
+      .phy_clk_en(phy_gmii_clk_en),
       .phy_rxd(phy_rxd),
       .phy_rx_dv(phy_rx_dv),
       .phy_rx_er(phy_rx_er),
-      .phy_tx_clk(phy_tx_clk),
       .phy_txd(phy_txd),
       .phy_tx_en(phy_tx_en),
-      .phy_tx_er(),
+      .phy_tx_er(phy_tx_er),
       .ExternalStall, .IlaTrigger);
 
 
@@ -569,58 +588,62 @@ module fpgaTop  #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     assign pcspma_an_config_vector[5]     = 1'b0;    // full duplex - SGMII reserved
     assign pcspma_an_config_vector[4:1]   = 4'b0000; // reserved
     assign pcspma_an_config_vector[0]     = 1'b1;    // SGMII
+    assign pcspma_status_link_status = pcspma_status_vector[0];
+    assign pcspma_status_link_synchronization = pcspma_status_vector[1];
+    assign pcspma_status_rudi_c = pcspma_status_vector[2];
+    assign pcspma_status_rudi_i = pcspma_status_vector[3];
+    assign pcspma_status_rudi_invalid = pcspma_status_vector[4];
+    assign pcspma_status_rxdisperr = pcspma_status_vector[5];
+    assign pcspma_status_rxnotintable = pcspma_status_vector[6];
+    assign pcspma_status_phy_link_status = pcspma_status_vector[7];
+    assign pcspma_status_remote_fault_encdg = pcspma_status_vector[9:8];
+    assign pcspma_status_speed = pcspma_status_vector[11:10];
+    assign pcspma_status_duplex = pcspma_status_vector[12];
+    assign pcspma_status_remote_fault = pcspma_status_vector[13];
+    assign pcspma_status_pause = pcspma_status_vector[15:14];
     
-sgmii_gmii sgmii_gmii (
-    // SGMII
-    .txp                    (phy_sgmii_tx_p),
-    .txn                    (phy_sgmii_tx_n),
-    .rxp                    (phy_sgmii_rx_p),
-    .rxn                    (phy_sgmii_rx_n),
-
-    // Ref clock from PHY
-    .refclk625_p            (phy_sgmii_clk_p),
-    .refclk625_n            (phy_sgmii_clk_n),
-
-    // async reset
-    .reset                  (rst_125mhz_int),
-
-    // clock and reset outputs
-    .clk125_out             (phy_gmii_clk_int),
-    .clk625_out             (),
-    .clk312_out             (),
-    .rst_125_out            (phy_gmii_rst_int),
-    .idelay_rdy_out         (),
-    .mmcm_locked_out        (),
-
-    // MAC clocking
-    .sgmii_clk_r            (),
-    .sgmii_clk_f            (),
-    .sgmii_clk_en           (phy_gmii_clk_en_int),
-    
-    // Speed control
-    .speed_is_10_100        (pcspma_status_speed != 2'b10),
-    .speed_is_100           (pcspma_status_speed == 2'b01),
-
-    // Internal GMII
-    .gmii_txd               (phy_gmii_txd_int),
-    .gmii_tx_en             (phy_gmii_tx_en_int),
-    .gmii_tx_er             (phy_gmii_tx_er_int),
-    .gmii_rxd               (phy_gmii_rxd_int),
-    .gmii_rx_dv             (phy_gmii_rx_dv_int),
-    .gmii_rx_er             (phy_gmii_rx_er_int),
-    .gmii_isolate           (),
-
-    // Configuration
-    .configuration_vector   (pcspma_config_vector),
-
-    .an_interrupt           (),
-    .an_adv_config_vector   (pcspma_an_config_vector),
-    .an_restart_config      (1'b0),
-
-    // Status
-    .status_vector          (pcspma_status_vector),
-    .signal_detect          (1'b1)
-);
+    sgmii_gmii sgmii_gmii(
+       // SGMII
+       .txp(phy_sgmii_tx_p),
+       .txn(phy_sgmii_tx_n),
+       .rxp(phy_sgmii_rx_p),
+       .rxn(phy_sgmii_rx_n),
+       // Ref clock from PHY
+       .refclk625_p(phy_sgmii_clk_p),
+       .refclk625_n(phy_sgmii_clk_n),
+       // async reset
+       //.reset(rst_125mhz_int),
+                          .reset(~c0_init_calib_complete), // *** might need to be synced to 125Mhz clock
+       // clock and reset outputs
+       .clk125_out(phy_gmii_clk_int),
+       .clk625_out(),
+       .clk312_out(),
+       .rst_125_out(phy_gmii_rst_int),
+       .idelay_rdy_out(),
+       .mmcm_locked_out(),
+       // MAC clocking
+       .sgmii_clk_r(),
+       .sgmii_clk_f(),
+       .sgmii_clk_en(phy_gmii_clk_en_int),
+       // Speed control
+       .speed_is_10_100(pcspma_status_speed != 2'b10),
+       .speed_is_100(pcspma_status_speed == 2'b01),
+       // Internal GMII
+       .gmii_txd(phy_txd),
+       .gmii_tx_en(phy_tx_en),
+       .gmii_tx_er(phy_tx_er),
+       .gmii_rxd(phy_rxd),
+       .gmii_rx_dv(phy_rx_dv),
+       .gmii_rx_er(phy_rx_er),
+       .gmii_isolate(),
+       // Configuration
+       .configuration_vector(pcspma_config_vector),
+       .an_interrupt(),
+       .an_adv_config_vector(pcspma_an_config_vector),
+       .an_restart_config(1'b0),
+       // Status
+       .status_vector(pcspma_status_vector),
+       .signal_detect(1'b1));
     
     
   end else begin // if (P.RVVI_SYNTH_SUPPORTED)

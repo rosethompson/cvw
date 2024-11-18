@@ -100,17 +100,16 @@ module acev import cvw::*; #(parameter cvw_t P,
   packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi, .valid, .m_axi_aclk(clk), .m_axi_aresetn(~reset), .RVVIStall,
       .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready);
 
-  eth_mac_1g_gmii_fifo #( .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024)) 
-  ethernet(.rst(reset), .logic_clk(clk), .logic_rst(reset),
+  eth_mac_1g_fifo #( .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024), .RX_FIFO_DEPTH(1024)) 
+  ethernet(.logic_clk(clk), .logic_rst(reset),
       .tx_axis_tdata(RvviAxiWdata), .tx_axis_tkeep(RvviAxiWstrb), .tx_axis_tvalid(RvviAxiWvalid), .tx_axis_tready(RvviAxiWready),
       .tx_axis_tlast(RvviAxiWlast), .tx_axis_tuser('0), .rx_axis_tdata(RvviAxiRdata),
       .rx_axis_tkeep(RvviAxiRstrb), .rx_axis_tvalid(RvviAxiRvalid), .rx_axis_tready(1'b1),
       .rx_axis_tlast(RvviAxiRlast), .rx_axis_tuser(),
-           .rx_clk(phy_clk), .rx_rst(phy_rst), .tx_clk(phy_clk) .tx_rst(phy_rst),
+           .rx_clk(phy_clk), .rx_rst(phy_rst), .tx_clk(phy_clk), .tx_rst(phy_rst),
            .gmii_rxd(phy_rxd),
            .gmii_rx_dv(phy_rx_dv),
            .gmii_rx_er(phy_rx_er),
-           .gmii_tx_clk(phy_tx_clk),
            .gmii_txd(phy_txd),
            .gmii_tx_en(phy_tx_en),
            .gmii_tx_er(phy_tx_er),

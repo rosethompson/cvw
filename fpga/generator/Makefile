@@ -56,7 +56,8 @@ FPGA_VCU: PreProcessFiles IP_VCU zsbl
 IP_VCU: $(dst)/sysrst.log \
 	MEM_VCU \
 	$(dst)/clkconverter.log \
-	$(dst)/ahbaxibridge.log
+	$(dst)/ahbaxibridge.log \
+	$(dst)/sgmii_gmii.log
 IP_Arty: $(dst)/sysrst.log \
 	MEM_Arty \
 	$(dst)/mmcm.log \
