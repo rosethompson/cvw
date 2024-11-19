@@ -572,14 +572,18 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     assign CSRArray[34] = fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FRM_REGW; // 12'h002
     assign CSRArray[35] = {fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FRM_REGW, fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FFLAGS_REGW}; // 12'h003
 
-    acev #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, "XILINX") acev(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+    acev #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, 4, "XILINX") acev(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
       .phy_rx_clk(phy_rx_clk),
+      .phy_rx_rst('0),
+      .phy_rx_clk_en('1),
       .phy_rxd(phy_rxd),
       .phy_rx_dv(phy_rx_dv),
       .phy_rx_er(phy_rx_er),
       .phy_tx_clk(phy_tx_clk),
+      .phy_tx_rst('0),
+      .phy_tx_clk_en('1),
       .phy_txd(phy_txd),
       .phy_tx_en(phy_tx_en),
       .phy_tx_er(),

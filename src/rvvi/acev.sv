@@ -32,6 +32,7 @@ module acev import cvw::*; #(parameter cvw_t P,
                              parameter integer TOTAL_CSRS = 36,
                              parameter integer RVVI_INIT_TIME_OUT = 32'd100000000,
                              parameter integer RVVI_PACKET_DELAY = 32'd2,
+                             parameter integer ETH_WIDTH = 4, // speed, 4 is 10/100M/s, 8 is 1G/s
                              parameter string  TARGET = "GENERIC"
 )(
   input logic              clk, reset,
@@ -50,13 +51,16 @@ module acev import cvw::*; #(parameter cvw_t P,
   input var [P.XLEN-1:0]   CSRArray [TOTAL_CSRS-1:0],
   
   // ethernet phy
-  input logic               phy_clk, // separate for mii, phy_rx_clk and phy_tx_clk
-  input logic               phy_rst, // not present for mii
-  input logic               phy_clk_en, // not present for mii
-  input logic [7:0]         phy_rxd,    // only 4 bits for mii
+  input logic               phy_rx_clk, // separate for mii, phy_rx_clk and phy_tx_clk
+  input logic               phy_tx_clk, // separate for mii, phy_rx_clk and phy_tx_clk
+  input logic               phy_rx_rst, // not present for mii
+  input logic               phy_tx_rst, // not present for mii
+  input logic               phy_rx_clk_en, // not present for mii
+  input logic               phy_tx_clk_en, // not present for mii
+  input logic [ETH_WIDTH-1:0]         phy_rxd,    // only 4 bits for mii
   input logic               phy_rx_dv,
   input logic               phy_rx_er,
-  output logic [7:0]        phy_txd,   // only 4 bits for mii
+  output logic [ETH_WIDTH-1:0]        phy_txd,   // only 4 bits for mii
   output logic              phy_tx_en,
   output logic              phy_tx_er,
 
@@ -100,29 +104,53 @@ module acev import cvw::*; #(parameter cvw_t P,
   packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi, .valid, .m_axi_aclk(clk), .m_axi_aresetn(~reset), .RVVIStall,
       .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready);
 
-  eth_mac_1g_fifo #( .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024), .RX_FIFO_DEPTH(1024)) 
-  ethernet(.logic_clk(clk), .logic_rst(reset),
-      .tx_axis_tdata(RvviAxiWdata), .tx_axis_tkeep(RvviAxiWstrb), .tx_axis_tvalid(RvviAxiWvalid), .tx_axis_tready(RvviAxiWready),
-      .tx_axis_tlast(RvviAxiWlast), .tx_axis_tuser('0), .rx_axis_tdata(RvviAxiRdata),
-      .rx_axis_tkeep(RvviAxiRstrb), .rx_axis_tvalid(RvviAxiRvalid), .rx_axis_tready(1'b1),
-      .rx_axis_tlast(RvviAxiRlast), .rx_axis_tuser(),
-           .rx_clk(phy_clk), .rx_rst(phy_rst), .tx_clk(phy_clk), .tx_rst(phy_rst),
-           .gmii_rxd(phy_rxd),
-           .gmii_rx_dv(phy_rx_dv),
-           .gmii_rx_er(phy_rx_er),
-           .gmii_txd(phy_txd),
-           .gmii_tx_en(phy_tx_en),
-           .gmii_tx_er(phy_tx_er),
-           .rx_clk_enable(phy_clk_en), 
-           .tx_clk_enable(phy_clk_en), 
-           .rx_mii_select(1'b0),
-           .tx_mii_select(1'b0),
+  if (ETH_WIDTH == 8) begin
+    // this is the version of 1g/s ethernet
+    eth_mac_1g_fifo #( .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024), .RX_FIFO_DEPTH(1024)) 
+    ethernet(.logic_clk(clk), .logic_rst(reset),
+             .tx_axis_tdata(RvviAxiWdata), .tx_axis_tkeep(RvviAxiWstrb), .tx_axis_tvalid(RvviAxiWvalid), .tx_axis_tready(RvviAxiWready),
+             .tx_axis_tlast(RvviAxiWlast), .tx_axis_tuser('0), .rx_axis_tdata(RvviAxiRdata),
+             .rx_axis_tkeep(RvviAxiRstrb), .rx_axis_tvalid(RvviAxiRvalid), .rx_axis_tready(1'b1),
+             .rx_axis_tlast(RvviAxiRlast), .rx_axis_tuser(),
+             .rx_clk(phy_rx_clk), .rx_rst(phy_rx_rst), .tx_clk(phy_tx_clk), .tx_rst(phy_tx_rst),
+             .gmii_rxd(phy_rxd),
+             .gmii_rx_dv(phy_rx_dv),
+             .gmii_rx_er(phy_rx_er),
+             .gmii_txd(phy_txd),
+             .gmii_tx_en(phy_tx_en),
+             .gmii_tx_er(phy_tx_er),
+             .rx_clk_enable(phy_rx_clk_en), 
+             .tx_clk_enable(phy_tx_clk_en), 
+             .rx_mii_select(1'b0),
+             .tx_mii_select(1'b0),
+             // status
+             .tx_error_underflow, .tx_fifo_overflow, .tx_fifo_bad_frame, .tx_fifo_good_frame, .rx_error_bad_frame,
+             .rx_error_bad_fcs, .rx_fifo_overflow, .rx_fifo_bad_frame, .rx_fifo_good_frame, 
+             .cfg_ifg(8'd12), .cfg_tx_enable(1'b1), .cfg_rx_enable(1'b1)
+             );
+    end else if (ETH_WIDTH == 4) begin
 
-      // status
-      .tx_error_underflow, .tx_fifo_overflow, .tx_fifo_bad_frame, .tx_fifo_good_frame, .rx_error_bad_frame,
-      .rx_error_bad_fcs, .rx_fifo_overflow, .rx_fifo_bad_frame, .rx_fifo_good_frame, 
-      .cfg_ifg(8'd12), .cfg_tx_enable(1'b1), .cfg_rx_enable(1'b1)
-      );
+      // 10/100 Mb/s ethernet
+      eth_mac_mii_fifo #(.TARGET(TARGET), .CLOCK_INPUT_STYLE("BUFG"), .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024), .RX_FIFO_DEPTH(1024)) 
+      ethernet(.rst(reset), .logic_clk(clk), .logic_rst(reset),
+               .tx_axis_tdata(RvviAxiWdata), .tx_axis_tkeep(RvviAxiWstrb), .tx_axis_tvalid(RvviAxiWvalid), .tx_axis_tready(RvviAxiWready),
+               .tx_axis_tlast(RvviAxiWlast), .tx_axis_tuser('0), .rx_axis_tdata(RvviAxiRdata),
+               .rx_axis_tkeep(RvviAxiRstrb), .rx_axis_tvalid(RvviAxiRvalid), .rx_axis_tready(1'b1),
+               .rx_axis_tlast(RvviAxiRlast), .rx_axis_tuser(),
+               .mii_rx_clk(phy_rx_clk),
+               .mii_rxd(phy_rxd),
+               .mii_rx_dv(phy_rx_dv),
+               .mii_rx_er(phy_rx_er),
+               .mii_tx_clk(phy_tx_clk),
+               .mii_txd(phy_txd),
+               .mii_tx_en(phy_tx_en),
+               .mii_tx_er(phy_tx_er),
+               // status
+               .tx_error_underflow, .tx_fifo_overflow, .tx_fifo_bad_frame, .tx_fifo_good_frame, .rx_error_bad_frame,
+               .rx_error_bad_fcs, .rx_fifo_overflow, .rx_fifo_bad_frame, .rx_fifo_good_frame, 
+               .cfg_ifg(8'd12), .cfg_tx_enable(1'b1), .cfg_rx_enable(1'b1)
+               );
+    end
 
     // "igin" (trigin)__"rt", ether type 005c__src mac [47:16]__src mac [15:0], dst mac [47:32]__dst mac [31:0]
     assign TriggerString = 160'h6e69_6769__7274_005c__8f54_0000__1654_4502__1111_6843;
