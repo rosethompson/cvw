@@ -60,9 +60,9 @@ module acev import cvw::*; #(parameter cvw_t P,
   input logic [ETH_WIDTH-1:0]         phy_rxd,    // only 4 bits for mii
   input logic               phy_rx_dv,
   input logic               phy_rx_er,
-  output logic [ETH_WIDTH-1:0]        phy_txd,   // only 4 bits for mii
-  output logic              phy_tx_en,
-  output logic              phy_tx_er,
+(* mark_debug = "true" *)  output logic [ETH_WIDTH-1:0]        phy_txd,   // only 4 bits for mii
+(* mark_debug = "true" *)  output logic              phy_tx_en,
+(* mark_debug = "true" *)  output logic              phy_tx_er,
 
   // feedback
   output logic             ExternalStall,
@@ -104,7 +104,7 @@ module acev import cvw::*; #(parameter cvw_t P,
   packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi, .valid, .m_axi_aclk(clk), .m_axi_aresetn(~reset), .RVVIStall,
       .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready);
 
-  if (ETH_WIDTH == 8) begin
+  if (ETH_WIDTH == 8) begin : eth
     // this is the version of 1g/s ethernet
     eth_mac_1g_fifo #( .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024), .RX_FIFO_DEPTH(1024)) 
     ethernet(.logic_clk(clk), .logic_rst(reset),
@@ -128,7 +128,7 @@ module acev import cvw::*; #(parameter cvw_t P,
              .rx_error_bad_fcs, .rx_fifo_overflow, .rx_fifo_bad_frame, .rx_fifo_good_frame, 
              .cfg_ifg(8'd12), .cfg_tx_enable(1'b1), .cfg_rx_enable(1'b1)
              );
-    end else if (ETH_WIDTH == 4) begin
+    end else if (ETH_WIDTH == 4) begin : eth
 
       // 10/100 Mb/s ethernet
       eth_mac_mii_fifo #(.TARGET(TARGET), .CLOCK_INPUT_STYLE("BUFG"), .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024), .RX_FIFO_DEPTH(1024)) 

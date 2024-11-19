@@ -264,6 +264,41 @@ set_property port_width 32 [get_debug_ports u_ila_0/probe48]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe48]
 connect_debug_port u_ila_0/probe48 [get_nets [list {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][0]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][1]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][2]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][3]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][4]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][5]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][6]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][7]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][8]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][9]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][10]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][11]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][12]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][13]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][14]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][15]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][16]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][17]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][18]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][19]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][20]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][21]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][22]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][23]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][24]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][25]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][26]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][27]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][28]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][29]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][30]} {wallypipelinedsoc/core/priv.priv/csr/HPMCOUNTER_REGW[0][31]} ]]
 
+create_debug_port u_ila_0 probe
+set_property port_width 8 [get_debug_ports u_ila_0/probe49]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe49]
+connect_debug_port u_ila_0/probe49 [get_nets [list {rvvi_synth.acev/phy_txd[0]} {rvvi_synth.acev/phy_txd[1]} {rvvi_synth.acev/phy_txd[2]} {rvvi_synth.acev/phy_txd[3]} {rvvi_synth.acev/phy_txd[4]} {rvvi_synth.acev/phy_txd[5]} {rvvi_synth.acev/phy_txd[6]} {rvvi_synth.acev/phy_txd[7]}]]
+
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe50]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe50]
+connect_debug_port u_ila_0/probe50 [get_nets [list {rvvi_synth.acev/phy_tx_en}]]
+
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe50]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe50]
+connect_debug_port u_ila_0/probe50 [get_nets [list {rvvi_synth.acev/phy_tx_er}]]
+
+create_debug_port u_ila_0 probe
+set_property port_width 32 [get_debug_ports u_ila_0/probe51]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe51]
+connect_debug_port u_ila_0/probe51 [get_nets [list {rvvi_synth.acev/RvviAxiWdata[0]} {rvvi_synth.acev/RvviAxiWdata[1]} {rvvi_synth.acev/RvviAxiWdata[2]} {rvvi_synth.acev/RvviAxiWdata[3]} {rvvi_synth.acev/RvviAxiWdata[4]} {rvvi_synth.acev/RvviAxiWdata[5]} {rvvi_synth.acev/RvviAxiWdata[6]} {rvvi_synth.acev/RvviAxiWdata[7]} {rvvi_synth.acev/RvviAxiWdata[8]} {rvvi_synth.acev/RvviAxiWdata[9]} {rvvi_synth.acev/RvviAxiWdata[10]} {rvvi_synth.acev/RvviAxiWdata[11]} {rvvi_synth.acev/RvviAxiWdata[12]} {rvvi_synth.acev/RvviAxiWdata[13]} {rvvi_synth.acev/RvviAxiWdata[14]} {rvvi_synth.acev/RvviAxiWdata[15]} {rvvi_synth.acev/RvviAxiWdata[16]} {rvvi_synth.acev/RvviAxiWdata[17]} {rvvi_synth.acev/RvviAxiWdata[18]} {rvvi_synth.acev/RvviAxiWdata[19]} {rvvi_synth.acev/RvviAxiWdata[20]} {rvvi_synth.acev/RvviAxiWdata[21]} {rvvi_synth.acev/RvviAxiWdata[22]} {rvvi_synth.acev/RvviAxiWdata[23]} {rvvi_synth.acev/RvviAxiWdata[24]} {rvvi_synth.acev/RvviAxiWdata[25]} {rvvi_synth.acev/RvviAxiWdata[26]} {rvvi_synth.acev/RvviAxiWdata[27]} {rvvi_synth.acev/RvviAxiWdata[28]} {rvvi_synth.acev/RvviAxiWdata[29]} {rvvi_synth.acev/RvviAxiWdata[30]} {rvvi_synth.acev/RvviAxiWdata[31]} ]]
+
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe52]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe52]
+connect_debug_port u_ila_0/probe52 [get_nets [list {rvvi_synth.acev/RvviAxiWlast}]]
+
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe53]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe53]
+connect_debug_port u_ila_0/probe53 [get_nets [list {rvvi_synth.acev/RvviAxiWvalid}]]
+
+create_debug_port u_ila_0 probe
+set_property port_width 1 [get_debug_ports u_ila_0/probe54]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe54]
+connect_debug_port u_ila_0/probe54 [get_nets [list {rvvi_synth.acev/RvviAxiWready}]]
+
 # the debug hub has issues with the clocks from the mmcm so lets give up an connect to the 100Mhz input clock.
 #connect_debug_port dbg_hub/clk [get_nets default_100mhz_clk]
 connect_debug_port dbg_hub/clk [get_nets CPUCLK]
