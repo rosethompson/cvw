@@ -81,7 +81,7 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
   flopenrc #(32)     InstrRawWReg (clk, reset, FlushW, ~StallW, InstrRawM, InstrRawW);
   flopenrc #(1)      TrapWReg (clk, reset, 1'b0, ~StallW, TrapM, TrapW);
 
-  assign valid  = InstrValidW & ~StallW;
+  assign valid  = (InstrValidW | TrapW)  & ~StallW;
   assign Required = {4'b0, CSRCount, 3'b0, FPRWen, GPRWen, PrivilegeModeW, TrapW, Minstret, Mcycle, InstrRawW, PCW};
   assign Registers = {FPRWen, GPRWen} == 2'b11 ? {FPRValue, 3'b0, FPRAddr, GPRValue, 3'b0, GPRAddr} :
                      {FPRWen, GPRWen} == 2'b01 ? {XLENZeros, 8'b0, GPRValue, 3'b0, GPRAddr} :
