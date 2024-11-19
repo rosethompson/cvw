@@ -627,7 +627,7 @@ module fpgaTop  #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
        // MAC clocking
        .sgmii_clk_r(),
        .sgmii_clk_f(),
-       .sgmii_clk_en(phy_gmii_clk_en_int),
+       .sgmii_clk_en(phy_gmii_clk_en),
        // Speed control
        .speed_is_10_100(pcspma_status_speed != 2'b10),
        .speed_is_100(pcspma_status_speed == 2'b01),
