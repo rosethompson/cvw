@@ -4,6 +4,7 @@ set partNumber $::env(XILINX_PART)
 set boardName $::env(XILINX_BOARD)
 set boardSubName [lindex [split ${boardName} :] 1]
 set board $::env(board)
+set rvvi $::env(RVVI)
 
 #set partNumber xc7a100tcsg324-1
 #set boardName digilentinc.com:arty-a7-100:part0:1.1
@@ -36,7 +37,9 @@ if {$board=="ArtyA7"} {
 import_ip IP/sysrst.srcs/sources_1/ip/sysrst/sysrst.xci
 import_ip IP/ahbaxibridge.srcs/sources_1/ip/ahbaxibridge/ahbaxibridge.xci
 import_ip IP/clkconverter.srcs/sources_1/ip/clkconverter/clkconverter.xci
-import_ip IP/sgmii_gmii.srcs/sources_1/ip/sgmii_gmii/sgmii_gmii.xci
+if {$rvvi == 1} {
+    import_ip IP/sgmii_gmii.srcs/sources_1/ip/sgmii_gmii/sgmii_gmii.xci
+}
 
 if {$board=="ArtyA7"} {
     import_ip IP/ddr3.srcs/sources_1/ip/ddr3/ddr3.xci
@@ -74,6 +77,7 @@ if {$board=="ArtyA7"} {
     set_property PROCESSING_ORDER NORMAL [get_files  ../constraints/constraints-$boardSubName.xdc]
 }
 
+set_property generic {RVVI_SYNTH_SUPPORTED=$rvvi} [current_fileset]
 
 # Temp
 set_param messaging.defaultLimit 100000
@@ -98,13 +102,19 @@ write_verilog -force -mode funcsim sim/syn-funcsim.v
 
 if {$board=="ArtyA7"} {
     #source ../constraints/small-debug.xdc
-    source ../constraints/small-debug-rvvi.xdc
-    #source ../constraints/small-debug-spi.xdc
+    if {$rvvi == 1} {
+        source ../constraints/small-debug-rvvi.xdc
+    } else {
+        source ../constraints/small-debug-spi.xdc
+    }
 } else {
     #source ../constraints/vcu-small-debug.xdc
     #source ../constraints/small-debug.xdc
-    #source ../constraints/small-debug.xdc
-    source ../constraints/big-debug-spi-rvvi.xdc
+    if {$rvvi == 1 } {
+        source ../constraints/big-debug-spi-rvvi.xdc
+    } else {
+        source ../constraints/small-debug.xdc
+    }        
 }
 
 
