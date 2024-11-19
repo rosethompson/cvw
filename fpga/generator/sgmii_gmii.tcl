@@ -1,8 +1,5 @@
-#set partNumber $::env(XILINX_PART)
-set partNumber xcvu9p-flga2104-2L-e
-#set boardName $::env(XILINX_BOARD)
-set boardName xilinx.com:vcu118:part0:2.4
-
+set partNumber $::env(XILINX_PART)
+set boardName $::env(XILINX_BOARD)
 
 set ipName sgmii_gmii
 

@@ -36,6 +36,7 @@ if {$board=="ArtyA7"} {
 import_ip IP/sysrst.srcs/sources_1/ip/sysrst/sysrst.xci
 import_ip IP/ahbaxibridge.srcs/sources_1/ip/ahbaxibridge/ahbaxibridge.xci
 import_ip IP/clkconverter.srcs/sources_1/ip/clkconverter/clkconverter.xci
+import_ip IP/sgmii_gmii.srcs/sources_1/ip/sgmii_gmii/sgmii_gmii.xci
 
 if {$board=="ArtyA7"} {
     import_ip IP/ddr3.srcs/sources_1/ip/ddr3/ddr3.xci
