@@ -2,7 +2,7 @@ dst := IP
 
 all: ArtyA7
 
-.PHONY: ArtyA7 ArtyA7rvvi vcu118 vcu118rvvi vcu108
+.PHONY: ArtyA7 ArtyA7rvvi vcu118 vcu108 vcu108rvvi
 
 ArtyA7: export XILINX_PART := xc7a100tcsg324-1
 ArtyA7: export XILINX_BOARD := digilentinc.com:arty-a7-100:part0:1.1
@@ -37,7 +37,7 @@ vcu108rvvi: export XILINX_BOARD := xilinx.com:vcu108:part0:1.7
 vcu108rvvi: export board := vcu108
 vcu108rvvi: export SYSTEMCLOCK := 50000000
 vcu108rvvi: export MAXSDCCLOCK  := 12500000
-vcu108rvvi: FPGA_VCU
+vcu108rvvi: FPGA_VCU_rvvi
 
 # variables computed from config
 EXT_MEM_BASE = $(shell grep 'EXT_MEM_BASE' ../../config/deriv/fpga$(board)/config.vh | sed 's/.*=.*h\([[:alnum:]]*\);/0x\1/g')
@@ -45,19 +45,21 @@ EXT_MEM_BASE = $(shell grep 'EXT_MEM_BASE' ../../config/deriv/fpga$(board)/confi
 EXT_MEM_RANGE = $(shell grep 'EXT_MEM_RANGE' ../../config/deriv/fpga$(board)/config.vh | sed 's/.*=.*h\([[:alnum:]]*\);/\1/g' | sed 's/\(.*\)/base=16;\1+1/g' | bc | sed 's/\(.*\)/0x\1/g')
 
 
-.PHONY: FPGA_Arty FPGA_VCU
+.PHONY: FPGA_Arty FPGA_VCU FPGA_VCU_rvvi
 FPGA_Arty: PreProcessFiles IP_Arty zsbl
 	vivado -mode tcl -source wally.tcl 2>&1 | tee wally.log
 FPGA_VCU: PreProcessFiles IP_VCU zsbl
 	vivado -mode tcl -source wally.tcl 2>&1 | tee wally.log
+FPGA_VCU_rvvi: PreProcessFiles IP_VCU IP_VCU_rvvi zsbl
+	vivado -mode tcl -source wally.tcl 2>&1 | tee wally.log
 
 # Generate IP Blocks
-.PHONY: IP_Arty IP_VCU
+.PHONY: IP_Arty IP_VCU IP_VCU_rvii
 IP_VCU: $(dst)/sysrst.log \
 	MEM_VCU \
 	$(dst)/clkconverter.log \
-	$(dst)/ahbaxibridge.log \
-	$(dst)/sgmii_gmii.log
+	$(dst)/ahbaxibridge.log 
+IP_VCU_rvvi: $(dst)/sgmii_gmii.log
 IP_Arty: $(dst)/sysrst.log \
 	MEM_Arty \
 	$(dst)/mmcm.log \
