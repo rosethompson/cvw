@@ -1,7 +1,7 @@
 ///////////////////////////////////////////
 // rvvi daemon
 //
-// Written: Rose Thomposn ross1728@gmail.com
+// Written: Rose Thompson rose@rosethompson.net
 // Created: Sept 10 2024
 // Modified: Sept 10 2024
 //
@@ -47,6 +47,7 @@
 #include "rvviApi.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
+#define PRINT_THRESHOLD 1
 
 #include "rvvidaemon.h"
 #include "queue.h"
@@ -361,7 +362,7 @@ void * ProcessLoop(void * arg){
       Dequeue(&InstructionDataPtr, InstructionQueue);
       //printf("After Dequeue\n");
       count++;
-      if(count == 1024){
+      if(count == PRINT_THRESHOLD){
         PrintInstructionData(&InstructionDataPtr);
         count = 0;
       }

@@ -465,8 +465,7 @@ module fpgaTop  #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     (* mark_debug = "true" *)    logic                                             valid;
     (* mark_debug = "true" *)    logic [72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16)-1:0] rvvi;
 
-    (* mark_debug = "true" *)    logic					     RVVIStall, HostStall;
-    
+
     logic [32*5-1:0]                                  TriggerString;
     logic [32*5-1:0]                                  SlowString;
     (* mark_debug = "true" *)    logic					     HostRequestSlowDown;
@@ -616,7 +615,7 @@ module fpgaTop  #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
        .refclk625_n(phy_sgmii_clk_n),
        // async reset
        //.reset(rst_125mhz_int),
-                          .reset(~c0_init_calib_complete), // *** might need to be synced to 125Mhz clock
+       .reset(~c0_init_calib_complete), // *** might need to be synced to 125Mhz clock
        // clock and reset outputs
        .clk125_out(phy_gmii_clk_int),
        .clk625_out(),

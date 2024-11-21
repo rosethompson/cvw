@@ -39,7 +39,7 @@ module genslowframe import cvw::*;
 (* mark_debug = "true" *)    logic PendingHostRequest;
     logic					     SlowDownThreshold, SlowDownCounterEnable, SlowDownCounterRst;
 
-    logic [9:0]                      ConcurrentCount;
+(* mark_debug = "true" *)    logic [9:0]                      ConcurrentCount;
 (* mark_debug = "true" *)    logic					     ConcurrentSlowDownCounterRst,  ConcurrentSlowDownCounterEnable, ConcurrentSlowDownCounterEnableUp, ConcurrentSlowDownCounterEnableDown;
 (* mark_debug = "true" *)    logic HostRequestSlowDownDelay, HostRequestSlowDownEdge;
 (* mark_debug = "true" *)    logic DidHostRequest;
@@ -48,7 +48,7 @@ module genslowframe import cvw::*;
   (* mark_debug = "true" *)    logic [16:0]				     Count;
   
     typedef enum				     {STATE_RST, STATE_PRE_COUNT, STATE_COUNT} statetype;
-    statetype CurrState, NextState;
+(* mark_debug = "true" *)    statetype CurrState, NextState;
 
     always_ff @(posedge clk) begin
       if(reset) CurrState <= STATE_RST;
