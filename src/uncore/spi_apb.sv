@@ -79,7 +79,7 @@ module spi_apb import cvw::*; #(parameter cvw_t P) (
 
   // Bus interface signals
   logic [7:0]  Entry;
-  logic        Memwrite;
+  logic        Memwrite, Memread;
   logic [31:0] Din,  Dout;
 
   // SPI Controller signals
@@ -138,6 +138,7 @@ module spi_apb import cvw::*; #(parameter cvw_t P) (
   // APB access
   assign Entry = {PADDR[7:2],2'b00};  //  32-bit word-aligned accesses
   assign Memwrite = PWRITE & PENABLE & PSEL;  // Only write in access phase
+  assign Memread = ~PWRITE & ~PENABLE & PSEL;  // This is gross.
   assign PREADY = 1'b1;
   
   // Account for subword read/write circuitry
@@ -191,23 +192,24 @@ module spi_apb import cvw::*; #(parameter cvw_t P) (
       InterruptPending[0] <= TransmitReadMark;
       InterruptPending[1] <= ReceiveWriteMark;  
       
-      case(Entry) // Flop to sample inputs
-        SPI_SCKDIV:  Dout <= {20'b0, SckDiv};
-        SPI_SCKMODE: Dout <= {30'b0, SckMode};
-        SPI_CSID:    Dout <= {30'b0, ChipSelectID};
-        SPI_CSDEF:   Dout <= {28'b0, ChipSelectDef};
-        SPI_CSMODE:  Dout <= {30'b0, ChipSelectMode};
-        SPI_DELAY0:  Dout <= {8'b0, Delay0[15:8], 8'b0, Delay0[7:0]};
-        SPI_DELAY1:  Dout <= {8'b0, Delay1[15:8], 8'b0, Delay1[7:0]};
-        SPI_FMT:     Dout <= {12'b0, Format[4:1], 13'b0, Format[0], 2'b0};
-        SPI_TXDATA:  Dout <= {TransmitFIFOFull, 23'b0, 8'b0};
-        SPI_RXDATA:  Dout <= {ReceiveFIFOEmpty, 23'b0, ReceiveData[7:0]};
-        SPI_TXMARK:  Dout <= {29'b0, TransmitWatermark};
-        SPI_RXMARK:  Dout <= {29'b0, ReceiveWatermark};
-        SPI_IE:      Dout <= {30'b0, InterruptEnable};
-        SPI_IP:      Dout <= {30'b0, InterruptPending};
-        default:     Dout <= 32'b0;
-      endcase
+      if (Memread)
+        case(Entry) // Flop to sample inputs
+          SPI_SCKDIV:  Dout <= {20'b0, SckDiv};
+          SPI_SCKMODE: Dout <= {30'b0, SckMode};
+          SPI_CSID:    Dout <= {30'b0, ChipSelectID};
+          SPI_CSDEF:   Dout <= {28'b0, ChipSelectDef};
+          SPI_CSMODE:  Dout <= {30'b0, ChipSelectMode};
+          SPI_DELAY0:  Dout <= {8'b0, Delay0[15:8], 8'b0, Delay0[7:0]};
+          SPI_DELAY1:  Dout <= {8'b0, Delay1[15:8], 8'b0, Delay1[7:0]};
+          SPI_FMT:     Dout <= {12'b0, Format[4:1], 13'b0, Format[0], 2'b0};
+          SPI_TXDATA:  Dout <= {TransmitFIFOFull, 23'b0, 8'b0};
+          SPI_RXDATA:  Dout <= {ReceiveFIFOEmpty, 23'b0, ReceiveData[7:0]};
+          SPI_TXMARK:  Dout <= {29'b0, TransmitWatermark};
+          SPI_RXMARK:  Dout <= {29'b0, ReceiveWatermark};
+          SPI_IE:      Dout <= {30'b0, InterruptEnable};
+          SPI_IP:      Dout <= {30'b0, InterruptPending};
+          default:     Dout <= 32'b0;
+        endcase
     end
 
   // SPI Controller module -------------------------------------------
