@@ -151,7 +151,7 @@ int main(int argc, char **argv){
     exit(EXIT_FAILURE);
   }
   printf("Recv buffer size is: %d\n", RecvLen);
-  RecvLen = 65536;
+  RecvLen = 262144;
   if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &RecvLen, sizeof (socklen_t)) == -1) {
     perror("SO_RCVBUF");
     close(sockfd);
@@ -312,7 +312,7 @@ void * ReceiveLoop(void * arg){
   while(1) {
     Emptiness = HowFull(InstructionQueue);
     PercentFull = (Emptiness * 100) / QUEUE_SIZE;
-    if(IsAlmostFull(InstructionQueue, QUEUE_SIZE / 64)){
+    if(IsAlmostFull(InstructionQueue, QUEUE_THREASHOLD)){
       //pthread_mutex_lock(&SlowMessageLock);
       pthread_cond_signal(&SlowMessageCond);
       //pthread_mutex_lock(&SlowMessageLock);
