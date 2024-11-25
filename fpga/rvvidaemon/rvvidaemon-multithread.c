@@ -47,7 +47,7 @@
 #include "rvviApi.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
-#define PRINT_THRESHOLD 1
+#define PRINT_THRESHOLD 1024
 
 #include "rvvidaemon.h"
 #include "queue.h"
@@ -72,7 +72,7 @@
 
 #define DEFAULT_IF	"eno1"
 
-#define QUEUE_SIZE       1024
+#define QUEUE_SIZE       16384
 #define QUEUE_THREASHOLD 64
 
 struct sockaddr_ll socket_address;
@@ -291,7 +291,7 @@ int main(int argc, char **argv){
   pthread_join(ProcessID, NULL);
 
   //opSessionTerminate();
-  close(sockfd);
+  //close(sockfd);
   return 0;
 }
 
