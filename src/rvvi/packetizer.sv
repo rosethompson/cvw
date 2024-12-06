@@ -42,7 +42,8 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   output logic [3:0] 	   RvviAxiWstrb,
   output logic  		   RvviAxiWlast,
   output logic  		   RvviAxiWvalid,
-  input  logic  		   RvviAxiWready
+  input  logic  		   RvviAxiWready,
+  input  logic [31:0]      InnerPktDelay
   );
 
   localparam NearTotalFrameLengthBits = 2*48+16+72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16);
@@ -99,14 +100,15 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   assign TransReady = RvviAxiWready;
   assign WordCountEnable = (CurrState == STATE_RDY & valid) | (CurrState == STATE_TRANS & TransReady);
   assign WordCountReset = CurrState == STATE_RDY;
-  assign RstCountEn = CurrState == STATE_COUNT | CurrState == STATE_TRANS_INSERT_DELAY;
-  assign RstCountRst = CurrState == STATE_RST | CurrState == STATE_TRANS;
+  assign RstCountEn = CurrState == STATE_COUNT | CurrState == STATE_TRANS_INSERT_DELAY | CurrState == STATE_TRANS;
+  assign RstCountRst = CurrState == STATE_RST | CurrState == STATE_WAIT;
 
   // have to count at least 250 ms after reset pulled to wait for the phy to actually be ready
   // at 20MHz 250 ms is 250e-3 / (1/20e6) = 5,000,000.
   counter #(32) rstcounter(m_axi_aclk, RstCountRst, RstCountEn, RstCount);
   assign CountFlag = RstCount == RVVI_INIT_TIME_OUT;
-  assign DelayFlag = RstCount == RVVI_PACKET_DELAY;
+  //assign DelayFlag = RstCount == RVVI_PACKET_DELAY;
+  assign DelayFlag = RstCount >= InnerPktDelay;
 
   counter #(32) framecounter(m_axi_aclk, ~m_axi_aresetn, (RvviAxiWready & RvviAxiWlast), FrameCount);
    

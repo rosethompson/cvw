@@ -82,10 +82,13 @@ uint8_t sendbuf[BUF_SIZ];
 struct ether_header *sendeh = (struct ether_header *) sendbuf;
 int tx_len = 0;
 int slow_len = 0;
+int rate_len = 0;
 int sockfd;
 
 uint8_t slowbuf[BUF_SIZ];
 struct ether_header *sloweh = (struct ether_header *) slowbuf;
+uint8_t ratebuf[BUF_SIZ];
+struct ether_header *rateeh = (struct ether_header *) ratebuf;
 int PercentFull;
 
 
@@ -285,6 +288,40 @@ int main(int argc, char **argv){
 
   // this loop will go into Thread T1
 
+  // frame to send to slow down the fpga
+  /* Construct the Ethernet header */
+  memset(ratebuf, 0, BUF_SIZ);
+  ratebuf[0] = DEST_MAC0;
+  ratebuf[1] = DEST_MAC1;
+  ratebuf[2] = DEST_MAC2;
+  ratebuf[3] = DEST_MAC3;
+  ratebuf[4] = DEST_MAC4;
+  ratebuf[5] = DEST_MAC5;
+  ratebuf[6] = SRC_MAC0;
+  ratebuf[7] = SRC_MAC1;
+  ratebuf[8] = SRC_MAC2;
+  ratebuf[9] = SRC_MAC3;
+  ratebuf[10] = SRC_MAC4;
+  ratebuf[11] = SRC_MAC5;
+
+  rateeh->ether_type = htons(ETHER_TYPE);
+  rate_len += sizeof(struct ether_header);
+  /* Packet data */
+  ratebuf[rate_len++] = 's';
+  ratebuf[rate_len++] = 'l';
+  ratebuf[rate_len++] = 'o';
+  ratebuf[rate_len++] = 'w';
+  ratebuf[rate_len++] = 'm';
+  ratebuf[rate_len++] = 'e';
+  ((uint32_t*) (ratebuf + rate_len))[0] = 10000;
+
+  if (sendto(sockfd, ratebuf, rate_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
+    printf("Send failed\n");
+  }else {
+    printf("send success!\n");
+  }
+  
+    
   pthread_t ReceiveID, ProcessID, SlowID;
   pthread_create(&ReceiveID, NULL, &ReceiveLoop, (void *) InstructionQueue);
   pthread_create(&ProcessID, NULL, &ProcessLoop, (void *) InstructionQueue);
@@ -397,6 +434,12 @@ void * SendSlowMessage(void * arg){
     }else {
       printf("send success!\n");
     }
+    if (sendto(sockfd, ratebuf, rate_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
+      printf("Send failed\n");
+    }else {
+      printf("send success!\n");
+    }
+    
     printf("WARNING the Receive Queue is Almost Full %d !!!!!!!!!!!!!!!!!! %d\n", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size, PercentFull);
   }
   

@@ -27,7 +27,8 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-module triggergen import cvw::*; (
+module triggergen import cvw::*; #(parameter logic [31:0] DEFAULTMESSAGE = 32'd0
+) (
   input logic clk, reset,
   input logic [32*5-1:0] CompareString,
   input logic [31:0] RvviAxiRdata,
@@ -121,7 +122,7 @@ module triggergen import cvw::*; (
   assign IlaTrigger = TriggerEn;
 
   flopenr #(1)  onecyclemessagereg(clk, MessageEnClear, MessageEn, 1'b1, MessageEnDelay);
-  flopenr #(32) triggermessagereg(clk, reset, MessageEn & ~MessageEnDelay, RvviAxiRdataDelay, TriggerMessage);
+  flopenl #(32) triggermessagereg(clk, reset, MessageEn & ~MessageEnDelay, RvviAxiRdataDelay, DefaultMessage, TriggerMessage);
   
 
 endmodule

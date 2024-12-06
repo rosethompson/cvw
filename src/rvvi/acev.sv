@@ -76,6 +76,7 @@ module acev import cvw::*; #(parameter cvw_t P,
     
     logic [32*5-1:0]				     TriggerString;
     logic [32*5-1:0]				     SlowString;
+    logic [32*5-1:0]				     RateString;
   (* mark_debug = "true" *)    logic					     HostRequestSlowDown;
 
   (* mark_debug = "true" *)        logic [31:0]                     HostFiFoFillAmt;
@@ -95,6 +96,9 @@ module acev import cvw::*; #(parameter cvw_t P,
     logic                                             tx_error_underflow, tx_fifo_overflow, tx_fifo_bad_frame, tx_fifo_good_frame, rx_error_bad_frame;
     logic                                             rx_error_bad_fcs, rx_fifo_overflow, rx_fifo_bad_frame, rx_fifo_good_frame;
 
+  logic                                               RateSet;
+  logic [31:0]                                        RateMessage;
+  
     rvvisynth #(P, MAX_CSRS) rvvisynth(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
@@ -102,7 +106,7 @@ module acev import cvw::*; #(parameter cvw_t P,
 
 
   packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi, .valid, .m_axi_aclk(clk), .m_axi_aresetn(~reset), .RVVIStall,
-      .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready);
+      .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready, .InnerPktDelay(RateMessage));
 
   if (ETH_WIDTH == 8) begin : eth
     // this is the version of 1g/s ethernet
@@ -156,6 +160,8 @@ module acev import cvw::*; #(parameter cvw_t P,
     assign TriggerString = 160'h6e69_6769__7274_005c__8f54_0000__1654_4502__1111_6843;
     // "emwo" (slowme)__"ls", ether type 005c__src mac [47:16]__src mac [15:0], dst mac [47:32]__dst mac [31:0]
     assign SlowString = 160'h656D_776F__6C73_005c__8f54_0000__1654_4502__1111_6843;
+    // "niet" (ratein)__"ar", ether type 005c__src mac [47:16]__src mac [15:0], dst mac [47:32]__dst mac [31:0]
+    assign RateString = 160'h6e69_6574__6172_005c__8f54_0000__1654_4502__1111_6843;
 			  
     triggergen triggergen(.clk, .reset, .CompareString(TriggerString), .RvviAxiRdata,
       .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger, .TriggerMessage());
@@ -163,6 +169,9 @@ module acev import cvw::*; #(parameter cvw_t P,
     triggergen slowdown(.clk, .reset, .CompareString(SlowString), .RvviAxiRdata,
       .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger(HostRequestSlowDown), .TriggerMessage(HostFiFoFillAmt));
 
+    triggergen #(RVVI_PACKET_DELAY) rateset(.clk, .reset, .CompareString(RateString), .RvviAxiRdata,
+      .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger(RateSet), .TriggerMessage(RateMessage));
+  
     genslowframe genslowframe(.clk, .reset, .HostRequestSlowDown, .RVVIStall, .HostFiFoFillAmt, .HostStall);
     
     assign ExternalStall = RVVIStall | HostStall;
