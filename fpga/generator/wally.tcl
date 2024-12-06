@@ -113,7 +113,8 @@ if {$board=="ArtyA7"} {
     #source ../constraints/vcu-small-debug.xdc
     #source ../constraints/small-debug.xdc
     if {$rvvi == 1 } {
-        source ../constraints/big-debug-spi-rvvi.xdc
+        #source ../constraints/big-debug-spi-rvvi.xdc
+        source ../constraints/big-debug-rvvi2.xdc
     } else {
         source ../constraints/small-debug.xdc
     }        

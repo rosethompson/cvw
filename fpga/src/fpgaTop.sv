@@ -615,7 +615,7 @@ module fpgaTop  #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
        .refclk625_n(phy_sgmii_clk_n),
        // async reset
        //.reset(rst_125mhz_int),
-       .reset(~c0_init_calib_complete), // *** might need to be synced to 125Mhz clock
+       .reset(bus_struct_reset), // *** might need to be synced to 125Mhz clock
        // clock and reset outputs
        .clk125_out(phy_gmii_clk_int),
        .clk625_out(),

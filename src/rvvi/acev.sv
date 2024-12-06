@@ -87,8 +87,8 @@ module acev import cvw::*; #(parameter cvw_t P,
 (* mark_debug = "true" *)    logic                                             RvviAxiWvalid;
 (* mark_debug = "true" *)    logic                                             RvviAxiWready;
 
-    logic [31:0] RvviAxiRdata;
-    logic [3:0]                                       RvviAxiRstrb;
+(* mark_debug = "true" *)    logic [31:0] RvviAxiRdata;
+(* mark_debug = "true" *)    logic [3:0]                                       RvviAxiRstrb;
 (* mark_debug = "true" *)    logic RvviAxiRlast;
 (* mark_debug = "true" *)    logic RvviAxiRvalid;
 

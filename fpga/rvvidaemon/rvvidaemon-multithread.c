@@ -52,6 +52,8 @@
 #include "rvvidaemon.h"
 #include "queue.h"
 
+#define MAX_CSRS  3
+
 #define DEST_MAC0	0x43
 #define DEST_MAC1	0x68
 #define DEST_MAC2	0x11
@@ -410,12 +412,15 @@ int ProcessRvviAll(RequiredRVVI_t *InstructionData){
   int CSRIndex;
 
   result = 0;
-  if(InstructionData->GPREn) set_gpr(0, InstructionData->GPRReg, InstructionData->GPRValue);
-  if(InstructionData->FPREn) set_fpr(0, InstructionData->FPRReg, InstructionData->FPRValue);
+  //if(InstructionData->GPREn) set_gpr(0, InstructionData->GPRReg, InstructionData->GPRValue);
+  if(InstructionData->GPREn) rvviDutGprSet(0, InstructionData->GPRReg, InstructionData->GPRValue);
+  //if(InstructionData->FPREn) set_fpr(0, InstructionData->FPRReg, InstructionData->FPRValue);
+  if(InstructionData->FPREn) rvviDutFprSet(0, InstructionData->FPRReg, InstructionData->FPRValue);
   if(InstructionData->CSRCount > 0) {
-    for(CSRIndex = 0; CSRIndex < 3; CSRIndex++){
+    for(CSRIndex = 0; CSRIndex < MAX_CSRS; CSRIndex++){
       if(InstructionData->CSR[CSRIndex].CSRReg != 0){
-	set_csr(0, InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
+	//set_csr(0, InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
+        rvviDutCsrSet(0, InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
       }
     }
   }
