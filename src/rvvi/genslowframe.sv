@@ -69,7 +69,7 @@ module genslowframe import cvw::*;
 
 /* -----\/----- EXCLUDED -----\/-----
     always_comb begin
-      casez(HostFiFoFillAmt[31:24]) 
+      casez(HostFiFoFillAmt[7:0]) 
         8'b0: CountThreshold = 17'd800;
         8'b1: CountThreshold = 17'd1600;
         8'b10: CountThreshold = 17'd3200;

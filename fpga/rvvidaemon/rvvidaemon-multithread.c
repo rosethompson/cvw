@@ -313,7 +313,7 @@ void * ReceiveLoop(void * arg){
   int Emptiness = QUEUE_SIZE;
   while(1) {
     Emptiness = HowFull(InstructionQueue);
-    PercentFull = (Emptiness * 100) / QUEUE_SIZE;
+    PercentFull = (Emptiness * 1000) / QUEUE_SIZE;
     if(IsAlmostFull(InstructionQueue, QUEUE_THREASHOLD)){
       //pthread_mutex_lock(&SlowMessageLock);
       pthread_cond_signal(&SlowMessageCond);
@@ -397,7 +397,7 @@ void * SendSlowMessage(void * arg){
     }else {
       printf("send success!\n");
     }
-    printf("WARNING the Receive Queue is Almost Full %d !!!!!!!!!!!!!!!!!!\n", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size);
+    printf("WARNING the Receive Queue is Almost Full %d !!!!!!!!!!!!!!!!!! %d\n", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size, PercentFull);
   }
   
 }
