@@ -307,12 +307,12 @@ int main(int argc, char **argv){
   rateeh->ether_type = htons(ETHER_TYPE);
   rate_len += sizeof(struct ether_header);
   /* Packet data */
-  ratebuf[rate_len++] = 's';
-  ratebuf[rate_len++] = 'l';
-  ratebuf[rate_len++] = 'o';
-  ratebuf[rate_len++] = 'w';
-  ratebuf[rate_len++] = 'm';
+  ratebuf[rate_len++] = 'r';
+  ratebuf[rate_len++] = 'a';
+  ratebuf[rate_len++] = 't';
   ratebuf[rate_len++] = 'e';
+  ratebuf[rate_len++] = 'i';
+  ratebuf[rate_len++] = 'n';
   ((uint32_t*) (ratebuf + rate_len))[0] = 10000;
 
   if (sendto(sockfd, ratebuf, rate_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
@@ -321,7 +321,6 @@ int main(int argc, char **argv){
     printf("send success!\n");
   }
   
-    
   pthread_t ReceiveID, ProcessID, SlowID;
   pthread_create(&ReceiveID, NULL, &ReceiveLoop, (void *) InstructionQueue);
   pthread_create(&ProcessID, NULL, &ProcessLoop, (void *) InstructionQueue);
@@ -437,7 +436,7 @@ void * SendSlowMessage(void * arg){
     if (sendto(sockfd, ratebuf, rate_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
       printf("Send failed\n");
     }else {
-      printf("send success!\n");
+      printf("!?!?!?!?!?!?RATE SET RATE RATE RATE !?!?!!?!?!?!? success!\n");
     }
     
     printf("WARNING the Receive Queue is Almost Full %d !!!!!!!!!!!!!!!!!! %d\n", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size, PercentFull);

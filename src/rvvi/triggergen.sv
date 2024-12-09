@@ -38,18 +38,18 @@ module triggergen import cvw::*; #(parameter logic [31:0] DEFAULT_MESSAGE = 32'd
   output logic IlaTrigger,
   output logic [31:0] TriggerMessage);
 
-  typedef enum              {STATE_RST, STATE_COMPARE, STATE_MISMATCH, STATE_TRIGGER, STATE_TRIGGER_DONE} statetype;
+  typedef enum              {STATE_RST, STATE_COMPARE, STATE_MISMATCH, STATE_TRIGGER, STATE_TRIGGER_MESSAGE, STATE_TRIGGER_DONE} statetype;
 (* mark_debug = "true" *)  statetype CurrState, NextState;
 
   logic [31:0] 	    mem [4:0];
   logic [2:0] 		    Counter;	
   logic 		    CounterEn, CounterRst;
-  logic [31:0] 	    RvviAxiRdataDelay;
+(* mark_debug = "true" *)  logic [31:0] 	    RvviAxiRdataDelay;
   logic [3:0] 	    RvviAxiRstrbDelay;
   logic 	    RvviAxiRvalidDelay;
-  logic 	    Match, Overflow, Mismatch, Threshold;
+(* mark_debug = "true" *)  logic 	    Match, Overflow, Mismatch, Threshold;
   logic 	    IlaTriggerOneCycle;
-  logic         MessageEn, MessageEnDelay, MessageEnClear;
+(* mark_debug = "true" *)  logic         MessageEn, MessageEnDelay, MessageEnClear;
   
    
 /* -----\/----- EXCLUDED -----\/-----
@@ -87,7 +87,10 @@ module triggergen import cvw::*; #(parameter logic [31:0] DEFAULT_MESSAGE = 32'd
       STATE_MISMATCH: if(RvviAxiRlast) NextState = STATE_RST;
                       else NextState = STATE_MISMATCH;
       STATE_TRIGGER: if(RvviAxiRlast) NextState = STATE_RST;
-                     else NextState = STATE_TRIGGER_DONE;
+                     else NextState = STATE_TRIGGER_MESSAGE;
+      STATE_TRIGGER_MESSAGE: if(RvviAxiRlast) NextState = STATE_RST;
+                             else if(RvviAxiRvalid) NextState = STATE_TRIGGER_DONE;
+                             else NextState = STATE_TRIGGER_MESSAGE;
       STATE_TRIGGER_DONE: if(RvviAxiRlast) NextState = STATE_RST;
                           else NextState = STATE_TRIGGER_DONE;
       default: NextState = STATE_RST;
@@ -101,17 +104,9 @@ module triggergen import cvw::*; #(parameter logic [31:0] DEFAULT_MESSAGE = 32'd
   assign IlaTriggerOneCycle = CurrState == STATE_TRIGGER;
   assign CounterRst = CurrState == STATE_RST;
   assign CounterEn = RvviAxiRvalid;
-  assign MessageEn = (CurrState == STATE_TRIGGER_DONE) & RvviAxiRvalidDelay;
+  assign MessageEn = CurrState == STATE_TRIGGER;//(CurrState == STATE_TRIGGER_DONE) & RvviAxiRvalidDelay;
   assign MessageEnClear = CurrState == STATE_RST;
 
-/* -----\/----- EXCLUDED -----\/-----
-  always_ff @(posedge clk) begin
-    if(reset) IlaTrigger <= '0;
-    else if (IlaTriggerOneCycle) IlaTrigger <= '1;
-    else if (IlaTriggerAck) IlaTrigger <= '0;
-    else IlaTrigger <= IlaTrigger;
-  end
- -----/\----- EXCLUDED -----/\----- */
 
   // this is a bit hacky, but it works!
   logic [3:0] TriggerCount;
