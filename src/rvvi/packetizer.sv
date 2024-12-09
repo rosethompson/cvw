@@ -43,7 +43,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   output logic  		   RvviAxiWlast,
   output logic  		   RvviAxiWvalid,
   input  logic  		   RvviAxiWready,
-  input  logic [31:0]      InnerPktDelay
+(* mark_debug = "true" *)  input  logic [31:0]      InnerPktDelay
   );
 
   localparam NearTotalFrameLengthBits = 2*48+16+72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16);
@@ -68,9 +68,9 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   typedef enum              {STATE_RST, STATE_COUNT, STATE_RDY, STATE_WAIT, STATE_TRANS, STATE_TRANS_INSERT_DELAY} statetype;
 (* mark_debug = "true" *)  statetype CurrState, NextState;
 
-   logic [31:0] 	    RstCount;
+(* mark_debug = "true" *)   logic [31:0] 	    RstCount;
 (* mark_debug = "true" *)   logic [31:0] 	    FrameCount;
-  logic 		    RstCountRst, RstCountEn, CountFlag, DelayFlag;
+(* mark_debug = "true" *)  logic 		    RstCountRst, RstCountEn, CountFlag, DelayFlag;
    
 
   always_ff @(posedge m_axi_aclk) begin
@@ -88,7 +88,8 @@ module packetizer import cvw::*; #(parameter cvw_t P,
       else                        NextState = STATE_RDY;
       STATE_WAIT: if(TransReady)  NextState = STATE_TRANS;
                   else            NextState = STATE_WAIT;
-      STATE_TRANS: if(BurstDone & TransReady) NextState = STATE_TRANS_INSERT_DELAY;
+      STATE_TRANS: if(BurstDone & TransReady & ~DelayFlag) NextState = STATE_TRANS_INSERT_DELAY;
+                   else if(BurstDone & TransReady & DelayFlag) NextState = STATE_RDY;
                    else          NextState = STATE_TRANS;
       STATE_TRANS_INSERT_DELAY: if(DelayFlag) NextState = STATE_RDY;
                                 else          NextState = STATE_TRANS_INSERT_DELAY;
@@ -100,8 +101,8 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   assign TransReady = RvviAxiWready;
   assign WordCountEnable = (CurrState == STATE_RDY & valid) | (CurrState == STATE_TRANS & TransReady);
   assign WordCountReset = CurrState == STATE_RDY;
-  assign RstCountEn = CurrState == STATE_COUNT | CurrState == STATE_TRANS_INSERT_DELAY | CurrState == STATE_TRANS;
-  assign RstCountRst = CurrState == STATE_RST | CurrState == STATE_WAIT;
+  assign RstCountEn = CurrState == STATE_COUNT | CurrState == STATE_TRANS_INSERT_DELAY | CurrState == STATE_TRANS | STATE_WAIT;
+  assign RstCountRst = CurrState == STATE_RST | CurrState == STATE_RDY;
 
   // have to count at least 250 ms after reset pulled to wait for the phy to actually be ready
   // at 20MHz 250 ms is 250e-3 / (1/20e6) = 5,000,000.
