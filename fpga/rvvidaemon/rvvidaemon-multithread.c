@@ -47,7 +47,12 @@
 #include "rvviApi.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
+//#define PRINT_THRESHOLD 65536
 #define PRINT_THRESHOLD 1024
+//#define E_TARGET_CLOCK 25000
+#define E_TARGET_CLOCK 80000
+#define SYSTEM_CLOCK 50000000
+#define INNER_PKT_DELAY (SYSTEM_CLOCK / E_TARGET_CLOCK)
 
 #include "rvvidaemon.h"
 #include "queue.h"
@@ -75,7 +80,7 @@
 #define DEFAULT_IF	"eno1"
 
 #define QUEUE_SIZE       16384
-#define QUEUE_THREASHOLD 64
+#define QUEUE_THREASHOLD 1024
 
 struct sockaddr_ll socket_address;
 uint8_t sendbuf[BUF_SIZ];
@@ -313,14 +318,8 @@ int main(int argc, char **argv){
   ratebuf[rate_len++] = 'e';
   ratebuf[rate_len++] = 'i';
   ratebuf[rate_len++] = 'n';
-  ((uint32_t*) (ratebuf + rate_len))[0] = 10000;
+  ((uint32_t*) (ratebuf + rate_len))[0] = INNER_PKT_DELAY;
 
-  if (sendto(sockfd, ratebuf, rate_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
-    printf("Send failed\n");
-  }else {
-    printf("send success!\n");
-  }
-  
   pthread_t ReceiveID, ProcessID, SlowID;
   pthread_create(&ReceiveID, NULL, &ReceiveLoop, (void *) InstructionQueue);
   pthread_create(&ProcessID, NULL, &ProcessLoop, (void *) InstructionQueue);
@@ -401,6 +400,7 @@ void * ProcessLoop(void * arg){
       //printf("After Dequeue\n");
       count++;
       if(count == PRINT_THRESHOLD){
+        printf("Queue depth = %d \t", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size);
         PrintInstructionData(&InstructionDataPtr);
         count = 0;
       }
