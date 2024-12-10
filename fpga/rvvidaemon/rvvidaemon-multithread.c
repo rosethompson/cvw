@@ -47,10 +47,10 @@
 #include "rvviApi.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
-//#define PRINT_THRESHOLD 65536
-#define PRINT_THRESHOLD 1024
+#define PRINT_THRESHOLD 65536
+//#define PRINT_THRESHOLD 1024
 //#define E_TARGET_CLOCK 25000
-#define E_TARGET_CLOCK 80000
+#define E_TARGET_CLOCK 50000
 #define SYSTEM_CLOCK 50000000
 #define INNER_PKT_DELAY (SYSTEM_CLOCK / E_TARGET_CLOCK)
 
@@ -80,7 +80,7 @@
 #define DEFAULT_IF	"eno1"
 
 #define QUEUE_SIZE       16384
-#define QUEUE_THREASHOLD 1024
+#define QUEUE_THREASHOLD 128
 
 struct sockaddr_ll socket_address;
 uint8_t sendbuf[BUF_SIZ];
