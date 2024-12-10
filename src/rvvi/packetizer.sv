@@ -120,7 +120,9 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   counter #(10) WordCounter(m_axi_aclk, WordCountReset, WordCountEnable, WordCount);
   // *** BUG BytesInFrame will eventually depend on the length of the data stored into the ethernet frame
   // for now this will be exactly 608 bits (76 bytes, 19 words) + the ethernet frame overhead and 2-byte padding = 92-bytes
-  assign BytesInFrame = 12'd2 + 12'd76 + 12'd6 + 12'd6 + 12'd2;
+  //assign BytesInFrame = 12'd2 + 12'd76 + 12'd6 + 12'd6 + 12'd2;
+  // 5-csrs
+  assign BytesInFrame = 12'd3 + 12'd99 + 12'd6 + 12'd6 + 12'd2;
   assign BurstDone = WordCount == (BytesInFrame[11:2] - 1'b1);
 
   genvar index;

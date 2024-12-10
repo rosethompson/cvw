@@ -47,17 +47,17 @@
 #include "rvviApi.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
-#define PRINT_THRESHOLD 65536
+#define PRINT_THRESHOLD 1
 //#define PRINT_THRESHOLD 1024
 //#define E_TARGET_CLOCK 25000
-#define E_TARGET_CLOCK 50000
+#define E_TARGET_CLOCK 70000
 #define SYSTEM_CLOCK 50000000
 #define INNER_PKT_DELAY (SYSTEM_CLOCK / E_TARGET_CLOCK)
 
 #include "rvvidaemon.h"
 #include "queue.h"
 
-#define MAX_CSRS  3
+#define MAX_CSRS  5
 
 #define DEST_MAC0	0x43
 #define DEST_MAC1	0x68
@@ -463,6 +463,7 @@ int ProcessRvviAll(RequiredRVVI_t *InstructionData){
       if(InstructionData->CSR[CSRIndex].CSRReg != 0){
 	//set_csr(0, InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
         rvviDutCsrSet(0, InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
+	printf("Setting CSR %x\n", InstructionData->CSR[CSRIndex].CSRReg);
       }
     }
   }

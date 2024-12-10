@@ -442,8 +442,8 @@ module fpgaTop  #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
   
 
   if(RVVI_SYNTH_SUPPORTED) begin : rvvi_synth
-    localparam MAX_CSRS = 3;
-    localparam TOTAL_CSRS = 36;
+    localparam MAX_CSRS = 5;
+    localparam TOTAL_CSRS = 36 + P.PMP_ENTRIES + P.PMP_ENTRIES/8; // 44 for 64-bit vcu108
     localparam [31:0] RVVI_INIT_TIME_OUT = 32'd100000000;
     localparam [31:0] RVVI_PACKET_DELAY = 32'd400;
     
@@ -556,7 +556,23 @@ module fpgaTop  #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     assign CSRArray[33] = fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FFLAGS_REGW; // 12'h001
     assign CSRArray[34] = fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FRM_REGW; // 12'h002
     assign CSRArray[35] = {fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FRM_REGW, fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FFLAGS_REGW}; // 12'h003
-
+    // pmp registers
+    genvar					      index;
+    for (index = 0; index < P.PMP_ENTRIES; index++) begin
+      // *** only works for 64-bit
+      assign CSRArray[36+index] = {{{P.XLEN-P.PA_BITS}{1'b0}}, fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPADDR_ARRAY_REGW[index]};
+    end
+    for (index = 0; index < P.PMP_ENTRIES/8; index++) begin
+      // *** only works for 64-bit
+      assign CSRArray[36+P.PMP_ENTRIES+index] = {fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+7],
+						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+6],
+						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+5],
+						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+4],
+						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+3],
+						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+2],
+						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+1],
+						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+0]};
+    end
     acev #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, 8, "XILINX") acev(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
