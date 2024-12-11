@@ -43,6 +43,12 @@ int main(){
   Instruction0.CSR[2].CSRReg = 0;
   Instruction0.CSR[2].CSRPad = 0;
   Instruction0.CSR[2].CSRValue = 0;
+  Instruction0.CSR[3].CSRReg = 0;
+  Instruction0.CSR[3].CSRPad = 0;
+  Instruction0.CSR[3].CSRValue = 0;
+  Instruction0.CSR[4].CSRReg = 0;
+  Instruction0.CSR[4].CSRPad = 0;
+  Instruction0.CSR[4].CSRValue = 0;
 
   Instruction1.PC = 0x1004;
   Instruction1.insn = 0x00003198;
@@ -70,11 +76,17 @@ int main(){
   Instruction1.CSR[2].CSRReg = 0;
   Instruction1.CSR[2].CSRPad = 0;
   Instruction1.CSR[2].CSRValue = 0;
+  Instruction1.CSR[3].CSRReg = 0;
+  Instruction1.CSR[3].CSRPad = 0;
+  Instruction1.CSR[3].CSRValue = 0;
+  Instruction1.CSR[4].CSRReg = 0;
+  Instruction1.CSR[4].CSRPad = 0;
+  Instruction1.CSR[4].CSRValue = 0;
 
   Instruction2.PC = 0x1008;
   Instruction2.insn = 0xdfadf198;
-  Instruction2.Mcycle = 3;
-  Instruction2.Minstret = 200;
+  Instruction2.Mcycle = 200;
+  Instruction2.Minstret = 3;
   Instruction2.Trap = 0;
   Instruction2.PrivilegeMode = 3;
   Instruction2.GPREn = 1;
@@ -97,11 +109,17 @@ int main(){
   Instruction2.CSR[2].CSRReg = 0;
   Instruction2.CSR[2].CSRPad = 0;
   Instruction2.CSR[2].CSRValue = 0;
+  Instruction2.CSR[3].CSRReg = 0;
+  Instruction2.CSR[3].CSRPad = 0;
+  Instruction2.CSR[3].CSRValue = 0;
+  Instruction2.CSR[4].CSRReg = 0;
+  Instruction2.CSR[4].CSRPad = 0;
+  Instruction2.CSR[4].CSRValue = 0;
 
   Instruction3.PC = 0x100C;
   Instruction3.insn = 0xdfadf198;
   Instruction3.Mcycle = 300;
-  Instruction3.Minstret = 1;
+  Instruction3.Minstret = 4;
   Instruction3.Trap = 0;
   Instruction3.PrivilegeMode = 3;
   Instruction3.GPREn = 1;
@@ -124,11 +142,17 @@ int main(){
   Instruction3.CSR[2].CSRReg = 0;
   Instruction3.CSR[2].CSRPad = 0;
   Instruction3.CSR[2].CSRValue = 0;
+  Instruction3.CSR[3].CSRReg = 0;
+  Instruction3.CSR[3].CSRPad = 0;
+  Instruction3.CSR[3].CSRValue = 0;
+  Instruction3.CSR[4].CSRReg = 0;
+  Instruction3.CSR[4].CSRPad = 0;
+  Instruction3.CSR[4].CSRValue = 0;
 
   Instruction4.PC = 0x1010;
   Instruction4.insn = 0xdfadf198;
-  Instruction4.Mcycle = 1;
-  Instruction4.Mcycle = 1;
+  Instruction4.Mcycle = 400;
+  Instruction4.Minstret = 5;
   Instruction4.Trap = 0;
   Instruction4.PrivilegeMode = 3;
   Instruction4.GPREn = 1;
@@ -151,11 +175,17 @@ int main(){
   Instruction4.CSR[2].CSRReg = 0;
   Instruction4.CSR[2].CSRPad = 0;
   Instruction4.CSR[2].CSRValue = 0;
+  Instruction4.CSR[3].CSRReg = 0;
+  Instruction4.CSR[3].CSRPad = 0;
+  Instruction4.CSR[3].CSRValue = 0;
+  Instruction4.CSR[4].CSRReg = 0;
+  Instruction4.CSR[4].CSRPad = 0;
+  Instruction4.CSR[4].CSRValue = 0;
   
   Instruction5.PC = 0x1014;
   Instruction5.insn = 0xdfadf198;
-  Instruction5.Mcycle = 1;
-  Instruction5.Mcycle = 1;
+  Instruction5.Mcycle = 500;
+  Instruction5.Minstret = 6;
   Instruction5.Trap = 0;
   Instruction5.PrivilegeMode = 3;
   Instruction5.GPREn = 1;
@@ -178,11 +208,17 @@ int main(){
   Instruction5.CSR[2].CSRReg = 0;
   Instruction5.CSR[2].CSRPad = 0;
   Instruction5.CSR[2].CSRValue = 0;
+  Instruction5.CSR[3].CSRReg = 0;
+  Instruction5.CSR[3].CSRPad = 0;
+  Instruction5.CSR[3].CSRValue = 0;
+  Instruction5.CSR[4].CSRReg = 0;
+  Instruction5.CSR[4].CSRPad = 0;
+  Instruction5.CSR[4].CSRValue = 0;
 
   Instruction6.PC = 0x1018;
   Instruction6.insn = 0xdfadf198;
-  Instruction6.Mcycle = 1;
-  Instruction6.Mcycle = 1;
+  Instruction6.Mcycle = 600;
+  Instruction6.Minstret = 7;
   Instruction6.Trap = 0;
   Instruction6.PrivilegeMode = 3;
   Instruction6.GPREn = 1;
@@ -205,11 +241,17 @@ int main(){
   Instruction6.CSR[2].CSRReg = 0;
   Instruction6.CSR[2].CSRPad = 0;
   Instruction6.CSR[2].CSRValue = 0;
+  Instruction6.CSR[3].CSRReg = 0;
+  Instruction6.CSR[3].CSRPad = 0;
+  Instruction6.CSR[3].CSRValue = 0;
+  Instruction6.CSR[4].CSRReg = 0;
+  Instruction6.CSR[4].CSRPad = 0;
+  Instruction6.CSR[4].CSRValue = 0;
 
   Instruction7.PC = 0x1020;
   Instruction7.insn = 0xdfadf198;
-  Instruction7.Mcycle = 1;
-  Instruction7.Mcycle = 1;
+  Instruction7.Mcycle = 700;
+  Instruction7.Minstret = 8;
   Instruction7.Trap = 0;
   Instruction7.PrivilegeMode = 3;
   Instruction7.GPREn = 1;
@@ -232,11 +274,17 @@ int main(){
   Instruction7.CSR[2].CSRReg = 0;
   Instruction7.CSR[2].CSRPad = 0;
   Instruction7.CSR[2].CSRValue = 0;
+  Instruction7.CSR[3].CSRReg = 0;
+  Instruction7.CSR[3].CSRPad = 0;
+  Instruction7.CSR[3].CSRValue = 0;
+  Instruction7.CSR[4].CSRReg = 0;
+  Instruction7.CSR[4].CSRPad = 0;
+  Instruction7.CSR[4].CSRValue = 0;
   
   Instruction8.PC = 0x1024;
   Instruction8.insn = 0xdfadf198;
-  Instruction8.Mcycle = 1;
-  Instruction8.Mcycle = 1;
+  Instruction8.Mcycle = 800;
+  Instruction8.Minstret = 9;
   Instruction8.Trap = 0;
   Instruction8.PrivilegeMode = 3;
   Instruction8.GPREn = 1;
@@ -259,11 +307,17 @@ int main(){
   Instruction8.CSR[2].CSRReg = 0;
   Instruction8.CSR[2].CSRPad = 0;
   Instruction8.CSR[2].CSRValue = 0;
+  Instruction8.CSR[3].CSRReg = 0;
+  Instruction8.CSR[3].CSRPad = 0;
+  Instruction8.CSR[3].CSRValue = 0;
+  Instruction8.CSR[4].CSRReg = 0;
+  Instruction8.CSR[4].CSRPad = 0;
+  Instruction8.CSR[4].CSRValue = 0;
 
   Instruction9.PC = 0x1028;
   Instruction9.insn = 0xdfadf198;
-  Instruction9.Mcycle = 1;
-  Instruction9.Mcycle = 1;
+  Instruction9.Mcycle = 900;
+  Instruction9.Minstret = 10;
   Instruction9.Trap = 0;
   Instruction9.PrivilegeMode = 3;
   Instruction9.GPREn = 1;
@@ -286,11 +340,17 @@ int main(){
   Instruction9.CSR[2].CSRReg = 0;
   Instruction9.CSR[2].CSRPad = 0;
   Instruction9.CSR[2].CSRValue = 0;
+  Instruction9.CSR[3].CSRReg = 0;
+  Instruction9.CSR[3].CSRPad = 0;
+  Instruction9.CSR[3].CSRValue = 0;
+  Instruction9.CSR[4].CSRReg = 0;
+  Instruction9.CSR[4].CSRPad = 0;
+  Instruction9.CSR[4].CSRValue = 0;
 
   Instruction10.PC = 0x102C;
   Instruction10.insn = 0xdfadf198;
-  Instruction10.Mcycle = 1;
-  Instruction10.Mcycle = 1;
+  Instruction10.Mcycle = 1000;
+  Instruction10.Minstret = 11;
   Instruction10.Trap = 0;
   Instruction10.PrivilegeMode = 3;
   Instruction10.GPREn = 1;
@@ -313,11 +373,17 @@ int main(){
   Instruction10.CSR[2].CSRReg = 0;
   Instruction10.CSR[2].CSRPad = 0;
   Instruction10.CSR[2].CSRValue = 0;
+  Instruction10.CSR[3].CSRReg = 0;
+  Instruction10.CSR[3].CSRPad = 0;
+  Instruction10.CSR[3].CSRValue = 0;
+  Instruction10.CSR[4].CSRReg = 0;
+  Instruction10.CSR[4].CSRPad = 0;
+  Instruction10.CSR[4].CSRValue = 0;
 
   Instruction11.PC = 0x1030;
   Instruction11.insn = 0xdfadf198;
-  Instruction11.Mcycle = 1;
-  Instruction11.Mcycle = 1;
+  Instruction11.Mcycle = 1100;
+  Instruction11.Minstret = 12;
   Instruction11.Trap = 0;
   Instruction11.PrivilegeMode = 3;
   Instruction11.GPREn = 1;
@@ -340,11 +406,17 @@ int main(){
   Instruction11.CSR[2].CSRReg = 0;
   Instruction11.CSR[2].CSRPad = 0;
   Instruction11.CSR[2].CSRValue = 0;
+  Instruction11.CSR[3].CSRReg = 0;
+  Instruction11.CSR[3].CSRPad = 0;
+  Instruction11.CSR[3].CSRValue = 0;
+  Instruction11.CSR[4].CSRReg = 0;
+  Instruction11.CSR[4].CSRPad = 0;
+  Instruction11.CSR[4].CSRValue = 0;
 
   Instruction12.PC = 0x1034;
   Instruction12.insn = 0xdfadf198;
-  Instruction12.Mcycle = 1;
-  Instruction12.Mcycle = 1;
+  Instruction12.Mcycle = 1200;
+  Instruction12.Minstret = 13;
   Instruction12.Trap = 0;
   Instruction12.PrivilegeMode = 3;
   Instruction12.GPREn = 1;
@@ -367,6 +439,12 @@ int main(){
   Instruction12.CSR[2].CSRReg = 0;
   Instruction12.CSR[2].CSRPad = 0;
   Instruction12.CSR[2].CSRValue = 0;
+  Instruction12.CSR[3].CSRReg = 0;
+  Instruction12.CSR[3].CSRPad = 0;
+  Instruction12.CSR[3].CSRValue = 0;
+  Instruction12.CSR[4].CSRReg = 0;
+  Instruction12.CSR[4].CSRPad = 0;
+  Instruction12.CSR[4].CSRValue = 0;
 
   printf("Start\n\n");
   PrintValidQueue(TestQueue);

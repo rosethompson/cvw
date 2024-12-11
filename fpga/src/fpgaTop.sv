@@ -445,7 +445,7 @@ module fpgaTop  #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     localparam MAX_CSRS = 5;
     localparam TOTAL_CSRS = 36 + P.PMP_ENTRIES + P.PMP_ENTRIES/8; // 44 for 64-bit vcu108
     localparam [31:0] RVVI_INIT_TIME_OUT = 32'd100000000;
-    localparam [31:0] RVVI_PACKET_DELAY = 32'd400;
+    localparam [31:0] RVVI_PACKET_DELAY = 32'd10000;
     
     // pipeline controlls
     logic                                             StallE, StallM, StallW, FlushE, FlushM, FlushW;
