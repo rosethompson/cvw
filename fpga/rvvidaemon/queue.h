@@ -1,6 +1,8 @@
 #ifndef __QUEUE_H
 #define __QUEUE_H
 
+#define SAFE 0
+
 #include "rvvidaemon.h"
 #include <pthread.h>
 #include <stdbool.h>

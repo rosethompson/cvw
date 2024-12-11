@@ -57,7 +57,9 @@ queue_t * InitQueue(int size){
 }
 
 void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue){
+  #if SAFE != 0
   if(IsFull(queue)) return;
+  #endif
   pthread_mutex_lock(&(queue->lock));
   // deep copy
   // total 99 bytes 12.375 ld/sd
@@ -73,7 +75,9 @@ void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue){
 }
 
 void Dequeue(RequiredRVVI_t * InstructionData, queue_t *queue){
+  #if SAFE != 0
   if(IsEmpty(queue)) return;
+  #endif
   pthread_mutex_lock(&(queue->lock));
   // deep copy
   memcpy(InstructionData, &(queue->InstructionData[queue->tail]), sizeof(RequiredRVVI_t));
