@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define MAXCSRS 3
+#define MAXCSRS 5 // *** bad to have defined in multiple locations
 
 typedef struct __attribute__((packed)) {
   uint16_t CSRReg : 12;
