@@ -78,9 +78,9 @@ void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue){
   queue->InstructionData[queue->head].FPRValue = NewInstructionData->FPRValue;
   int index;
   for(index = 0; index < MAXCSRS; index++){
-  queue->InstructionData[queue->head].CSR[index].CSRReg = NewInstructionData->CSR[index].CSRReg;
-  queue->InstructionData[queue->head].CSR[index].CSRPad = NewInstructionData->CSR[index].CSRPad;
-  queue->InstructionData[queue->head].CSR[index].CSRValue = NewInstructionData->CSR[index].CSRValue;
+    queue->InstructionData[queue->head].CSR[index].CSRReg = NewInstructionData->CSR[index].CSRReg;
+    queue->InstructionData[queue->head].CSR[index].CSRPad = NewInstructionData->CSR[index].CSRPad;
+    queue->InstructionData[queue->head].CSR[index].CSRValue = NewInstructionData->CSR[index].CSRValue;
   }
   //printf("Enqueue: head %d, tail %d\n", queue->head, queue->tail);
   if(queue->head == (queue->size - 1)) {
@@ -116,9 +116,9 @@ void Dequeue(RequiredRVVI_t * InstructionData, queue_t *queue){
   InstructionData->FPRValue = InstructionDataArray->FPRValue;
   int index;
   for(index = 0; index < MAXCSRS; index++){
-  InstructionData->CSR[index].CSRReg = InstructionDataArray->CSR[index].CSRReg;
-  InstructionData->CSR[index].CSRPad = InstructionDataArray->CSR[index].CSRPad;
-  InstructionData->CSR[index].CSRValue = InstructionDataArray->CSR[index].CSRValue;
+    InstructionData->CSR[index].CSRReg = InstructionDataArray->CSR[index].CSRReg;
+    InstructionData->CSR[index].CSRPad = InstructionDataArray->CSR[index].CSRPad;
+    InstructionData->CSR[index].CSRValue = InstructionDataArray->CSR[index].CSRValue;
   }
   if(queue->tail == (queue->size - 1)) queue->tail = 0;
   else (queue->tail)++;

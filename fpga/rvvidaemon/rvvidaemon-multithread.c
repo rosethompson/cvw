@@ -47,7 +47,7 @@
 #include "rvviApi.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
-#define PRINT_THRESHOLD 1
+#define PRINT_THRESHOLD 65536
 //#define PRINT_THRESHOLD 1024
 //#define E_TARGET_CLOCK 25000
 #define E_TARGET_CLOCK 70000
