@@ -52,7 +52,6 @@ queue_t * InitQueue(int size){
   queue->head = 0;
   queue->tail = 0;
   queue->size = size;
-  queue->empty = 1;
   return queue;
 }
 
@@ -60,6 +59,8 @@ void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue){
   #if SAFE != 0
   if(IsFull(queue)) return;
   #endif
+
+  
   pthread_mutex_lock(&(queue->lock));
   // deep copy
   // total 99 bytes 12.375 ld/sd
@@ -70,69 +71,89 @@ void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue){
     queue->head = 0;
   }
   else (queue->head)++;
-  queue->empty = 0;
   pthread_mutex_unlock(&(queue->lock));
+
+  
 }
 
 void Dequeue(RequiredRVVI_t * InstructionData, queue_t *queue){
   #if SAFE != 0
   if(IsEmpty(queue)) return;
   #endif
+
+  
   pthread_mutex_lock(&(queue->lock));
   // deep copy
   memcpy(InstructionData, &(queue->InstructionData[queue->tail]), sizeof(RequiredRVVI_t));
   if(queue->tail == (queue->size - 1)) queue->tail = 0;
   else (queue->tail)++;
-  if(queue->tail == queue->head) queue->empty = 1;
   pthread_mutex_unlock(&(queue->lock));
+
+  
 }
 
 bool IsFull(queue_t *queue){
   bool result;
+  
   pthread_mutex_lock(&(queue->lock));
-  result = (queue->head == queue->tail) && !(queue->empty);
+  result = (queue->tail - queue->head) == 1;
   pthread_mutex_unlock(&(queue->lock));
+  
   return result;
 }
 
 bool IsAlmostFull(queue_t *queue, int Threshold){
   // probably a better solution
+  
   pthread_mutex_lock(&(queue->lock));
   int head = queue->head;
   int tail = queue->tail;
   int size = queue->size;
   pthread_mutex_unlock(&(queue->lock));
+
+  
   if (head < tail){ // head pointer wrapped around
     head += size;
   }
   int diff = head - tail;
+  
   return (diff >= Threshold) | IsFull(queue); 
 }
 int HowFull(queue_t *queue){
   // probably a better solution
+  
   pthread_mutex_lock(&(queue->lock));
   int head = queue->head;
   int tail = queue->tail;
   int size = queue->size;
   pthread_mutex_unlock(&(queue->lock));
+
+  
   if (head < tail){ // head pointer wrapped around
     head += size;
   }
   int diff = head - tail;
+  
   return diff; 
 }
 
 bool IsEmpty(queue_t *queue){
   bool result;
+
+  
   pthread_mutex_lock(&(queue->lock));
-  result = (queue->head == queue->tail) && queue->empty;
+  result = (queue->head == queue->tail);
   pthread_mutex_unlock(&(queue->lock));
+
+  
   return result;
 }
 
    
 void PrintQueue(queue_t *queue){
   int index;
+
+  
   pthread_mutex_lock(&(queue->lock));
   printf("Queue Size = %d\n", queue->size);
   printf("Head pointer = %d\n", queue->head);
@@ -141,10 +162,14 @@ void PrintQueue(queue_t *queue){
     PrintInstructionDataCopy(&(queue->InstructionData[index]));
   }
   pthread_mutex_unlock(&(queue->lock));
+
+  
 }
 
 void PrintValidQueue(queue_t *queue){
   int index;
+
+  
   pthread_mutex_lock(&(queue->lock));
   printf("Queue Size = %d\n", queue->size);
   printf("Head pointer = %d\n", queue->head);
@@ -153,7 +178,7 @@ void PrintValidQueue(queue_t *queue){
     PrintInstructionDataCopy(&(queue->InstructionData[index]));
   }
   if((queue->tail > queue->head) ||
-     (queue->tail == queue->head && !queue->empty)){
+     (queue->tail == queue->head)){
     for(index = queue->tail; index < queue->size; index++){
       PrintInstructionDataCopy(&(queue->InstructionData[index]));
     }
@@ -162,6 +187,8 @@ void PrintValidQueue(queue_t *queue){
     }
   }
   pthread_mutex_unlock(&(queue->lock));
+
+  
 }
 
 void PrintInstructionDataCopy(RequiredRVVI_t *InstructionData){

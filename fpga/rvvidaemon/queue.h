@@ -10,8 +10,9 @@
 typedef struct {
   RequiredRVVI_t *InstructionData;
   int head, tail, size;
-  bool empty;
   pthread_mutex_t lock;
+  pthread_mutex_t HeadLock;
+  pthread_mutex_t TailLock;
 } queue_t;
 
 queue_t * InitQueue(int size);
