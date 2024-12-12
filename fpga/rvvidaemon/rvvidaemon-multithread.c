@@ -51,7 +51,7 @@
 #define PRINT_THRESHOLD 65536
 //#define PRINT_THRESHOLD 1024
 //#define E_TARGET_CLOCK 25000
-#define E_TARGET_CLOCK 85000
+#define E_TARGET_CLOCK 80000
 #define SYSTEM_CLOCK 50000000
 #define INNER_PKT_DELAY (SYSTEM_CLOCK / E_TARGET_CLOCK)
 
@@ -66,6 +66,8 @@
 #define DEST_MAC3	0x11
 #define DEST_MAC4	0x02
 #define DEST_MAC5	0x45
+
+#define DEST_MAC 0x450211116843
 
 #define SRC_MAC0	0x54
 #define SRC_MAC1	0x16
@@ -335,7 +337,6 @@ int main(int argc, char **argv){
 
 void * ReceiveLoop(void * arg){
   uint8_t buf[BUF_SIZ];
-  struct ether_header *eh = (struct ether_header *) buf;
   ssize_t headerbytes, numbytes;
   queue_t * InstructionQueue = (queue_t *) arg;
 
@@ -346,42 +347,26 @@ void * ReceiveLoop(void * arg){
     exit(1);             
   }
 
-  int Emptiness = QUEUE_SIZE;
+  int QueueDepth = QUEUE_SIZE;
   while(1) {
-    Emptiness = HowFull(InstructionQueue);
-    PercentFull = (Emptiness * 1000) / QUEUE_SIZE;
-    if(IsAlmostFull(InstructionQueue, QUEUE_THREASHOLD)){
-      //pthread_mutex_lock(&SlowMessageLock);
-      pthread_cond_signal(&SlowMessageCond);
-      //pthread_mutex_lock(&SlowMessageLock);
-      /* if (sendto(sockfd, slowbuf, slow_len, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){ */
-      /* 	printf("Send failed\n"); */
-      /* }else { */
-      /* 	printf("send success!\n"); */
-      /* } */
-      if(IsFull(InstructionQueue)){
+    QueueDepth = HowFull(InstructionQueue);
+    PercentFull = (QueueDepth * 1000) / QUEUE_SIZE;
+    if(QueueDepth >= QUEUE_THREASHOLD){
+      pthread_cond_signal(&SlowMessageCond);  // send message to other thread to slow down
+      if(QueueDepth == QUEUE_SIZE){
         printf("Critical Error!!!!!!!!! Queue is now full. Terminating receive thread.\n");
-        //pthread_exit(NULL);
         exit(-1);
       }
     }
     numbytes = recvfrom(sockfd, buf, BUF_SIZ, 0, NULL, NULL);
     headerbytes = (sizeof(struct ether_header));
     int result;
-    if (eh->ether_dhost[0] == DEST_MAC0 &&
-        eh->ether_dhost[1] == DEST_MAC1 &&
-        eh->ether_dhost[2] == DEST_MAC2 &&
-        eh->ether_dhost[3] == DEST_MAC3 &&
-        eh->ether_dhost[4] == DEST_MAC4 &&
-        eh->ether_dhost[5] == DEST_MAC5) {
+    uint64_t DstMAC;
+    DstMAC = *((uint64_t*)buf);
+    DstMAC = DstMAC & 0xFFFFFFFFFFFF;
+    if(DstMAC == DEST_MAC){
       RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes);
-
-      // now let's drive IDV
-      // start simple just drive and compare PC.
-      //printf("Before Enqueue\n");
       Enqueue(InstructionDataPtr, InstructionQueue);
-      //printf("After Enqueue\n");
-      //WriteInstructionData(InstructionDataPtr, LogFile);
     }
   }
   fclose(LogFile);
