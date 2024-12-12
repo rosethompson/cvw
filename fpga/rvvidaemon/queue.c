@@ -61,7 +61,7 @@ void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue){
   #endif
 
   
-  pthread_mutex_lock(&(queue->lock));
+  pthread_mutex_lock(&(queue->HeadLock));
   // deep copy
   // total 99 bytes 12.375 ld/sd
   memcpy(&(queue->InstructionData[queue->head]), (void*) NewInstructionData, sizeof(RequiredRVVI_t));
@@ -71,7 +71,7 @@ void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue){
     queue->head = 0;
   }
   else (queue->head)++;
-  pthread_mutex_unlock(&(queue->lock));
+  pthread_mutex_unlock(&(queue->HeadLock));
 
   
 }
@@ -82,12 +82,12 @@ void Dequeue(RequiredRVVI_t * InstructionData, queue_t *queue){
   #endif
 
   
-  pthread_mutex_lock(&(queue->lock));
+  pthread_mutex_lock(&(queue->TailLock));
   // deep copy
   memcpy(InstructionData, &(queue->InstructionData[queue->tail]), sizeof(RequiredRVVI_t));
   if(queue->tail == (queue->size - 1)) queue->tail = 0;
   else (queue->tail)++;
-  pthread_mutex_unlock(&(queue->lock));
+  pthread_mutex_unlock(&(queue->TailLock));
 
   
 }
@@ -95,9 +95,11 @@ void Dequeue(RequiredRVVI_t * InstructionData, queue_t *queue){
 bool IsFull(queue_t *queue){
   bool result;
   
-  pthread_mutex_lock(&(queue->lock));
+  pthread_mutex_lock(&(queue->HeadLock));
+  pthread_mutex_lock(&(queue->TailLock));
   result = (queue->tail - queue->head) == 1;
-  pthread_mutex_unlock(&(queue->lock));
+  pthread_mutex_unlock(&(queue->HeadLock));
+  pthread_mutex_unlock(&(queue->TailLock));
   
   return result;
 }
@@ -105,11 +107,13 @@ bool IsFull(queue_t *queue){
 bool IsAlmostFull(queue_t *queue, int Threshold){
   // probably a better solution
   
-  pthread_mutex_lock(&(queue->lock));
+  pthread_mutex_lock(&(queue->HeadLock));
+  pthread_mutex_lock(&(queue->TailLock));
   int head = queue->head;
   int tail = queue->tail;
   int size = queue->size;
-  pthread_mutex_unlock(&(queue->lock));
+  pthread_mutex_unlock(&(queue->HeadLock));
+  pthread_mutex_unlock(&(queue->TailLock));
 
   
   if (head < tail){ // head pointer wrapped around
@@ -122,11 +126,13 @@ bool IsAlmostFull(queue_t *queue, int Threshold){
 int HowFull(queue_t *queue){
   // probably a better solution
   
-  pthread_mutex_lock(&(queue->lock));
+  pthread_mutex_lock(&(queue->HeadLock));
+  pthread_mutex_lock(&(queue->TailLock));
   int head = queue->head;
   int tail = queue->tail;
   int size = queue->size;
-  pthread_mutex_unlock(&(queue->lock));
+  pthread_mutex_unlock(&(queue->HeadLock));
+  pthread_mutex_unlock(&(queue->TailLock));
 
   
   if (head < tail){ // head pointer wrapped around
@@ -141,9 +147,11 @@ bool IsEmpty(queue_t *queue){
   bool result;
 
   
-  pthread_mutex_lock(&(queue->lock));
+  pthread_mutex_lock(&(queue->HeadLock));
+  pthread_mutex_lock(&(queue->TailLock));
   result = (queue->head == queue->tail);
-  pthread_mutex_unlock(&(queue->lock));
+  pthread_mutex_unlock(&(queue->HeadLock));
+  pthread_mutex_unlock(&(queue->TailLock));
 
   
   return result;
@@ -154,14 +162,16 @@ void PrintQueue(queue_t *queue){
   int index;
 
   
-  pthread_mutex_lock(&(queue->lock));
+  pthread_mutex_lock(&(queue->HeadLock));
+  pthread_mutex_lock(&(queue->TailLock));
   printf("Queue Size = %d\n", queue->size);
   printf("Head pointer = %d\n", queue->head);
   printf("Tail pointer = %d\n", queue->tail);
   for(index = 0; index < queue->size; index++){
     PrintInstructionDataCopy(&(queue->InstructionData[index]));
   }
-  pthread_mutex_unlock(&(queue->lock));
+  pthread_mutex_unlock(&(queue->HeadLock));
+  pthread_mutex_unlock(&(queue->TailLock));
 
   
 }
@@ -169,8 +179,8 @@ void PrintQueue(queue_t *queue){
 void PrintValidQueue(queue_t *queue){
   int index;
 
-  
-  pthread_mutex_lock(&(queue->lock));
+  pthread_mutex_lock(&(queue->HeadLock));
+  pthread_mutex_lock(&(queue->TailLock));
   printf("Queue Size = %d\n", queue->size);
   printf("Head pointer = %d\n", queue->head);
   printf("Tail pointer = %d\n", queue->tail);
@@ -186,7 +196,8 @@ void PrintValidQueue(queue_t *queue){
       PrintInstructionDataCopy(&(queue->InstructionData[index]));
     }
   }
-  pthread_mutex_unlock(&(queue->lock));
+  pthread_mutex_unlock(&(queue->HeadLock));
+  pthread_mutex_unlock(&(queue->TailLock));
 
   
 }
