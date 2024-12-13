@@ -55,6 +55,8 @@
 #define SYSTEM_CLOCK 50000000
 #define INNER_PKT_DELAY (SYSTEM_CLOCK / E_TARGET_CLOCK)
 
+#define RATE_SET_THREAHOLD 65536
+
 #include "rvvidaemon.h"
 #include "queue.h"
 
@@ -341,6 +343,7 @@ void * ReceiveLoop(void * arg){
   queue_t * InstructionQueue = (queue_t *) arg;
 
   FILE *LogFile;
+  int count = 0;
   LogFile = fopen("receive-log.txt", "w");
   if(LogFile == NULL) {
     printf("Error opening receive.txt for writing!");   
@@ -368,6 +371,14 @@ void * ReceiveLoop(void * arg){
       RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes);
       Enqueue(InstructionDataPtr, InstructionQueue);
     }
+    if(count == RATE_SET_THREAHOLD){
+      if (sendto(sockfd, ratebuf, rate_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
+        printf("Send failed\n");
+      }
+      count = 0;
+    }
+    count++;
+
   }
   fclose(LogFile);
   pthread_exit(NULL);
@@ -455,6 +466,8 @@ int ProcessRvviAll(RequiredRVVI_t *InstructionData){
   }
 
   if (trap) {
+    printf("Got a Trap!\n");
+    PrintInstructionData(InstructionData);
     rvviDutTrap(0, InstructionData->PC, InstructionData->insn);
   } else {
     rvviDutRetire(0, InstructionData->PC, InstructionData->insn, 0);
@@ -525,7 +538,7 @@ void PrintInstructionData(RequiredRVVI_t *InstructionData){
   }
   if(InstructionData->CSRCount > 0) {
     printf( ", Num CSR = %d", InstructionData->CSRCount);
-    for(CSRIndex = 0; CSRIndex < 3; CSRIndex++){
+    for(CSRIndex = 0; CSRIndex < MAX_CSRS; CSRIndex++){
       if(InstructionData->CSR[CSRIndex].CSRReg != 0){
 	printf(", CSR[%x] = %lx", InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
       }

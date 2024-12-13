@@ -61,27 +61,27 @@ _start:
 	# now toggle led so we know the copy completed.
 
 	# write to gpio
-	li	t2, 0xFF
-	la	t3, 0x1006000C
-	li	t4, 5
+#	li	t2, 0xFF
+#	la	t3, 0x1006000C
+#	li	t4, 5
 
-loop:
+#loop:
 
 	# delay
-	li	t0, PERIOD/2
-delay1:	
-	addi	t0, t0, -1
-	bge	t0, x0, delay1
-	sw	t2, 0x0(t3)
+#	li	t0, PERIOD/2
+#delay1:	
+#	addi	t0, t0, -1
+#	bge	t0, x0, delay1
+#	sw	t2, 0x0(t3)
 
-	li	t0, PERIOD/2
-delay2:	
-	addi	t0, t0, -1
-	bge	t0, x0, delay2
-	sw	x0, 0x0(t3)
+#	li	t0, PERIOD/2
+#delay2:	
+#	addi	t0, t0, -1
+#	bge	t0, x0, delay2
+#	sw	x0, 0x0(t3)
 
-	addi	t4, t4, -1
-	bgt	t4, x0, loop
+#	addi	t4, t4, -1
+#	bgt	t4, x0, loop
 
 
 	# now that the card is copied and the led toggled we
