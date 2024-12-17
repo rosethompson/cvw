@@ -44,7 +44,9 @@
 #include <sys/socket.h>
 #include <net/if.h>
 #include <netinet/ether.h>
+#include <pthread.h> 
 #include "rvviApi.h" // *** bug fix me when this file gets included into the correct directory.
+#include "op/op.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
 //#define PRINT_THRESHOLD 1
@@ -87,6 +89,9 @@
 #define QUEUE_SIZE       16384
 #define QUEUE_THREASHOLD 128
 
+// load wally configuration
+// must be set external to program
+// export IMPERAS_TOOLS="../../config/rv64gc/imperas.ic"
 struct sockaddr_ll socket_address;
 uint8_t sendbuf[BUF_SIZ];
 struct ether_header *sendeh = (struct ether_header *) sendbuf;
@@ -382,6 +387,60 @@ void * ReceiveLoop(void * arg){
   }
   fclose(LogFile);
   pthread_exit(NULL);
+}
+
+void * SetSpeedLoop(void * arg){
+  queue_t * InstructionQueue = (queue_t *) arg;
+
+  int InstrPreSec = 10000;
+
+  struct timespec UpdateInterval = { .tv_sec = 1, .tv_nsec = 0 }; // 1.0 seconds
+
+  int THREASHOLD_C1 = 8; // Soft limit. Start slow down
+  int THREASHOLD_C2 = 128; // Critial limit. Dramatic slow down
+  int THREASHOLD_C3 = QUEUE_SIZE; // Actual limit. Critial error.
+
+  int QueueDepth = 0;
+  
+  uint8_t SpeedBuf[BUF_SIZ];
+  int SpeedLen = 0;
+  struct ether_header *SpeedHeader = (struct ether_header *) SpeedBuf;
+  memset(SpeedBuf, 0, BUF_SIZ);
+  SpeedBuf[0] = DEST_MAC0;
+  SpeedBuf[1] = DEST_MAC1;
+  SpeedBuf[2] = DEST_MAC2;
+  SpeedBuf[3] = DEST_MAC3;
+  SpeedBuf[4] = DEST_MAC4;
+  SpeedBuf[5] = DEST_MAC5;
+  SpeedBuf[6] = SRC_MAC0;
+  SpeedBuf[7] = SRC_MAC1;
+  SpeedBuf[8] = SRC_MAC2;
+  SpeedBuf[9] = SRC_MAC3;
+  SpeedBuf[10] = SRC_MAC4;
+  SpeedBuf[11] = SRC_MAC5;
+
+  SpeedHeader->ether_type = htons(ETHER_TYPE);
+  SpeedLen += sizeof(struct ether_header);
+  /* Packet data */
+  SpeedBuf[SpeedLen++] = 'r';
+  SpeedBuf[SpeedLen++] = 'a';
+  SpeedBuf[SpeedLen++] = 't';
+  SpeedBuf[SpeedLen++] = 'e';
+  SpeedBuf[SpeedLen++] = 'i';
+  SpeedBuf[SpeedLen++] = 'n';
+  // set initial value
+  ((uint32_t*) (SpeedBuf + SpeedLen))[0] = (InstrPreSec / E_TARGET_CLOCK);
+
+  nanosleep(&UpdateInterval, NULL);
+  QueueDepth = HowFull(InstructionQueue);
+  if(QueueDepth >= THREASHOLD_C1) {
+  } else if(QueueDepth >= THREASHOLD_C2) {
+  } else if(QueueDepth >= THREASHOLD_C3) {
+    
+  } else {
+    printf("Critial failure. SetSpeedLoop Thread ");
+  }
+  
 }
 
 void * ProcessLoop(void * arg){
