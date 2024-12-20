@@ -44,16 +44,17 @@
 #include <sys/socket.h>
 #include <net/if.h>
 #include <netinet/ether.h>
-#include <pthread.h> 
+#include <pthread.h>
 #include "rvviApi.h" // *** bug fix me when this file gets included into the correct directory.
 #include "op/op.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
-//#define PRINT_THRESHOLD 1
-#define PRINT_THRESHOLD 65536
+#define PRINT_THRESHOLD 1
+//#define PRINT_THRESHOLD 65536
 //#define PRINT_THRESHOLD 1024
 //#define E_TARGET_CLOCK 25000
-#define E_TARGET_CLOCK 80000
+//#define E_TARGET_CLOCK 80000
+#define E_TARGET_CLOCK 70000
 #define SYSTEM_CLOCK 50000000
 #define INNER_PKT_DELAY (SYSTEM_CLOCK / E_TARGET_CLOCK)
 
@@ -430,10 +431,13 @@ void * SetSpeedLoop(void * arg){
   SpeedBuf[SpeedLen++] = 'n';
   // set initial value
   ((uint32_t*) (SpeedBuf + SpeedLen))[0] = (InstrPreSec / E_TARGET_CLOCK);
+  if (sendto(sockfd, SpeedBuf, SpeedLen+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
+  else printf("send success!\n");
 
   nanosleep(&UpdateInterval, NULL);
   QueueDepth = HowFull(InstructionQueue);
   if(QueueDepth >= THREASHOLD_C1) {
+    
   } else if(QueueDepth >= THREASHOLD_C2) {
   } else if(QueueDepth >= THREASHOLD_C3) {
     
@@ -510,14 +514,12 @@ int ProcessRvviAll(RequiredRVVI_t *InstructionData){
   int CSRIndex;
 
   result = 0;
-  //if(InstructionData->GPREn) set_gpr(0, InstructionData->GPRReg, InstructionData->GPRValue);
   if(InstructionData->GPREn) rvviDutGprSet(0, InstructionData->GPRReg, InstructionData->GPRValue);
-  //if(InstructionData->FPREn) set_fpr(0, InstructionData->FPRReg, InstructionData->FPRValue);
   if(InstructionData->FPREn) rvviDutFprSet(0, InstructionData->FPRReg, InstructionData->FPRValue);
   if(InstructionData->CSRCount > 0) {
-    for(CSRIndex = 0; CSRIndex < MAX_CSRS; CSRIndex++){
+    int TotalCSRs = MAX_CSRS >= InstructionData->CSRCount ? MAX_CSRS : InstructionData->CSRCount;
+    for(CSRIndex = 0; CSRIndex < TotalCSRs; CSRIndex++){
       if(InstructionData->CSR[CSRIndex].CSRReg != 0){
-	//set_csr(0, InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
         rvviDutCsrSet(0, InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
 	printf("Setting CSR %x\n", InstructionData->CSR[CSRIndex].CSRReg);
       }
@@ -527,6 +529,7 @@ int ProcessRvviAll(RequiredRVVI_t *InstructionData){
   if (trap) {
     printf("Got a Trap!\n");
     PrintInstructionData(InstructionData);
+    printf("The instruction is %x\n", InstructionData->insn);
     rvviDutTrap(0, InstructionData->PC, InstructionData->insn);
   } else {
     rvviDutRetire(0, InstructionData->PC, InstructionData->insn, 0);

@@ -68,17 +68,19 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
   logic [56+3*P.XLEN-1:0]                   Required;
   logic [16+2*P.XLEN-1:0]                   Registers;
   logic [MAX_CSRS*(P.XLEN+16)-1:0]          CSRs;
-     
+  logic                                     FlushOrTrapW;
+  
   assign XLENZeros = '0;
+  assign FlushNotTrapW = FlushW & ~TrapM; // This is subtle. rvvi needs to keep Instr and PC even when there is a trap.
 
   // start out easy and just populate Required
   // PC, inst, mcycle, minstret, trap, mode
   
   flopenrc #(1)      InstrValidMReg (clk, reset, FlushW, ~StallW, InstrValidM, InstrValidW);
-  flopenrc #(P.XLEN) PCWReg (clk, reset, FlushW, ~StallW, PCM, PCW);
+  flopenrc #(P.XLEN) PCWReg (clk, reset, FlushNoTrapW, ~StallW, PCM, PCW);
   flopenrc #(32)     InstrRawEReg (clk, reset, FlushE, ~StallE, InstrRawD, InstrRawE);
   flopenrc #(32)     InstrRawMReg (clk, reset, FlushM, ~StallM, InstrRawE, InstrRawM);
-  flopenrc #(32)     InstrRawWReg (clk, reset, FlushW, ~StallW, InstrRawM, InstrRawW);
+  flopenrc #(32)     InstrRawWReg (clk, reset, FlushNoTrapW, ~StallW, InstrRawM, InstrRawW);
   flopenrc #(1)      TrapWReg (clk, reset, 1'b0, ~StallW, TrapM, TrapW);
 
   assign valid  = (InstrValidW | TrapW)  & ~StallW;
