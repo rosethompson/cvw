@@ -394,12 +394,15 @@ void * SetSpeedLoop(void * arg){
   queue_t * InstructionQueue = (queue_t *) arg;
 
   int InstrPreSec = 10000;
+  int Phase = 0;
+  int Slope = 10000; // Instr/s to change in phase 1.
 
-  struct timespec UpdateInterval = { .tv_sec = 1, .tv_nsec = 0 }; // 1.0 seconds
+  struct timespec UpdateInterval = { .tv_sec = 0, .tv_nsec = 100000000 }; // 0.1 seconds
+  int Rate = ((UpdateInterval.tv_nsec * Slope) / 1000000000) + UpdateInterval.tv_sec * Slope;
 
   int THREASHOLD_C1 = 8; // Soft limit. Start slow down
   int THREASHOLD_C2 = 128; // Critial limit. Dramatic slow down
-  int THREASHOLD_C3 = QUEUE_SIZE; // Actual limit. Critial error.
+  int THREASHOLD_C3 = QUEUE_SIZE - (QUEUE_SIZE/8); // Near limit. Critial Warning.
 
   int QueueDepth = 0;
   
@@ -434,17 +437,29 @@ void * SetSpeedLoop(void * arg){
   if (sendto(sockfd, SpeedBuf, SpeedLen+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
   else printf("send success!\n");
 
-  nanosleep(&UpdateInterval, NULL);
-  QueueDepth = HowFull(InstructionQueue);
-  if(QueueDepth >= THREASHOLD_C1) {
-    
-  } else if(QueueDepth >= THREASHOLD_C2) {
-  } else if(QueueDepth >= THREASHOLD_C3) {
-    
-  } else {
-    printf("Critial failure. SetSpeedLoop Thread ");
-  }
-  
+  while(1){
+    nanosleep(&UpdateInterval, NULL);
+    QueueDepth = HowFull(InstructionQueue);
+    if(QueueDepth >= THREASHOLD_C1 / 2) {
+      if(!Phase) InstrPreSec = InstrPreSec * 2;
+      else InstrPreSec = InstrPreSec + InstrPreSec * Rate;
+    } else if(QueueDepth >= THREASHOLD_C2) {
+      if(!Phase){
+        InstrPreSec = InstrPreSec / 2;
+        Phase = 1;
+      } else InstrPreSec = InstrPreSec - InstrPreSec * Rate;
+    } else if(QueueDepth >= THREASHOLD_C3) {
+      printf("Near upper limit of queue depth. Revert to 10K Instr/s, Phase = %d\n", Phase);
+      InstrPreSec = 10000;
+      Phase = 1;
+    } else if(QueueDepth >= QUEUE_SIZE){
+      printf("Critial failure. SetSpeedLoop Thread Phase = %d.\n", Phase);
+      exit(-1);
+    }
+    ((uint32_t*) (SpeedBuf + SpeedLen))[0] = (InstrPreSec / E_TARGET_CLOCK);
+    if (sendto(sockfd, SpeedBuf, SpeedLen+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
+    else printf("send success!\n");
+  }  
 }
 
 void * ProcessLoop(void * arg){
