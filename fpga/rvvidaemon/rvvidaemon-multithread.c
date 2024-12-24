@@ -49,9 +49,9 @@
 #include "op/op.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
-#define PRINT_THRESHOLD 1
+//#define PRINT_THRESHOLD 1
 //#define PRINT_THRESHOLD 65536
-//#define PRINT_THRESHOLD 1024
+#define PRINT_THRESHOLD 1024
 //#define E_TARGET_CLOCK 25000
 //#define E_TARGET_CLOCK 80000
 #define E_TARGET_CLOCK 70000
@@ -116,6 +116,7 @@ void PrintInstructionData(RequiredRVVI_t *InstructionData);
 void * ReceiveLoop(void * arg);
 void * ProcessLoop(void * arg);
 void * SendSlowMessage(void * arg);
+void * SetSpeedLoop(void * arg);
 int ProcessRvviAll(RequiredRVVI_t *InstructionData);
 void set_gpr(int hart, int reg, uint64_t value);
 void set_csr(int hart, int csrIndex, uint64_t value);
@@ -331,10 +332,11 @@ int main(int argc, char **argv){
   ratebuf[rate_len++] = 'n';
   ((uint32_t*) (ratebuf + rate_len))[0] = INNER_PKT_DELAY;
 
-  pthread_t ReceiveID, ProcessID, SlowID;
+  pthread_t ReceiveID, ProcessID, SlowID, SetSpeedLoopID;
   pthread_create(&ReceiveID, NULL, &ReceiveLoop, (void *) InstructionQueue);
   pthread_create(&ProcessID, NULL, &ProcessLoop, (void *) InstructionQueue);
   pthread_create(&SlowID, NULL, &SendSlowMessage, (void *) InstructionQueue);
+  pthread_create(&SetSpeedLoopID, NULL, &SetSpeedLoop, (void *) InstructionQueue);
   //pthread_join(ReceiveID, NULL);
   pthread_join(ProcessID, NULL);
 
@@ -378,9 +380,9 @@ void * ReceiveLoop(void * arg){
       Enqueue(InstructionDataPtr, InstructionQueue);
     }
     if(count == RATE_SET_THREAHOLD){
-      if (sendto(sockfd, ratebuf, rate_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
-        printf("Send failed\n");
-      }
+      /* if (sendto(sockfd, ratebuf, rate_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){ */
+      /*   printf("Send failed\n"); */
+      /* } */
       count = 0;
     }
     count++;
@@ -395,9 +397,10 @@ void * SetSpeedLoop(void * arg){
 
   int InstrPreSec = 10000;
   int Phase = 0;
-  int Slope = 10000; // Instr/s to change in phase 1.
+  int Slope = 1000; // Instr/s to change in phase 1.
 
-  struct timespec UpdateInterval = { .tv_sec = 0, .tv_nsec = 100000000 }; // 0.1 seconds
+  //struct timespec UpdateInterval = { .tv_sec = 0, .tv_nsec = 100000000 }; // 0.1 seconds
+  struct timespec UpdateInterval = { .tv_sec = 3, .tv_nsec = 0 }; // 0.1 seconds
   int Rate = ((UpdateInterval.tv_nsec * Slope) / 1000000000) + UpdateInterval.tv_sec * Slope;
 
   int THREASHOLD_C1 = 8; // Soft limit. Start slow down
@@ -433,32 +436,32 @@ void * SetSpeedLoop(void * arg){
   SpeedBuf[SpeedLen++] = 'i';
   SpeedBuf[SpeedLen++] = 'n';
   // set initial value
-  ((uint32_t*) (SpeedBuf + SpeedLen))[0] = (InstrPreSec / E_TARGET_CLOCK);
+  ((uint32_t*) (SpeedBuf + SpeedLen))[0] = (SYSTEM_CLOCK / InstrPreSec);
   if (sendto(sockfd, SpeedBuf, SpeedLen+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
   else printf("send success!\n");
 
   while(1){
     nanosleep(&UpdateInterval, NULL);
     QueueDepth = HowFull(InstructionQueue);
-    if(QueueDepth >= THREASHOLD_C1 / 2) {
+    if(QueueDepth <= THREASHOLD_C1 / 2) {
       if(!Phase) InstrPreSec = InstrPreSec * 2;
-      else InstrPreSec = InstrPreSec + InstrPreSec * Rate;
-    } else if(QueueDepth >= THREASHOLD_C2) {
+      else InstrPreSec = InstrPreSec + Rate;
+    } else if(QueueDepth <= THREASHOLD_C2) {
       if(!Phase){
-        InstrPreSec = InstrPreSec / 2;
+        InstrPreSec = InstrPreSec / 4;
         Phase = 1;
-      } else InstrPreSec = InstrPreSec - InstrPreSec * Rate;
-    } else if(QueueDepth >= THREASHOLD_C3) {
+      } else InstrPreSec = InstrPreSec - Rate;
+    } else if(QueueDepth <= THREASHOLD_C3) {
       printf("Near upper limit of queue depth. Revert to 10K Instr/s, Phase = %d\n", Phase);
       InstrPreSec = 10000;
       Phase = 1;
-    } else if(QueueDepth >= QUEUE_SIZE){
+    } else if(QueueDepth <= QUEUE_SIZE){
       printf("Critial failure. SetSpeedLoop Thread Phase = %d.\n", Phase);
       exit(-1);
     }
-    ((uint32_t*) (SpeedBuf + SpeedLen))[0] = (InstrPreSec / E_TARGET_CLOCK);
+    ((uint32_t*) (SpeedBuf + SpeedLen))[0] = (SYSTEM_CLOCK / InstrPreSec);
+    printf("InstrPreSec = %d, InterPacketDelay = %d, Phase = %d, Rate = %d\n", InstrPreSec, (SYSTEM_CLOCK / InstrPreSec), Phase, Rate);
     if (sendto(sockfd, SpeedBuf, SpeedLen+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
-    else printf("send success!\n");
   }  
 }
 
@@ -508,11 +511,11 @@ void * SendSlowMessage(void * arg){
     }else {
       printf("send success!\n");
     }
-    if (sendto(sockfd, ratebuf, rate_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
-      printf("Send failed\n");
-    }else {
-      printf("!?!?!?!?!?!?RATE SET RATE RATE RATE !?!?!!?!?!?!? success!\n");
-    }
+    /* if (sendto(sockfd, ratebuf, rate_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){ */
+    /*   printf("Send failed\n"); */
+    /* }else { */
+    /*   printf("!?!?!?!?!?!?RATE SET RATE RATE RATE !?!?!!?!?!?!? success!\n"); */
+    /* } */
     
     printf("WARNING the Receive Queue is Almost Full %d !!!!!!!!!!!!!!!!!! %d\n", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size, PercentFull);
   }
