@@ -110,6 +110,8 @@ int PercentFull;
 
 pthread_mutex_t SlowMessageLock;
 pthread_cond_t SlowMessageCond;
+pthread_mutex_t StartLock;
+pthread_cond_t StartCond;
 
 // prototypes
 void PrintInstructionData(RequiredRVVI_t *InstructionData);
@@ -352,10 +354,23 @@ void * ReceiveLoop(void * arg){
 
   FILE *LogFile;
   int count = 0;
+  int result;
+  uint64_t DstMAC;
   LogFile = fopen("receive-log.txt", "w");
   if(LogFile == NULL) {
     printf("Error opening receive.txt for writing!");   
     exit(1);             
+  }
+
+  // receive first frame
+  numbytes = recvfrom(sockfd, buf, BUF_SIZ, 0, NULL, NULL);
+  headerbytes = (sizeof(struct ether_header));
+  DstMAC = *((uint64_t*)buf);
+  DstMAC = DstMAC & 0xFFFFFFFFFFFF;
+  if(DstMAC == DEST_MAC){
+    RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes);
+    Enqueue(InstructionDataPtr, InstructionQueue);
+    pthread_cond_signal(&StartCond);  // send message to other thread to slow down
   }
 
   int QueueDepth = QUEUE_SIZE;
@@ -371,8 +386,6 @@ void * ReceiveLoop(void * arg){
     }
     numbytes = recvfrom(sockfd, buf, BUF_SIZ, 0, NULL, NULL);
     headerbytes = (sizeof(struct ether_header));
-    int result;
-    uint64_t DstMAC;
     DstMAC = *((uint64_t*)buf);
     DstMAC = DstMAC & 0xFFFFFFFFFFFF;
     if(DstMAC == DEST_MAC){
@@ -395,12 +408,13 @@ void * ReceiveLoop(void * arg){
 void * SetSpeedLoop(void * arg){
   queue_t * InstructionQueue = (queue_t *) arg;
 
-  int InstrPreSec = 10000;
+  int INIT_INSTR_PRE_SEC = 10000;
+  int InstrPreSec = INIT_INSTR_PRE_SEC;
   int Phase = 0;
-  int Slope = 1000; // Instr/s to change in phase 1.
+  int Slope = 10000; // Instr/s to change in phase 1.
 
-  //struct timespec UpdateInterval = { .tv_sec = 0, .tv_nsec = 100000000 }; // 0.1 seconds
-  struct timespec UpdateInterval = { .tv_sec = 3, .tv_nsec = 0 }; // 0.1 seconds
+  struct timespec UpdateInterval = { .tv_sec = 0, .tv_nsec = 100000000 }; // 0.1 seconds
+  //struct timespec UpdateInterval = { .tv_sec = 3, .tv_nsec = 0 }; // 0.1 seconds
   int Rate = ((UpdateInterval.tv_nsec * Slope) / 1000000000) + UpdateInterval.tv_sec * Slope;
 
   int THREASHOLD_C1 = 8; // Soft limit. Start slow down
@@ -436,6 +450,12 @@ void * SetSpeedLoop(void * arg){
   SpeedBuf[SpeedLen++] = 'i';
   SpeedBuf[SpeedLen++] = 'n';
   // set initial value
+
+  // wait until we receive first frame.
+  pthread_mutex_lock(&StartLock);
+  pthread_cond_wait(&StartCond, &StartLock);
+  pthread_mutex_unlock(&StartLock);
+  
   ((uint32_t*) (SpeedBuf + SpeedLen))[0] = (SYSTEM_CLOCK / InstrPreSec);
   if (sendto(sockfd, SpeedBuf, SpeedLen+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
   else printf("send success!\n");
@@ -446,14 +466,16 @@ void * SetSpeedLoop(void * arg){
     if(QueueDepth <= THREASHOLD_C1 / 2) {
       if(!Phase) InstrPreSec = InstrPreSec * 2;
       else InstrPreSec = InstrPreSec + Rate;
-    } else if(QueueDepth <= THREASHOLD_C2) {
+    } else if(QueueDepth <= THREASHOLD_C1) {
       if(!Phase){
         InstrPreSec = InstrPreSec / 4;
         Phase = 1;
       } else InstrPreSec = InstrPreSec - Rate;
+    } else if(QueueDepth <= THREASHOLD_C2) {
+      InstrPreSec = InstrPreSec / 2;
     } else if(QueueDepth <= THREASHOLD_C3) {
       printf("Near upper limit of queue depth. Revert to 10K Instr/s, Phase = %d\n", Phase);
-      InstrPreSec = 10000;
+      InstrPreSec = INIT_INSTR_PRE_SEC;
       Phase = 1;
     } else if(QueueDepth <= QUEUE_SIZE){
       printf("Critial failure. SetSpeedLoop Thread Phase = %d.\n", Phase);
