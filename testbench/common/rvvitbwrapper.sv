@@ -25,9 +25,11 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
-                                parameter MAX_CSRS = 5,
-                                parameter logic [31:0] RVVI_INIT_TIME_OUT = 32'd4,
-                                parameter logic [31:0] RVVI_PACKET_DELAY = 32'd2)(
+                                      parameter              MAX_CSRS = 5,
+                                      parameter logic [31:0] RVVI_INIT_TIME_OUT = 32'd4,
+                                      parameter logic [31:0] RVVI_PACKET_DELAY = 32'd2,
+                                      parameter ETH_WIDTH = 4
+)(
   input  logic clk,
   input  logic reset,
   output logic ExternalStall,
@@ -37,7 +39,11 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   input  logic phy_rx_clk,
   input  logic [3:0] phy_rxd,
   input  logic phy_rx_dv,
-  input  logic phy_rx_er
+  input  logic phy_rx_er,
+  input logic               phy_rx_clk_en, // not present for mii
+  input logic               phy_tx_clk_en, // not present for mii
+  input logic               phy_rx_rst, // not present for mii
+  input logic               phy_tx_rst // not present for mii
 );
 
   logic        valid;
@@ -74,8 +80,8 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   logic                                             EthernetTXCounterEn;
   logic [31:0]                                      EthernetTXCount;
   logic                                             IlaTrigger;
+  logic                                             mii_tx_en;
   
-
   assign StallE         = dut.core.StallE;
   assign StallM         = dut.core.StallM;
   assign StallW         = dut.core.StallW;
@@ -135,49 +141,23 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   assign CSRArray[34] = dut.core.priv.priv.csr.csru.csru.FRM_REGW; // 12'h002
   assign CSRArray[35] = {dut.core.priv.priv.csr.csru.csru.FRM_REGW, dut.core.priv.priv.csr.csru.csru.FFLAGS_REGW}; // 12'h003
 
-    acev #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, "GENERIC") acev(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+    acev #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, ETH_WIDTH, "GENERIC") acev(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
       .phy_rx_clk,
       .phy_rxd,
+      .phy_rx_rst,
+      .phy_tx_rst,
       .phy_rx_dv,
       .phy_rx_er,
       .phy_tx_clk,
+      .phy_rx_clk_en, // not present for mii
+      .phy_tx_clk_en, // not present for mii
       .phy_txd,
       .phy_tx_en,
       .phy_tx_er,
       .ExternalStall, .IlaTrigger);
-/* -----\/----- EXCLUDED -----\/-----
-  
 
-  rvvisynth #(P, MAX_CSRS, TOTAL_CSRS) rvvisynth(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
-                                                 .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
-                                                 .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
-                                                 .valid, .rvvi);
-
-  packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi, .valid, .m_axi_aclk(clk), .m_axi_aresetn(~reset), .RVVIStall,
-    .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready);
-
-  eth_mac_mii_fifo #("GENERIC", "BUFG", 32) ethernet(.rst(reset), .logic_clk(clk), .logic_rst(reset),
-    .tx_axis_tdata(RvviAxiWdata), .tx_axis_tkeep(RvviAxiWstrb), .tx_axis_tvalid(RvviAxiWvalid), .tx_axis_tready(RvviAxiWready),
-    .tx_axis_tlast(RvviAxiWlast), .tx_axis_tuser('0), .rx_axis_tdata(), .rx_axis_tkeep(), .rx_axis_tvalid(), .rx_axis_tready(1'b1),
-    .rx_axis_tlast(), .rx_axis_tuser(),
-
-    .mii_rx_clk(clk),
-    .mii_rxd('0),
-    .mii_rx_dv('0),
-    .mii_rx_er('0),
-    .mii_tx_clk(clk),
-    .mii_txd,
-    .mii_tx_en,
-    .mii_tx_er,
-
-    // status
-    .tx_error_underflow, .tx_fifo_overflow, .tx_fifo_bad_frame, .tx_fifo_good_frame, .rx_error_bad_frame,
-    .rx_error_bad_fcs, .rx_fifo_overflow, .rx_fifo_bad_frame, .rx_fifo_good_frame, 
-    .cfg_ifg(8'd12), .cfg_tx_enable(1'b1), .cfg_rx_enable(1'b1));
-
- -----/\----- EXCLUDED -----/\----- */
   flopr #(1) txedgereg(clk, reset, mii_tx_en, MiiTxEnDelay);
   assign EthernetTXCounterEn = ~mii_tx_en & MiiTxEnDelay;
   counter #(32) ethernexttxcounter(clk, reset, EthernetTXCounterEn, EthernetTXCount);
