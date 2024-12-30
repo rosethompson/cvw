@@ -2,11 +2,11 @@
 .globl lpddr_test
 .type lpddr_test, @function
 lpddr_test:
-	li t1, 0x90000000
+	li t1, 0x80000000
         addi t5, t1, 0
 	li t2, 0xAABBCCDD00112233
 
-        li t3, 10
+        li t3, 1024
         li t4, 0
 loop_write:     
         beq t4, t3, done_write

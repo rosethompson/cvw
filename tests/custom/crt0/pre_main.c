@@ -1,5 +1,6 @@
 #include <stdlib.h>
 
+#include "main.h"
 #include "pcnt_driver.h"
 
 int pre_main(int argc, char *argv[]) {
