@@ -72,6 +72,10 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   logic                                             RvviAxiWlast;
   logic                                             RvviAxiWvalid;
   logic                                             RvviAxiWready;
+  logic [31:0]                                      RvviAxiRdata;
+  logic [3:0]                                       RvviAxiRstrb;
+  logic                                             RvviAxiRlast;
+  logic                                             RvviAxiRvalid;
 
   logic                                             tx_error_underflow, tx_fifo_overflow, tx_fifo_bad_frame, tx_fifo_good_frame, rx_error_bad_frame;
   logic                                             rx_error_bad_fcs, rx_fifo_overflow, rx_fifo_bad_frame, rx_fifo_good_frame;
@@ -162,6 +166,147 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   assign EthernetTXCounterEn = ~mii_tx_en & MiiTxEnDelay;
   counter #(32) ethernexttxcounter(clk, reset, EthernetTXCounterEn, EthernetTXCount);
 
+
+  // receive the rvvi packets from acev. Remove instruction's data except for Minstret. Then add 32-bit kind of random value which represents the load on the host computer.
+  // Finally drop some frames.
+
+    // axi 4 write data channel
+
+  if (ETH_WIDTH == 8) begin : eth
+    // this is the version of 1g/s ethernet
+    eth_mac_1g_fifo #( .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024), .RX_FIFO_DEPTH(1024)) 
+    ethernet(.logic_clk(clk), .logic_rst(reset),
+             .tx_axis_tdata(RvviAxiWdata), .tx_axis_tkeep(RvviAxiWstrb), .tx_axis_tvalid(RvviAxiWvalid), .tx_axis_tready(RvviAxiWready),
+             .tx_axis_tlast(RvviAxiWlast), .tx_axis_tuser('0), .rx_axis_tdata(RvviAxiRdata),
+             .rx_axis_tkeep(RvviAxiRstrb), .rx_axis_tvalid(RvviAxiRvalid), .rx_axis_tready(1'b1),
+             .rx_axis_tlast(RvviAxiRlast), .rx_axis_tuser(),
+             .rx_clk(phy_tx_clk), .rx_rst(phy_tx_rst), .tx_clk(phy_rx_clk), .tx_rst(phy_rx_rst),
+             .gmii_rxd(phy_txd),
+             .gmii_rx_dv(phy_tx_en),
+             .gmii_rx_er(phy_tx_er),
+             .gmii_txd(phy_rxd),
+             .gmii_tx_en(phy_rx_dv),
+             .gmii_tx_er(phy_rx_er),
+             .rx_clk_enable(phy_tx_clk_en), 
+             .tx_clk_enable(phy_rx_clk_en), 
+             .rx_mii_select(1'b0),
+             .tx_mii_select(1'b0),
+             // status
+             .tx_error_underflow(), .tx_fifo_overflow(), .tx_fifo_bad_frame(), .tx_fifo_good_frame(), .rx_error_bad_frame(),
+             .rx_error_bad_fcs(), .rx_fifo_overflow(), .rx_fifo_bad_frame(), .rx_fifo_good_frame(), 
+             .cfg_ifg(8'd12), .cfg_tx_enable(1'b1), .cfg_rx_enable(1'b1)
+             );
+    end else if (ETH_WIDTH == 4) begin : eth
+
+      // 10/100 Mb/s ethernet
+      eth_mac_mii_fifo #(.TARGET("GENERIC"), .CLOCK_INPUT_STYLE("BUFG"), .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024), .RX_FIFO_DEPTH(1024)) 
+      ethernet(.rst(reset), .logic_clk(clk), .logic_rst(reset),
+               .tx_axis_tdata(RvviAxiWdata), .tx_axis_tkeep(RvviAxiWstrb), .tx_axis_tvalid(RvviAxiWvalid), .tx_axis_tready(RvviAxiWready),
+               .tx_axis_tlast(RvviAxiWlast), .tx_axis_tuser('0), .rx_axis_tdata(RvviAxiRdata),
+               .rx_axis_tkeep(RvviAxiRstrb), .rx_axis_tvalid(RvviAxiRvalid), .rx_axis_tready(1'b1),
+               .rx_axis_tlast(RvviAxiRlast), .rx_axis_tuser(),
+               .mii_rx_clk(phy_tx_clk),
+               .mii_rxd(phy_txd),
+               .mii_rx_dv(phy_tx_en),
+               .mii_rx_er(phy_tx_er),
+               .mii_tx_clk(phy_rx_clk),
+               .mii_txd(phy_rxd),
+               .mii_tx_en(phy_rx_dv),
+               .mii_tx_er(phy_rx_er),
+               // status
+               .tx_error_underflow(), .tx_fifo_overflow(), .tx_fifo_bad_frame(), .tx_fifo_good_frame(), .rx_error_bad_frame(),
+               .rx_error_bad_fcs(), .rx_fifo_overflow(), .rx_fifo_bad_frame(), .rx_fifo_good_frame(), 
+               .cfg_ifg(8'd12), .cfg_tx_enable(1'b1), .cfg_rx_enable(1'b1)
+               );
+    end
+
+  typedef enum {STATE_IDLE, STATE_CAPTURE, STATE_CAPTURE_DONE, STATE_DONE} RecvStateType;
+  RecvStateType RecvCurrState, RecvNextState;
+  
+  logic        RecvCounterEn, RecvCounterReset;
+  logic [3:0]  RecvCounter;
+  logic [31:0] mem [11:0];
+  logic        RecvDone;
+  
+
+  always_ff @(posedge clk)
+    if (reset) RecvCurrState <= STATE_IDLE;
+    else RecvCurrState <= RecvNextState;
+
+  always_comb begin
+    case(RecvCurrState)
+      STATE_IDLE: if(RvviAxiRvalid) RecvNextState = STATE_CAPTURE;
+      else RecvNextState = STATE_IDLE;
+      STATE_CAPTURE: if(RecvDone) RecvNextState = STATE_CAPTURE_DONE;
+      else RecvNextState = STATE_CAPTURE;
+      STATE_CAPTURE_DONE: if(RvviAxiRlast) RecvNextState = STATE_DONE;
+      else RecvNextState = STATE_CAPTURE_DONE;
+      STATE_DONE: if(RvviAxiRvalid) RecvNextState = STATE_CAPTURE;
+      else RecvNextState = STATE_IDLE;
+      default: RecvNextState = STATE_IDLE;
+    endcase
+  end
+
+  assign RecvCounterEn = RvviAxiRvalid & RecvCurrState != STATE_CAPTURE_DONE;
+  assign RecvCounterReset = (RecvCurrState == STATE_IDLE | RecvCurrState == STATE_DONE) & ~RvviAxiRvalid;
+  counter #(4) recvcounterreg(clk, RecvCounterReset, RecvCounterEn, RecvCounter);
+  assign RecvDone = RecvCounter == 4'd11 & RvviAxiRvalid;
+  
+  always_ff @(posedge clk) begin
+    if(RecvCounterEn) begin
+      mem[RecvCounter] <= RvviAxiRdata;
+    end
+  end
+
+  // now that the frame is captured send it back with the random 32-bit system load estimation
+
+  typedef enum {STATE_RDY, STATE_TRANS, STATE_WAIT, STATE_FINISHED} TransStateType;
+  TransStateType TransCurrState, TransNextState;
+
+  logic        TransCounterEn, TransCounterReset;
+  logic [2:0]  TransCounter;
+  logic [31:0] TransMem [6:0];
+  logic        TransCounterThreshold;
+
+  always_ff @(posedge clk)
+    if (reset) TransCurrState <= STATE_RDY;
+    else TransCurrState <= TransNextState;
+
+  always_comb begin
+    case(TransCurrState)
+      STATE_RDY: if(RecvDone & RvviAxiWready) TransNextState = STATE_TRANS;
+      else if(RecvDone & ~RvviAxiWready) TransNextState = STATE_WAIT;
+      else TransNextState = STATE_RDY;
+      STATE_WAIT: if(RvviAxiWready) TransNextState = STATE_TRANS;
+      else TransNextState = STATE_WAIT;
+      STATE_TRANS: if (TransCounterThreshold & RvviAxiWready) TransNextState = STATE_FINISHED;
+      else TransNextState = STATE_TRANS;
+      STATE_FINISHED: TransNextState = STATE_RDY;
+      default: TransNextState = STATE_RDY;
+    endcase
+  end
+
+  assign TransCounterThreshold = TransCounter == 3'd6;
+  assign TransCounterEn = RvviAxiWready & TransCurrState == STATE_TRANS;
+  assign TransCounterReset = TransCurrState == STATE_RDY;
+  counter #(3) transcounterreg(clk, TransCounterReset, TransCounterEn, TransCounter);
+  assign TransMem[0] = mem[0];
+  assign TransMem[1] = mem[1];
+  assign TransMem[2] = mem[2];
+  //assign TransMem[3] = mem[3];
+  assign TransMem[3][15:0] = mem[3][15:0];
+  assign TransMem[3][31:16] = mem[8][31:16];
+  assign TransMem[4] = mem[9];
+  assign TransMem[5][15:0] = mem[10][15:0];
+  assign TransMem[5][31:16] = 16'b1;// 32-bit system load lower bits
+  assign TransMem[6][15:0] = '0; // 32-bit system load  uppwer bits 
+  assign TransMem[6][31:16] = '0;
+
+  assign RvviAxiWdata = TransMem[TransCounter];
+  assign RvviAxiWstrb = '1;
+  assign RvviAxiWlast = TransCounterThreshold & TransCurrState == STATE_TRANS;
+  assign RvviAxiWvalid = TransCurrState == STATE_TRANS;
+    
 endmodule  
 
 
