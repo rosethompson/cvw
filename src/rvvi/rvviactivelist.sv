@@ -62,16 +62,16 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   statetype CurrState, NextState;
   logic                  Port3CounterLoad, Port3CounterEn;
   logic                  Port3Active;
-  logic [Entries-1:0]    LutMatch;
+  logic [2**Entries-1:0]    LutMatch;
   
 
   // search Lut for matching Port2WData[Entries:0]. The index tells us the correct entry in the memory array.
   genvar                 index;
-  for(index=0; index<Entries; index++) begin
+  for(index=0; index<2**Entries; index++) begin
     assign LutMatch[index] = Lut[index] == Port2WData[Entries:0];
   end
   // assume only one matches
-  binencoder #(Entries) binencoder(LutMatch, Port2LutIndex);
+  binencoder #(2**Entries) binencoder(LutMatch, Port2LutIndex);
   
   always_ff @(posedge clk)
     if (Port1Wen & ~Full) begin 
