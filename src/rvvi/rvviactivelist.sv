@@ -84,6 +84,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
       HeadPtr <= '0;
       Full <= 1'b0;
       Empty <= 1'b1;
+      ActiveBits <= '0;
     end else begin 
       if (Port1Wen) begin
         Full <= ({~HeadPtrNext[Entries], HeadPtrNext[Entries-1:0]} == TailPtr);
@@ -96,9 +97,9 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
       if(Port2Wen) begin
         ActiveBits[Port2LutIndex] <= 1'b0;
           //Lut[raddr] <= Port2WData[Entries:0]; // don't need to clear it.
-        if(Port2LutIndex == TailPtr) TailPtr <= TailPtrNext; // only advance the tail pointer if most recent received instruction is at the end of the FIFO.
+        if(Port2LutIndex == TailPtr[Entries-1:0]) TailPtr <= TailPtrNext; // only advance the tail pointer if most recent received instruction is at the end of the FIFO.
       end
-      Empty <= |ActiveBits;
+      Empty <= ~|ActiveBits;
     end 
   
   assign raddr = TailPtr[Entries-1:0];
