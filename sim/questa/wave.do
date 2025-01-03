@@ -699,7 +699,7 @@ add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWlast
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWvalid
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWready
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/TransCounter
-add wave -noupdate -expand /testbench/rvvi_synth/rvvitbwrapper/TransMem
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/TransMem
 add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/acev/inversepacketizer/clk
 add wave -noupdate -expand -group {invser packetizer} -expand -group input /testbench/rvvi_synth/rvvitbwrapper/acev/inversepacketizer/RvviAxiRdata
 add wave -noupdate -expand -group {invser packetizer} -expand -group input /testbench/rvvi_synth/rvvitbwrapper/acev/inversepacketizer/RvviAxiRstrb
@@ -708,20 +708,21 @@ add wave -noupdate -expand -group {invser packetizer} -expand -group input /test
 add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/acev/inversepacketizer/Valid
 add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/acev/inversepacketizer/Minstr
 add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/acev/inversepacketizer/InterPacketDelay
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/phy_tx_clk
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/phy_rx_clk
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/phy_rxd
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/phy_rx_dv
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/phy_rx_er
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/phy_rx_clk_en
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/phy_tx_clk_en
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/phy_rx_rst
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/phy_tx_rst
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/phy_txd
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/phy_tx_en
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/phy_tx_er
+add wave -noupdate -expand -group {active list} -expand /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/ActiveBits
+add wave -noupdate -expand -group {active list} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/Full
+add wave -noupdate -expand -group {active list} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/mem
+add wave -noupdate -expand -group {active list} -expand /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/Lut
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/Port1WData
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/Port1Wen
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/Port2WData
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/Port2Wen
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/HostInterPacketDelay
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/HostMinstr
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/Port2LutIndex
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/Port2Wen
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/waddr
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {15822 ns} 0} {{Cursor 4} {10854470 ns} 1} {{Cursor 3} {13747 ns} 1} {{Cursor 4} {223860 ns} 1}
+WaveRestoreCursors {{Cursor 4} {3225 ns} 0} {{Cursor 4} {10854470 ns} 1} {{Cursor 3} {13747 ns} 1} {{Cursor 4} {223860 ns} 1}
 quietly wave cursor active 1
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -737,4 +738,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {13620 ns} {16052 ns}
+WaveRestoreZoom {3053 ns} {3387 ns}

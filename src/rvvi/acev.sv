@@ -118,13 +118,13 @@ module acev import cvw::*; #(parameter cvw_t P,
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
       .valid, .rvvi);
 
-  logic [207:0]            Port2WData;
+  logic [P.XLEN+32-1:0]            Port2WData;
 
-  assign Port2WData = {HostInterPacketDelay, HostMinstr, EthType, SrcMac, DstMac};
+  assign Port2WData = {HostInterPacketDelay, HostMinstr};
   assign Port3Stall = 0; // *** fix me.
   
-  rvviactivelist #(.Entries(16), .WIDTH(RVVI_WIDTH-112), .WIDTH2(208)) // *** fix the widths so they depend on the sizes of rvvi
-  rvviactivelist (.clk, .reset, .Port1Wen(valid), .Port1WData(rvvi[RVVI_WIDTH-1:112]),
+  rvviactivelist #(.Entries(4), .WIDTH(RVVI_WIDTH), .WIDTH2(96)) // *** fix the widths so they depend on the sizes of rvvi
+  rvviactivelist (.clk, .reset, .Port1Wen(valid), .Port1WData(rvvi),
                   .Port2Wen(HostInstrValid), .Port2WData,
                   .Port3RData(), .Port3RValid(), .Port3Stall, // *** connect these to muxes to pktizer
                   .Full(), .Empty()); // full will stall cpu

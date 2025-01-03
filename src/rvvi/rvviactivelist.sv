@@ -31,7 +31,7 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=208)(                 // 2^Entries entries of WIDTH bits each
+module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(                 // 2^Entries entries of WIDTH bits each
     input logic              clk, Port1Wen, Port2Wen, reset,
     input logic [WIDTH-1:0]  Port1WData, 
     input logic [WIDTH2-1:0] Port2WData, 
@@ -52,7 +52,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=208)(            
   
   logic [WIDTH-1:0]      mem[2**Entries];
   logic [2**Entries]     ActiveBits;
-  logic [WIDTH-1:0]      Lut[Entries:0];
+  logic [Entries:0]      Lut[2**Entries];
   logic [Entries:0]      TailPtr, HeadPtr, Port3Ptr, Port3PtrNext;
   logic [Entries:0]      TailPtrNext, HeadPtrNext;
   logic [Entries-1:0]    raddr;
@@ -62,10 +62,16 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=208)(            
   statetype CurrState, NextState;
   logic                  Port3CounterLoad, Port3CounterEn;
   logic                  Port3Active;
+  logic [Entries-1:0]    LutMatch;
   
-  
-  
-  assign Port2LutIndex = Lut[Port2WData[Entries+160:160]];
+
+  // search Lut for matching Port2WData[Entries:0]. The index tells us the correct entry in the memory array.
+  genvar                 index;
+  for(index=0; index<Entries; index++) begin
+    assign LutMatch[index] = Lut[index] == Port2WData[Entries:0];
+  end
+  // assume only one matches
+  binencoder #(Entries) binencoder(LutMatch, Port2LutIndex);
   
   always_ff @(posedge clk)
     if (Port1Wen & ~Full) begin 
@@ -83,11 +89,13 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=208)(            
         Full <= ({~HeadPtrNext[Entries], HeadPtrNext[Entries-1:0]} == TailPtr);
         HeadPtr  <= HeadPtrNext;
         if(~Full) begin 
-          Lut[waddr][2**Entries+160:160] <= HeadPtr; // 160 is offset for Minstret
+          Lut[waddr] <= Port1WData[Entries+160:160];
           ActiveBits[waddr] <= 1'b1;
         end
-      end else if(Port2Wen) begin
+      end 
+      if(Port2Wen) begin
         ActiveBits[Port2LutIndex] <= 1'b0;
+          //Lut[raddr] <= Port2WData[Entries:0]; // don't need to clear it.
         if(Port2LutIndex == TailPtr) TailPtr <= TailPtrNext; // only advance the tail pointer if most recent received instruction is at the end of the FIFO.
       end
       Empty <= |ActiveBits;
