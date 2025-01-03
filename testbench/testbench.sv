@@ -613,12 +613,9 @@ module testbench;
     localparam logic [31:0] RVVI_PACKET_DELAY = 32'd2;
     localparam              ETH_WIDTH = 8;
 
-    logic [ETH_WIDTH-1:0]   phy_txd;
-    logic                   phy_tx_en, phy_tx_er;
-
     rvvitbwrapper #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, ETH_WIDTH) 
-    rvvitbwrapper(.clk, .reset, .ExternalStall, .phy_tx_clk(clk), .phy_txd, .phy_tx_en, .phy_tx_er,
-                  .phy_rx_clk(clk), .phy_rxd('0), .phy_rx_dv('0), .phy_rx_er('0), .phy_rx_clk_en('1), .phy_tx_clk_en('1), .phy_rx_rst(reset), .phy_tx_rst(reset));
+    rvvitbwrapper(.clk, .reset, .ExternalStall, .phy_tx_clk(clk),
+                  .phy_rx_clk(clk), .phy_rx_clk_en('1), .phy_tx_clk_en('1), .phy_rx_rst(reset), .phy_tx_rst(reset));
   end else begin
     assign ExternalStall = '0;
   end

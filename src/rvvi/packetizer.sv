@@ -43,6 +43,8 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   output logic  		   RvviAxiWlast,
   output logic  		   RvviAxiWvalid,
   input  logic  		   RvviAxiWready,
+  input logic [47:0]       SrcMac, DstMac,
+  input logic [15:0]       EthType,
 (* mark_debug = "true" *)  input  logic [31:0]      InnerPktDelay
   );
 
@@ -57,8 +59,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   logic                    BurstDone;
   logic                    WordCountReset;
   logic                    WordCountEnable;
-  logic [47:0]             SrcMac, DstMac;
-  logic [15:0]             EthType, Length;
+  logic [15:0]             Length;
   logic [TotalFrameLengthBits-1:0] TotalFrame;
   logic [31:0] TotalFrameWords [TotalFrameLengthBytes/4-1:0];
   logic [WordPadLen-1:0]     WordPad;
@@ -134,10 +135,6 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   assign WordPad = '0;
   assign TotalFrame = {WordPad, rvviDelay, EthType, DstMac, SrcMac};
 
-  // *** fix me later
-  assign DstMac = 48'h8F54_0000_1654; // made something up
-  assign SrcMac = 48'h4502_1111_6843;
-  assign EthType = 16'h005c;
   
   assign RvviAxiWdata = TotalFrameWords[WordCount[4:0]];
   assign RvviAxiWstrb = '1;

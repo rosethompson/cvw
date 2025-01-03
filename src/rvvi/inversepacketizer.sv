@@ -27,7 +27,7 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-module inversepacketizer import cvw::*; (
+module inversepacketizer import cvw::*; #(parameter cvw_t P) (
   input logic               clk, reset,
   input logic [31:0]        RvviAxiRdata,
   input logic [3:0]         RvviAxiRstrb,
@@ -35,7 +35,7 @@ module inversepacketizer import cvw::*; (
   input logic               RvviAxiRvalid,
   output logic              Valid,
   output logic [P.XLEN-1:0] Minstr,
-  output logic              InterPacketDelay);
+  output logic [31:0]       InterPacketDelay);
   
 
   typedef enum              {STATE_RST, STATE_ALL_CAPTURED, STATE_WAIT} statetype;
@@ -73,8 +73,8 @@ module inversepacketizer import cvw::*; (
     end
   end
 
-  assign Minstr = {mem[3][31:16], mem[4], mem[5][15:0]};
-  assign InterPacketDelay = {mem[5][31:0], mem[6][15:0]};
+  assign Minstr = {mem[5][15:0], mem[4], mem[3][31:16]};
+  assign InterPacketDelay = {mem[6][15:0], mem[5][31:16]};
   assign Valid = CurrState == STATE_ALL_CAPTURED;
   
 

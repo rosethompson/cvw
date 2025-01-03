@@ -34,12 +34,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   input  logic reset,
   output logic ExternalStall,
   input  logic phy_tx_clk,
-  output logic [ETH_WIDTH-1:0] phy_txd,
-  output logic phy_tx_en, phy_tx_er,
   input  logic phy_rx_clk,
-  input  logic [ETH_WIDTH-1:0] phy_rxd,
-  input  logic phy_rx_dv,
-  input  logic phy_rx_er,
   input logic               phy_rx_clk_en, // not present for mii
   input logic               phy_tx_clk_en, // not present for mii
   input logic               phy_rx_rst, // not present for mii
@@ -85,6 +80,12 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   logic [31:0]                                      EthernetTXCount;
   logic                                             IlaTrigger;
   logic                                             mii_tx_en;
+  
+  logic [ETH_WIDTH-1:0]                             phy_rxd;
+  logic                                             phy_rx_dv;
+  logic                                             phy_rx_er;
+  logic [ETH_WIDTH-1:0]                             phy_txd;
+  logic                                             phy_tx_en, phy_tx_er;
   
   assign StallE         = dut.core.StallE;
   assign StallM         = dut.core.StallM;

@@ -69,8 +69,10 @@ module acev import cvw::*; #(parameter cvw_t P,
   output logic             IlaTrigger
   );
 
+  localparam               RVVI_WIDTH = 72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16);
+  
   (* mark_debug = "true" *)    logic                                             valid;
-  (* mark_debug = "true" *)    logic [72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16)-1:0] rvvi;
+  (* mark_debug = "true" *)    logic [RVVI_WIDTH-1:0] rvvi;
 
   (* mark_debug = "true" *)    logic					     RVVIStall, HostStall;
     
@@ -98,15 +100,43 @@ module acev import cvw::*; #(parameter cvw_t P,
 
   logic                                               RateSet;
   logic [31:0]                                        RateMessage;
+  logic                                               HostInstrValid;
+  logic [31:0]                                        HostInterPacketDelay;
+  logic [P.XLEN-1:0]                                  HostMinstr;
+
+  logic [47:0]             SrcMac, DstMac;
+  logic [15:0]             EthType;
+  logic                    Port3Stall;
   
-    rvvisynth #(P, MAX_CSRS, TOTAL_CSRS) rvvisynth(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+  // *** fix me later
+  assign DstMac = 48'h8F54_0000_1654; // made something up
+  assign SrcMac = 48'h4502_1111_6843;
+  assign EthType = 16'h005c;
+
+  rvvisynth #(P, MAX_CSRS, TOTAL_CSRS) rvvisynth(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
       .valid, .rvvi);
 
+  logic [207:0]            Port2WData;
 
-  packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi, .valid, .m_axi_aclk(clk), .m_axi_aresetn(~reset), .RVVIStall,
-      .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready, .InnerPktDelay(RateMessage));
+  assign Port2WData = {HostInterPacketDelay, HostMinstr, EthType, SrcMac, DstMac};
+  assign Port3Stall = 0; // *** fix me.
+  
+  rvviactivelist #(.Entries(16), .WIDTH(RVVI_WIDTH-112), .WIDTH2(208)) // *** fix the widths so they depend on the sizes of rvvi
+  rvviactivelist (.clk, .reset, .Port1Wen(valid), .Port1WData(rvvi[RVVI_WIDTH-1:112]),
+                  .Port2Wen(HostInstrValid), .Port2WData,
+                  .Port3RData(), .Port3RValid(), .Port3Stall, // *** connect these to muxes to pktizer
+                  .Full(), .Empty()); // full will stall cpu
+
+  inversepacketizer #(P) inversepacketizer (.clk, .reset, .RvviAxiRdata, .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid,
+    .Valid(HostInstrValid), .Minstr(HostMinstr), .InterPacketDelay(HostInterPacketDelay));
+  
+
+  packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi, .valid, .m_axi_aclk(clk),
+     .m_axi_aresetn(~reset), .RVVIStall,
+    .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready, .SrcMac, .DstMac, .EthType, 
+    .InnerPktDelay(RateMessage));
 
   if (ETH_WIDTH == 8) begin : eth
     // this is the version of 1g/s ethernet

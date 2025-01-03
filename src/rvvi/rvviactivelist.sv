@@ -31,7 +31,7 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=224)(                 // 2^Entries entries of WIDTH bits each
+module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=208)(                 // 2^Entries entries of WIDTH bits each
     input logic              clk, Port1Wen, Port2Wen, reset,
     input logic [WIDTH-1:0]  Port1WData, 
     input logic [WIDTH2-1:0] Port2WData, 
@@ -39,7 +39,9 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=224)(            
     output logic             Port3RValid,
     input  logic             Port3Stall,
     output logic             Full, Empty);
-  
+
+  // port 2 data is
+  // InstrPackDelay (32-bit), Minstret (64-bit), eth src (16-bit), src mac (48-bit) , dst mac (48-bit)
 
   /* Pointer FIFO using design elements from "Simulation and Synthesis Techniques
    for Asynchronous FIFO Design" by Clifford E. Cummings. Namely, Entries bit read and write pointers
