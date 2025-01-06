@@ -50,9 +50,9 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
    which are also used to address memory
    */
   
-  logic [WIDTH-1:0]      mem[2**Entries];
-  logic [2**Entries]     ActiveBits;
-  logic [Entries:0]      Lut[2**Entries];
+  logic [WIDTH-1:0]      mem[2**Entries-1:0];
+  logic [2**Entries-1:0] ActiveBits;
+  logic [Entries:0]      Lut[2**Entries-1:0];
   logic [Entries:0]      TailPtr, HeadPtr, Port3Ptr, Port3PtrNext;
   logic [Entries:0]      TailPtrNext, HeadPtrNext;
   logic [Entries-1:0]    raddr;
@@ -87,7 +87,6 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
       ActiveBits <= '0;
     end else begin 
       if (Port1Wen) begin
-        Full <= ({~HeadPtrNext[Entries], HeadPtrNext[Entries-1:0]} == TailPtr);
         HeadPtr  <= HeadPtrNext;
         if(~Full) begin 
           Lut[waddr] <= Port1WData[Entries+160:160];
@@ -97,15 +96,37 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
       if(Port2Wen) begin
         ActiveBits[Port2LutIndex] <= 1'b0;
           //Lut[raddr] <= Port2WData[Entries:0]; // don't need to clear it.
-        if(Port2LutIndex == TailPtr[Entries-1:0]) TailPtr <= TailPtrNext; // only advance the tail pointer if most recent received instruction is at the end of the FIFO.
+        if(Port2LutIndex == TailPtr[Entries-1:0]) begin // only advance the tail pointer if most recent received instruction is at the end of the FIFO.
+          if(Empty) TailPtr <= HeadPtr;
+          else TailPtr <= TailPtrNext;
+        end
       end
       Empty <= ~|ActiveBits;
+      Full <= &ActiveBits;
     end 
   
   assign raddr = TailPtr[Entries-1:0];
   assign TailPtrNext = TailPtr + {{(Entries){1'b0}}, (Port2Wen & ~Empty)};      
   assign waddr = HeadPtr[Entries-1:0];
   assign HeadPtrNext = HeadPtr + {{(Entries){1'b0}}, (Port1Wen & ~Full)};
+
+  // derive tail pointer from the active bits.
+  // it is the first 1 after the head pointer.  The easiest way to find it is a leading zero detector, but we first have to align the bits
+  // we'll use a rotator to do this. Then we'll have to compenstate by adding back in the shift.
+  logic [(2**Entries)*2-1:0]     ActiveBitsShift;
+  logic [2**Entries-1:0]     ActiveBitsInvert;
+  logic [(2**Entries)*2-1:0] ActiveBitsExtend;
+  logic [Entries-1:0]        TailPtrUncompensated;
+  logic [Entries-1:0]        TailPtr2;
+
+  logic [2**Entries-1:0]     ActiveBitsRev;
+  for(index=0; index<2**Entries; index++) assign ActiveBitsRev[2**Entries-index-1] = ActiveBits[index];
+  
+  assign ActiveBitsExtend = {ActiveBitsRev[2**Entries-1:0], ActiveBitsRev[2**Entries-1:0]};
+  assign ActiveBitsShift = ActiveBitsExtend << HeadPtr[Entries-1:0];
+  assign ActiveBitsInvert = ActiveBitsShift[(2**Entries)*2-1:2**Entries];
+  lzc #(2**Entries) lzc(ActiveBitsInvert, TailPtrUncompensated);
+  assign TailPtr2 = TailPtrUncompensated + HeadPtr[Entries-1:0];
 
   // port 3
   // if port 2 writes to an address which is not the tail pointer, we iterate from the tail to the first non-active entry.
@@ -120,7 +141,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
 
   always_comb begin
     case(CurrState)
-      STATE_IDLE: if(Port2Wen & Port2LutIndex != TailPtr) NextState = STATE_REPLAY;
+      STATE_IDLE: if(Port2Wen & Port2LutIndex != TailPtr2) NextState = STATE_REPLAY;
       else NextState = STATE_IDLE;
       STATE_REPLAY: if(~Port3Active & ~Port3Stall) NextState = STATE_IDLE;
       else NextState = STATE_REPLAY;
@@ -128,10 +149,10 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
     endcase
   end
 
-  flopenl #(Entries+1) port3counterreg(clk, Port3CounterLoad, Port3CounterEn, Port3PtrNext, TailPtr, Port3Ptr);
+  flopenl #(Entries+1) port3counterreg(clk, Port3CounterLoad, Port3CounterEn, Port3PtrNext, TailPtr2, Port3Ptr);
   assign Port3PtrNext = Port3Ptr + 1;
-  assign Port3CounterLoad = CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr;
-  assign Port3CounterEn = CurrState == STATE_REPLAY & ~Port3Stall;
+  assign Port3CounterLoad = CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr2;
+  assign Port3CounterEn = CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr2 & ~Port3Stall;
   assign Port3Active = ActiveBits[Port3Ptr];
   assign Port3RData = mem[Port3Ptr];
   assign Port3RValid = CurrState == STATE_REPLAY & ~Port3Stall;

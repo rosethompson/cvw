@@ -108,7 +108,9 @@ module acev import cvw::*; #(parameter cvw_t P,
   logic [15:0]             EthType;
   logic                    Port3Stall;
   logic                    ActiveListStall;
-  
+  logic                    SelActiveList, PacketizerRvviValid;
+  logic [RVVI_WIDTH-1:0]   ActiveListRvvi, PacketizerRvvi;
+    
   // *** fix me later
   assign DstMac = 48'h8F54_0000_1654; // made something up
   assign SrcMac = 48'h4502_1111_6843;
@@ -122,19 +124,22 @@ module acev import cvw::*; #(parameter cvw_t P,
   logic [P.XLEN+32-1:0]            Port2WData;
 
   assign Port2WData = {HostInterPacketDelay, HostMinstr};
-  assign Port3Stall = 0; // *** fix me.
   
   rvviactivelist #(.Entries(4), .WIDTH(RVVI_WIDTH), .WIDTH2(96)) // *** fix the widths so they depend on the sizes of rvvi
   rvviactivelist (.clk, .reset, .Port1Wen(valid), .Port1WData(rvvi),
                   .Port2Wen(HostInstrValid), .Port2WData,
-                  .Port3RData(), .Port3RValid(), .Port3Stall, // *** connect these to muxes to pktizer
+                  .Port3RData(ActiveListRvvi), .Port3RValid(SelActiveList), .Port3Stall(RVVIStall), 
                   .Full(ActiveListStall), .Empty()); // full will stall cpu
+
+  assign PacketizerRvvi = SelActiveList ? ActiveListRvvi : rvvi;
+  assign PacketizerRvviValid = SelActiveList ? SelActiveList : valid;
+  
 
   inversepacketizer #(P) inversepacketizer (.clk, .reset, .RvviAxiRdata, .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid,
     .Valid(HostInstrValid), .Minstr(HostMinstr), .InterPacketDelay(HostInterPacketDelay));
   
 
-  packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi, .valid, .m_axi_aclk(clk),
+  packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi(PacketizerRvvi), .valid(PacketizerRvviValid), .m_axi_aclk(clk),
      .m_axi_aresetn(~reset), .RVVIStall,
     .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready, .SrcMac, .DstMac, .EthType, 
     .InnerPktDelay(RateMessage));
@@ -205,7 +210,7 @@ module acev import cvw::*; #(parameter cvw_t P,
   
     genslowframe genslowframe(.clk, .reset, .HostRequestSlowDown, .RVVIStall, .HostFiFoFillAmt, .HostStall);
     
-    assign ExternalStall = RVVIStall | HostStall | ActiveListStall;
+    assign ExternalStall = RVVIStall | HostStall | ActiveListStall | SelActiveList;
 
 
 

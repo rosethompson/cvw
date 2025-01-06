@@ -86,7 +86,11 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   logic                                             phy_rx_er;
   logic [ETH_WIDTH-1:0]                             phy_txd;
   logic                                             phy_tx_en, phy_tx_er;
-  
+
+  logic                                             FrameCounterEn, FrameCounterReset;
+  logic [3:0]                                       FrameCounter;
+  logic                                             DontSend;
+    
   assign StallE         = dut.core.StallE;
   assign StallM         = dut.core.StallM;
   assign StallW         = dut.core.StallW;
@@ -305,8 +309,14 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
 
   assign RvviAxiWdata = TransMem[TransCounter];
   assign RvviAxiWstrb = '1;
-  assign RvviAxiWlast = TransCounterThreshold & TransCurrState == STATE_TRANS;
-  assign RvviAxiWvalid = TransCurrState == STATE_TRANS;
+  assign RvviAxiWlast = TransCounterThreshold & TransCurrState == STATE_TRANS & ~DontSend;
+  assign RvviAxiWvalid = TransCurrState == STATE_TRANS & ~DontSend;
+
+  assign FrameCounterReset = reset;
+  assign FrameCounterEn = TransCurrState == STATE_FINISHED;
+  assign DontSend = FrameCounter == 4'd10;
+  counter #(4) framecounterreg(clk, FrameCounterReset, FrameCounterEn, FrameCounter);
+  
     
 endmodule  
 
