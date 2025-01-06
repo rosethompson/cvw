@@ -52,10 +52,9 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   
   logic [WIDTH-1:0]      mem[2**Entries-1:0];
   logic [2**Entries-1:0] ActiveBits;
-  logic [Entries:0]      Lut[2**Entries-1:0];
-  logic [Entries:0]      TailPtr, HeadPtr, Port3Ptr, Port3PtrNext;
-  logic [Entries:0]      TailPtrNext, HeadPtrNext;
-  logic [Entries-1:0]    raddr;
+  logic [Entries-1:0]      Lut[2**Entries-1:0];
+  logic [Entries-1:0]      HeadPtr, Port3Ptr, Port3PtrNext;
+  logic [Entries-1:0]      HeadPtrNext;
   logic [Entries-1:0]    waddr;
   logic [Entries-1:0]    Port2LutIndex;
   typedef enum           {STATE_IDLE, STATE_REPLAY, STATE_WAIT} statetype;
@@ -68,7 +67,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   // search Lut for matching Port2WData[Entries:0]. The index tells us the correct entry in the memory array.
   genvar                 index;
   for(index=0; index<2**Entries; index++) begin
-    assign LutMatch[index] = Lut[index] == Port2WData[Entries:0];
+    assign LutMatch[index] = Lut[index] == Port2WData[Entries-1:0];
   end
   // assume only one matches
   binencoder #(2**Entries) binencoder(LutMatch, Port2LutIndex);
@@ -80,7 +79,6 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
 
   always_ff @(posedge clk)
     if (reset) begin 
-      TailPtr <= '0;
       HeadPtr <= '0;
       Full <= 1'b0;
       Empty <= 1'b1;
@@ -95,18 +93,11 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
       end 
       if(Port2Wen) begin
         ActiveBits[Port2LutIndex] <= 1'b0;
-          //Lut[raddr] <= Port2WData[Entries:0]; // don't need to clear it.
-        if(Port2LutIndex == TailPtr[Entries-1:0]) begin // only advance the tail pointer if most recent received instruction is at the end of the FIFO.
-          if(Empty) TailPtr <= HeadPtr;
-          else TailPtr <= TailPtrNext;
-        end
       end
       Empty <= ~|ActiveBits;
       Full <= &ActiveBits;
     end 
   
-  assign raddr = TailPtr[Entries-1:0];
-  assign TailPtrNext = TailPtr + {{(Entries){1'b0}}, (Port2Wen & ~Empty)};      
   assign waddr = HeadPtr[Entries-1:0];
   assign HeadPtrNext = HeadPtr + {{(Entries){1'b0}}, (Port1Wen & ~Full)};
 
@@ -151,7 +142,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
     endcase
   end
 
-  flopenl #(Entries+1) port3counterreg(clk, Port3CounterLoad, Port3CounterEn, Port3PtrNext, TailPtr2, Port3Ptr);
+  flopenl #(Entries) port3counterreg(clk, Port3CounterLoad, Port3CounterEn, Port3PtrNext, TailPtr2, Port3Ptr);
   assign Port3PtrNext = Port3Ptr + 1;
   assign Port3CounterLoad = CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr2;
   //assign Port3CounterEn = CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr2 & ~Port3Stall;
