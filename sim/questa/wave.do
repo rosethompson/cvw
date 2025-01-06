@@ -728,14 +728,14 @@ add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/waddr
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/Full
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/HeadPtr
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/TailPtr
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/HeadPtr
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/ActiveBits
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/ActiveBitsRev
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/ActiveBitsExtend
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/ActiveBitsShift
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/ActiveBitsInvert
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/TailPtrUncompensated
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/TailPtr2
+add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/HeadPtr
+add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/ActiveBits
+add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/ActiveBitsRev
+add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/ActiveBitsExtend
+add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/ActiveBitsShift
+add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/ActiveBitsInvert
+add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/TailPtrUncompensated
+add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/TailPtr2
 add wave -noupdate -color Gold /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/CurrState
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/Port3Stall
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/Port3RValid
@@ -746,7 +746,7 @@ add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/Port3
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/SelActiveList
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/PacketizerRvviValid
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {19105 ns} 1} {{Cursor 4} {34136 ns} 0} {{Cursor 3} {13747 ns} 1} {{Cursor 4} {223860 ns} 1}
+WaveRestoreCursors {{Cursor 4} {19105 ns} 1} {{Cursor 4} {281900 ns} 0} {{Cursor 3} {616640 ns} 1} {{Cursor 4} {593200 ns} 0}
 quietly wave cursor active 2
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -762,4 +762,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {29593 ns} {37177 ns}
+WaveRestoreZoom {281614 ns} {282186 ns}

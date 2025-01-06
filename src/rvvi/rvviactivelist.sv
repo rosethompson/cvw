@@ -38,7 +38,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
     output logic [WIDTH-1:0] Port3RData,
     output logic             Port3RValid,
     input  logic             Port3Stall,
-    output logic             Full, Empty);
+    output logic             Full, Empty, ActiveListWait);
 
   // port 2 data is
   // InstrPackDelay (32-bit), Minstret (64-bit), eth src (16-bit), src mac (48-bit) , dst mac (48-bit)
@@ -58,7 +58,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   logic [Entries-1:0]    raddr;
   logic [Entries-1:0]    waddr;
   logic [Entries-1:0]    Port2LutIndex;
-  typedef enum           {STATE_IDLE, STATE_REPLAY} statetype;
+  typedef enum           {STATE_IDLE, STATE_REPLAY, STATE_WAIT} statetype;
   statetype CurrState, NextState;
   logic                  Port3CounterLoad, Port3CounterEn;
   logic                  Port3Active;
@@ -143,8 +143,10 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
     case(CurrState)
       STATE_IDLE: if(Port2Wen & Port2LutIndex != TailPtr2) NextState = STATE_REPLAY;
       else NextState = STATE_IDLE;
-      STATE_REPLAY: if(~Port3Active & ~Port3Stall) NextState = STATE_IDLE;
+      STATE_REPLAY: if(~Port3Active & ~Port3Stall) NextState = STATE_WAIT;
       else NextState = STATE_REPLAY;
+      STATE_WAIT: if(Empty) NextState = STATE_IDLE;
+      else NextState = STATE_WAIT;
       default: NextState = STATE_IDLE;
     endcase
   end
@@ -152,10 +154,11 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   flopenl #(Entries+1) port3counterreg(clk, Port3CounterLoad, Port3CounterEn, Port3PtrNext, TailPtr2, Port3Ptr);
   assign Port3PtrNext = Port3Ptr + 1;
   assign Port3CounterLoad = CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr2;
-  assign Port3CounterEn = CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr2 & ~Port3Stall;
+  //assign Port3CounterEn = CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr2 & ~Port3Stall;
+  assign Port3CounterEn = Port3RValid;
   assign Port3Active = ActiveBits[Port3Ptr];
   assign Port3RData = mem[Port3Ptr];
-  assign Port3RValid = CurrState == STATE_REPLAY & ~Port3Stall;
-  
+  assign Port3RValid = CurrState == STATE_REPLAY & ~Port3Stall & Port3Active;
+  assign ActiveListWait = CurrState == STATE_WAIT | CurrState == STATE_REPLAY;
 
 endmodule

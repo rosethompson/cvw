@@ -110,6 +110,8 @@ module acev import cvw::*; #(parameter cvw_t P,
   logic                    ActiveListStall;
   logic                    SelActiveList, PacketizerRvviValid;
   logic [RVVI_WIDTH-1:0]   ActiveListRvvi, PacketizerRvvi;
+  logic                    ActiveListWait;
+  
     
   // *** fix me later
   assign DstMac = 48'h8F54_0000_1654; // made something up
@@ -129,7 +131,7 @@ module acev import cvw::*; #(parameter cvw_t P,
   rvviactivelist (.clk, .reset, .Port1Wen(valid), .Port1WData(rvvi),
                   .Port2Wen(HostInstrValid), .Port2WData,
                   .Port3RData(ActiveListRvvi), .Port3RValid(SelActiveList), .Port3Stall(RVVIStall), 
-                  .Full(ActiveListStall), .Empty()); // full will stall cpu
+                  .Full(ActiveListStall), .ActiveListWait, .Empty()); // full will stall cpu
 
   assign PacketizerRvvi = SelActiveList ? ActiveListRvvi : rvvi;
   assign PacketizerRvviValid = SelActiveList ? SelActiveList : valid;
@@ -210,7 +212,7 @@ module acev import cvw::*; #(parameter cvw_t P,
   
     genslowframe genslowframe(.clk, .reset, .HostRequestSlowDown, .RVVIStall, .HostFiFoFillAmt, .HostStall);
     
-    assign ExternalStall = RVVIStall | HostStall | ActiveListStall | SelActiveList;
+    assign ExternalStall = RVVIStall | HostStall | ActiveListStall | ActiveListWait | SelActiveList;
 
 
 
