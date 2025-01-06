@@ -43,25 +43,25 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   // port 2 data is
   // InstrPackDelay (32-bit), Minstret (64-bit), eth src (16-bit), src mac (48-bit) , dst mac (48-bit)
 
-  /* Pointer FIFO using design elements from "Simulation and Synthesis Techniques
-   for Asynchronous FIFO Design" by Clifford E. Cummings. Namely, Entries bit read and write pointers
-   are an extra bit larger than address size to determine Full/Empty conditions. 
-   Watermark comparisons use 2's complement subtraction between the Entries-1 bit pointers,
-   which are also used to address memory
-   */
-  
-  logic [WIDTH-1:0]      mem[2**Entries-1:0];
-  logic [2**Entries-1:0] ActiveBits;
-  logic [Entries-1:0]      Lut[2**Entries-1:0];
-  logic [Entries-1:0]      HeadPtr, Port3Ptr, Port3PtrNext;
-  logic [Entries-1:0]      HeadPtrNext;
-  logic [Entries-1:0]    waddr;
-  logic [Entries-1:0]    Port2LutIndex;
-  typedef enum           {STATE_IDLE, STATE_REPLAY, STATE_WAIT} statetype;
+  logic [WIDTH-1:0]          mem[2**Entries-1:0];
+  logic [2**Entries-1:0]     ActiveBits;
+  logic [Entries-1:0]        Lut[2**Entries-1:0];
+  logic [Entries-1:0]        HeadPtr, Port3Ptr, Port3PtrNext;
+  logic [Entries-1:0]        HeadPtrNext;
+  logic [Entries-1:0]        waddr;
+  logic [Entries-1:0]        Port2LutIndex;
+  typedef enum               {STATE_IDLE, STATE_REPLAY, STATE_WAIT} statetype;
   statetype CurrState, NextState;
-  logic                  Port3CounterLoad, Port3CounterEn;
-  logic                  Port3Active;
-  logic [2**Entries-1:0]    LutMatch;
+  logic                      Port3CounterLoad, Port3CounterEn;
+  logic                      Port3Active;
+  logic [2**Entries-1:0]     LutMatch;
+  logic [(2**Entries)*2-1:0] ActiveBitsShift;
+  logic [2**Entries-1:0]     ActiveBitsInvert;
+  logic [(2**Entries)*2-1:0] ActiveBitsExtend;
+  logic [Entries-1:0]        TailPtrUncompensated;
+  logic [Entries-1:0]        TailPtr2;
+
+  logic [2**Entries-1:0]     ActiveBitsRev;
   
 
   // search Lut for matching Port2WData[Entries:0]. The index tells us the correct entry in the memory array.
@@ -104,13 +104,6 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   // derive tail pointer from the active bits.
   // it is the first 1 after the head pointer.  The easiest way to find it is a leading zero detector, but we first have to align the bits
   // we'll use a rotator to do this. Then we'll have to compenstate by adding back in the shift.
-  logic [(2**Entries)*2-1:0]     ActiveBitsShift;
-  logic [2**Entries-1:0]     ActiveBitsInvert;
-  logic [(2**Entries)*2-1:0] ActiveBitsExtend;
-  logic [Entries-1:0]        TailPtrUncompensated;
-  logic [Entries-1:0]        TailPtr2;
-
-  logic [2**Entries-1:0]     ActiveBitsRev;
   for(index=0; index<2**Entries; index++) assign ActiveBitsRev[2**Entries-index-1] = ActiveBits[index];
   
   assign ActiveBitsExtend = {ActiveBitsRev[2**Entries-1:0], ActiveBitsRev[2**Entries-1:0]};
@@ -145,7 +138,6 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   flopenl #(Entries) port3counterreg(clk, Port3CounterLoad, Port3CounterEn, Port3PtrNext, TailPtr2, Port3Ptr);
   assign Port3PtrNext = Port3Ptr + 1;
   assign Port3CounterLoad = CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr2;
-  //assign Port3CounterEn = CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr2 & ~Port3Stall;
   assign Port3CounterEn = Port3RValid;
   assign Port3Active = ActiveBits[Port3Ptr];
   assign Port3RData = mem[Port3Ptr];
