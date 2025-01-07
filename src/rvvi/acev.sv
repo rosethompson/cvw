@@ -138,7 +138,7 @@ module acev import cvw::*; #(parameter cvw_t P,
   
 
   inversepacketizer #(P) inversepacketizer (.clk, .reset, .RvviAxiRdata, .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid,
-    .Valid(HostInstrValid), .Minstr(HostMinstr), .InterPacketDelay(HostInterPacketDelay));
+    .Valid(HostInstrValid), .Minstr(HostMinstr), .InterPacketDelay(HostInterPacketDelay), .DstMac(SrcMac), .SrcMac(DstMac), .EthType);
   
 
   packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi(PacketizerRvvi), .valid(PacketizerRvviValid), .m_axi_aclk(clk),

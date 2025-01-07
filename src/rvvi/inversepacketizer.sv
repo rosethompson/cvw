@@ -35,8 +35,10 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P) (
   input logic               RvviAxiRvalid,
   output logic              Valid,
   output logic [P.XLEN-1:0] Minstr,
-  output logic [31:0]       InterPacketDelay);
-  
+  output logic [31:0]       InterPacketDelay,
+  input logic [47:0]        DstMac,
+  input logic [47:0]        SrcMac,
+  input logic [15:0]        EthType);
 
   typedef enum              {STATE_RST, STATE_ALL_CAPTURED, STATE_WAIT} statetype;
   statetype CurrState, NextState;
@@ -44,6 +46,8 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P) (
   logic [31:0]              mem [7:0];
   logic [2:0]               Counter;	
   logic                     CounterEn, CounterRst;
+  logic [3:0]               Match;
+  logic                     AllMatch;
 
   counter #(3) counter(clk, CounterRst, CounterEn, Counter);
   
@@ -73,9 +77,16 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P) (
     end
   end
 
+  // *** This is very inefficient. Can reduce to a single compare.
+  assign Match[0] = mem[0] == DstMac[31:0];
+  assign Match[1] = mem[1] == {SrcMac[15:0], DstMac[47:32]};
+  assign Match[2] = mem[2] == SrcMac[47:16];
+  assign Match[3] = mem[3][15:0] == EthType;
+  assign AllMatch = &Match;
+  
   assign Minstr = {mem[5][15:0], mem[4], mem[3][31:16]};
   assign InterPacketDelay = {mem[6][15:0], mem[5][31:16]};
-  assign Valid = CurrState == STATE_ALL_CAPTURED;
+  assign Valid = CurrState == STATE_ALL_CAPTURED & AllMatch;
   
 
 endmodule
