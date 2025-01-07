@@ -32,21 +32,21 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(                 // 2^Entries entries of WIDTH bits each
-    input logic              clk, Port1Wen, Port2Wen, reset,
+(* mark_debug = "true" *)    input logic              clk, Port1Wen, Port2Wen, reset,
     input logic [WIDTH-1:0]  Port1WData, 
     input logic [WIDTH2-1:0] Port2WData, 
     output logic [WIDTH-1:0] Port3RData,
-    output logic             Port3RValid,
-    input  logic             Port3Stall,
-    output logic             Full, Empty, ActiveListWait);
+(* mark_debug = "true" *)    output logic             Port3RValid,
+(* mark_debug = "true" *)    input  logic             Port3Stall,
+(* mark_debug = "true" *)    output logic             Full, Empty, ActiveListWait);
 
   // port 2 data is
   // InstrPackDelay (32-bit), Minstret (64-bit), eth src (16-bit), src mac (48-bit) , dst mac (48-bit)
 
   logic [WIDTH-1:0]          mem[2**Entries-1:0];
-  logic [2**Entries-1:0]     ActiveBits;
+(* mark_debug = "true" *)  logic [2**Entries-1:0]     ActiveBits;
   logic [Entries-1:0]        Lut[2**Entries-1:0];
-  logic [Entries-1:0]        HeadPtr, Port3Ptr, Port3PtrNext;
+(* mark_debug = "true" *)  logic [Entries-1:0]        HeadPtr, Port3Ptr, Port3PtrNext;
   logic [Entries-1:0]        HeadPtrNext;
   logic [Entries-1:0]        waddr;
   logic [Entries-1:0]        Port2LutIndex;
@@ -59,7 +59,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   logic [2**Entries-1:0]     ActiveBitsInvert;
   logic [(2**Entries)*2-1:0] ActiveBitsExtend;
   logic [Entries-1:0]        TailPtrUncompensated;
-  logic [Entries-1:0]        TailPtr2;
+(* mark_debug = "true" *)  logic [Entries-1:0]        TailPtr2;
 
   logic [2**Entries-1:0]     ActiveBitsRev;
   

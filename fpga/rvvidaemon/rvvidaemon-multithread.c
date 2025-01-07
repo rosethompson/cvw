@@ -49,9 +49,9 @@
 #include "op/op.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
-//#define PRINT_THRESHOLD 1
+#define PRINT_THRESHOLD 1
 //#define PRINT_THRESHOLD 65536
-#define PRINT_THRESHOLD 1024
+//#define PRINT_THRESHOLD 1024
 //#define E_TARGET_CLOCK 25000
 //#define E_TARGET_CLOCK 80000
 #define E_TARGET_CLOCK 70000
@@ -352,6 +352,28 @@ void * ReceiveLoop(void * arg){
   ssize_t headerbytes, numbytes;
   queue_t * InstructionQueue = (queue_t *) arg;
 
+  uint8_t AckBuf[BUF_SIZ];
+  int AckLen = 0;
+  struct ether_header *AckHeader = (struct ether_header *) AckBuf;
+
+  memset(AckBuf, 0, BUF_SIZ);
+  AckBuf[0] = DEST_MAC0;
+  AckBuf[1] = DEST_MAC1;
+  AckBuf[2] = DEST_MAC2;
+  AckBuf[3] = DEST_MAC3;
+  AckBuf[4] = DEST_MAC4;
+  AckBuf[5] = DEST_MAC5;
+  AckBuf[6] = SRC_MAC0;
+  AckBuf[7] = SRC_MAC1;
+  AckBuf[8] = SRC_MAC2;
+  AckBuf[9] = SRC_MAC3;
+  AckBuf[10] = SRC_MAC4;
+  AckBuf[11] = SRC_MAC5;
+
+  AckHeader->ether_type = htons(ETHER_TYPE);
+  AckLen += sizeof(struct ether_header);
+
+
   FILE *LogFile;
   int count = 0;
   int result;
@@ -370,6 +392,11 @@ void * ReceiveLoop(void * arg){
   if(DstMAC == DEST_MAC){
     RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes);
     Enqueue(InstructionDataPtr, InstructionQueue);
+
+    ((uint64_t*) (AckBuf + AckLen))[0] = InstructionDataPtr->Minstret;
+    ((uint32_t*) (AckBuf + AckLen + 8))[0] = 1;
+    if (sendto(sockfd, AckBuf, AckLen + 12, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
+
     pthread_cond_signal(&StartCond);  // send message to other thread to slow down
   }
 
@@ -391,6 +418,11 @@ void * ReceiveLoop(void * arg){
     if(DstMAC == DEST_MAC){
       RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes);
       Enqueue(InstructionDataPtr, InstructionQueue);
+
+      ((uint64_t*) (AckBuf + AckLen))[0] = InstructionDataPtr->Minstret;
+      ((uint32_t*) (AckBuf + AckLen + 8))[0] = 1;
+      if (sendto(sockfd, AckBuf, AckLen + 12, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
+
     }
     if(count == RATE_SET_THREAHOLD){
       /* if (sendto(sockfd, ratebuf, rate_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){ */
@@ -413,12 +445,12 @@ void * SetSpeedLoop(void * arg){
   int Phase = 0;
   int Slope = 10000; // Instr/s to change in phase 1.
 
-  struct timespec UpdateInterval = { .tv_sec = 0, .tv_nsec = 100000000 }; // 0.1 seconds
+  struct timespec UpdateInterval = { .tv_sec = 0, .tv_nsec = 10000000 }; // 0.01 seconds
   //struct timespec UpdateInterval = { .tv_sec = 3, .tv_nsec = 0 }; // 0.1 seconds
   int Rate = ((UpdateInterval.tv_nsec * Slope) / 1000000000) + UpdateInterval.tv_sec * Slope;
 
-  int THREASHOLD_C1 = 8; // Soft limit. Start slow down
-  int THREASHOLD_C2 = 128; // Critial limit. Dramatic slow down
+  int THREASHOLD_C1 = 4; // Soft limit. Start slow down
+  int THREASHOLD_C2 = 16; // Critial limit. Dramatic slow down
   int THREASHOLD_C3 = QUEUE_SIZE - (QUEUE_SIZE/8); // Near limit. Critial Warning.
 
   int QueueDepth = 0;
