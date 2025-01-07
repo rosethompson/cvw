@@ -111,6 +111,7 @@ module acev import cvw::*; #(parameter cvw_t P,
   (* mark_debug = "true" *) logic                    SelActiveList, PacketizerRvviValid;
   (* mark_debug = "true" *) logic [RVVI_WIDTH-1:0]   ActiveListRvvi, PacketizerRvvi;
   logic                    ActiveListWait;
+  logic [31:0]		   HostInterPacketDelayD;
   
     
   // *** fix me later
@@ -139,12 +140,14 @@ module acev import cvw::*; #(parameter cvw_t P,
 
   inversepacketizer #(P) inversepacketizer (.clk, .reset, .RvviAxiRdata, .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid,
     .Valid(HostInstrValid), .Minstr(HostMinstr), .InterPacketDelay(HostInterPacketDelay), .DstMac(SrcMac), .SrcMac(DstMac), .EthType);
-  
+
+  flopenl #(32) hostinterpacketdelayreg(clk, reset, HostInstrValid, HostInterPacketDelay, RVVI_PACKET_DELAY, HostInterPacketDelayD);
 
   packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi(PacketizerRvvi), .valid(PacketizerRvviValid), .m_axi_aclk(clk),
      .m_axi_aresetn(~reset), .RVVIStall,
     .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready, .SrcMac, .DstMac, .EthType, 
-    .InnerPktDelay(RateMessage));
+//    .InnerPktDelay(RateMessage));
+    .InnerPktDelay(HostInterPacketDelayD));
 
   if (ETH_WIDTH == 8) begin : eth
     // this is the version of 1g/s ethernet

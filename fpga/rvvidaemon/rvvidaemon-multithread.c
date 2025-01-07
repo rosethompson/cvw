@@ -54,7 +54,7 @@
 //#define PRINT_THRESHOLD 1024
 //#define E_TARGET_CLOCK 25000
 //#define E_TARGET_CLOCK 80000
-#define E_TARGET_CLOCK 70000
+#define E_TARGET_CLOCK 60000
 #define SYSTEM_CLOCK 50000000
 #define INNER_PKT_DELAY (SYSTEM_CLOCK / E_TARGET_CLOCK)
 
@@ -337,8 +337,8 @@ int main(int argc, char **argv){
   pthread_t ReceiveID, ProcessID, SlowID, SetSpeedLoopID;
   pthread_create(&ReceiveID, NULL, &ReceiveLoop, (void *) InstructionQueue);
   pthread_create(&ProcessID, NULL, &ProcessLoop, (void *) InstructionQueue);
-  pthread_create(&SlowID, NULL, &SendSlowMessage, (void *) InstructionQueue);
-  pthread_create(&SetSpeedLoopID, NULL, &SetSpeedLoop, (void *) InstructionQueue);
+  //pthread_create(&SlowID, NULL, &SendSlowMessage, (void *) InstructionQueue);
+  //pthread_create(&SetSpeedLoopID, NULL, &SetSpeedLoop, (void *) InstructionQueue);
   //pthread_join(ReceiveID, NULL);
   pthread_join(ProcessID, NULL);
 
@@ -394,7 +394,7 @@ void * ReceiveLoop(void * arg){
     Enqueue(InstructionDataPtr, InstructionQueue);
 
     ((uint64_t*) (AckBuf + AckLen))[0] = InstructionDataPtr->Minstret;
-    ((uint32_t*) (AckBuf + AckLen + 8))[0] = 1;
+    ((uint32_t*) (AckBuf + AckLen + 8))[0] = INNER_PKT_DELAY;
     if (sendto(sockfd, AckBuf, AckLen + 12, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
 
     pthread_cond_signal(&StartCond);  // send message to other thread to slow down
@@ -420,7 +420,7 @@ void * ReceiveLoop(void * arg){
       Enqueue(InstructionDataPtr, InstructionQueue);
 
       ((uint64_t*) (AckBuf + AckLen))[0] = InstructionDataPtr->Minstret;
-      ((uint32_t*) (AckBuf + AckLen + 8))[0] = 1;
+      ((uint32_t*) (AckBuf + AckLen + 8))[0] = INNER_PKT_DELAY;
       if (sendto(sockfd, AckBuf, AckLen + 12, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
 
     }
@@ -633,11 +633,11 @@ int state_compare(int hart, uint64_t Minstret){
 
   if (result == 0) {
     /* Send packet */
-    if (sendto(sockfd, sendbuf, tx_len, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
-      printf("Send failed\n");
-    }else {
-      printf("send success!\n");
-    }
+    /* if (sendto(sockfd, sendbuf, tx_len, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){ */
+    /*   printf("Send failed\n"); */
+    /* }else { */
+    /*   printf("send success!\n"); */
+    /* } */
 
     sprintf(buf, "MISMATCH @ instruction # %ld\n", Minstret);
     idvMsgError(buf);

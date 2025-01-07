@@ -41,13 +41,13 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P) (
   input logic [15:0]        EthType);
 
   typedef enum              {STATE_RST, STATE_ALL_CAPTURED, STATE_WAIT} statetype;
-  statetype CurrState, NextState;
+(* mark_debug = "true" *)  statetype CurrState, NextState;
 
-  logic [31:0]              mem [7:0];
-  logic [2:0]               Counter;	
+(* mark_debug = "true" *)  logic [31:0]              mem [7:0];
+(* mark_debug = "true" *)  logic [2:0]               Counter;	
   logic                     CounterEn, CounterRst;
-  logic [3:0]               Match;
-  logic                     AllMatch;
+(* mark_debug = "true" *)  logic [3:0]               Match;
+(* mark_debug = "true" *)  logic                     AllMatch;
 
   counter #(3) counter(clk, CounterRst, CounterEn, Counter);
   
