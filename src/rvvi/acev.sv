@@ -108,8 +108,8 @@ module acev import cvw::*; #(parameter cvw_t P,
   logic [15:0]             EthType;
   logic                    Port3Stall;
   logic                    ActiveListStall;
-  logic                    SelActiveList, PacketizerRvviValid;
-  logic [RVVI_WIDTH-1:0]   ActiveListRvvi, PacketizerRvvi;
+  (* mark_debug = "true" *) logic                    SelActiveList, PacketizerRvviValid;
+  (* mark_debug = "true" *) logic [RVVI_WIDTH-1:0]   ActiveListRvvi, PacketizerRvvi;
   logic                    ActiveListWait;
   
     
