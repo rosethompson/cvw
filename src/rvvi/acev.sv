@@ -127,7 +127,7 @@ module acev import cvw::*; #(parameter cvw_t P,
 
   assign Port2WData = {HostInterPacketDelay, HostMinstr};
   
-  rvviactivelist #(.Entries(4), .WIDTH(RVVI_WIDTH), .WIDTH2(96)) // *** fix the widths so they depend on the sizes of rvvi
+  rvviactivelist #(.Entries(4), .WIDTH(RVVI_WIDTH), .WIDTH2(P.XLEN+32)) 
   rvviactivelist (.clk, .reset, .Port1Wen(valid), .Port1WData(rvvi),
                   .Port2Wen(HostInstrValid), .Port2WData,
                   .Port3RData(ActiveListRvvi), .Port3RValid(SelActiveList), .Port3Stall(RVVIStall), 
