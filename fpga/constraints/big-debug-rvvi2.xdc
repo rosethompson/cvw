@@ -258,20 +258,40 @@ set_property port_width 4 [get_debug_ports u_ila_0/probe48]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe48]
 connect_debug_port u_ila_0/probe48 [get_nets [list {rvvi_synth.acev/rvviactivelist/Port3Ptr[0]} {rvvi_synth.acev/rvviactivelist/Port3Ptr[1]} {rvvi_synth.acev/rvviactivelist/Port3Ptr[2]} {rvvi_synth.acev/rvviactivelist/Port3Ptr[3]} ]]
 
-#create_debug_port u_ila_0 probe
-#set_property port_width 3 [get_debug_ports u_ila_0/probe49]
-#set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe49]
-#connect_debug_port u_ila_0/probe49 [get_nets [list {rvvi_synth.acev/inversepacketerizer/CurrState[0]} {rvvi_synth.acev/inversepacketerizer/CurrState[1]} {rvvi_synth.acev/inversepacketerizer/CurrState[2]}  ]]
+create_debug_port u_ila_0 probe
+set_property port_width 3 [get_debug_ports u_ila_0/probe49]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe49]
+connect_debug_port u_ila_0/probe49 [get_nets [list {rvvi_synth.acev/inversepacketizer/CurrState[0]} {rvvi_synth.acev/inversepacketizer/CurrState[1]} {rvvi_synth.acev/inversepacketizer/CurrState[2]}  ]]
 
-#create_debug_port u_ila_0 probe
-#set_property port_width 3 [get_debug_ports u_ila_0/probe50]
-#set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe50]
-#connect_debug_port u_ila_0/probe50 [get_nets [list {rvvi_synth.acev/inversepacketerizer/Counter[0]} {rvvi_synth.acev/inversepacketerizer/Counter[1]} {rvvi_synth.acev/inversepacketerizer/Counter[2]}  ]]
+create_debug_port u_ila_0 probe
+set_property port_width 3 [get_debug_ports u_ila_0/probe50]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe50]
+connect_debug_port u_ila_0/probe50 [get_nets [list {rvvi_synth.acev/inversepacketizer/Counter[0]} {rvvi_synth.acev/inversepacketizer/Counter[1]} {rvvi_synth.acev/inversepacketizer/Counter[2]}  ]]
 
-#create_debug_port u_ila_0 probe
-#set_property port_width 4 [get_debug_ports u_ila_0/probe51]
-#set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe51]
-#connect_debug_port u_ila_0/probe51 [get_nets [list {rvvi_synth.acev/inversepacketerizer/Match[0]} {rvvi_synth.acev/inversepacketerizer/Match[1]} {rvvi_synth.acev/inversepacketerizer/Match[2]} {rvvi_synth.acev/inversepacketerizer/Match[3]}  ]]
+create_debug_port u_ila_0 probe
+set_property port_width 4 [get_debug_ports u_ila_0/probe51]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe51]
+connect_debug_port u_ila_0/probe51 [get_nets [list {rvvi_synth.acev/inversepacketizer/Match[0]} {rvvi_synth.acev/inversepacketizer/Match[1]} {rvvi_synth.acev/inversepacketizer/Match[2]} {rvvi_synth.acev/inversepacketizer/Match[3]}  ]]
+
+create_debug_port u_ila_0 probe
+set_property port_width 3 [get_debug_ports u_ila_0/probe52]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe52]
+connect_debug_port u_ila_0/probe52 [get_nets [list {rvvi_synth.acev/rvviactivelist/CurrState[0]} {rvvi_synth.acev/rvviactivelist/CurrState[1]} {rvvi_synth.acev/rvviactivelist/CurrState[2]}  ]]
+
+create_debug_port u_ila_0 probe
+set_property port_width 16 [get_debug_ports u_ila_0/probe53]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe53]
+connect_debug_port u_ila_0/probe53 [get_nets [list {rvvi_synth.acev/inversepacketizer/FrameCount[0]} {rvvi_synth.acev/inversepacketizer/FrameCount[1]} {rvvi_synth.acev/inversepacketizer/FrameCount[2]} {rvvi_synth.acev/inversepacketizer/FrameCount[3]} {rvvi_synth.acev/inversepacketizer/FrameCount[4]} {rvvi_synth.acev/inversepacketizer/FrameCount[5]} {rvvi_synth.acev/inversepacketizer/FrameCount[6]} {rvvi_synth.acev/inversepacketizer/FrameCount[7]} {rvvi_synth.acev/inversepacketizer/FrameCount[8]} {rvvi_synth.acev/inversepacketizer/FrameCount[9]} {rvvi_synth.acev/inversepacketizer/FrameCount[10]} {rvvi_synth.acev/inversepacketizer/FrameCount[11]} {rvvi_synth.acev/inversepacketizer/FrameCount[12]} {rvvi_synth.acev/inversepacketizer/FrameCount[13]} {rvvi_synth.acev/inversepacketizer/FrameCount[14]} {rvvi_synth.acev/inversepacketizer/FrameCount[15]} ]]
+
+create_debug_port u_ila_0 probe
+set_property port_width 16 [get_debug_ports u_ila_0/probe54]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe54]
+connect_debug_port u_ila_0/probe54 [get_nets [list {rvvi_synth.acev/inversepacketizer/Minstr[0]} {rvvi_synth.acev/inversepacketizer/Minstr[1]} {rvvi_synth.acev/inversepacketizer/Minstr[2]} {rvvi_synth.acev/inversepacketizer/Minstr[3]} {rvvi_synth.acev/inversepacketizer/Minstr[4]} {rvvi_synth.acev/inversepacketizer/Minstr[5]} {rvvi_synth.acev/inversepacketizer/Minstr[6]} {rvvi_synth.acev/inversepacketizer/Minstr[7]} {rvvi_synth.acev/inversepacketizer/Minstr[8]} {rvvi_synth.acev/inversepacketizer/Minstr[9]} {rvvi_synth.acev/inversepacketizer/Minstr[10]} {rvvi_synth.acev/inversepacketizer/Minstr[11]} {rvvi_synth.acev/inversepacketizer/Minstr[12]} {rvvi_synth.acev/inversepacketizer/Minstr[13]} {rvvi_synth.acev/inversepacketizer/Minstr[14]} {rvvi_synth.acev/inversepacketizer/Minstr[15]} ]]
+
+create_debug_port u_ila_0 probe
+set_property port_width 16 [get_debug_ports u_ila_0/probe55]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe55]
+connect_debug_port u_ila_0/probe55 [get_nets [list {rvvi_synth.acev/rvviactivelist/LutMatch[0]} {rvvi_synth.acev/rvviactivelist/LutMatch[1]} {rvvi_synth.acev/rvviactivelist/LutMatch[2]} {rvvi_synth.acev/rvviactivelist/LutMatch[3]} {rvvi_synth.acev/rvviactivelist/LutMatch[4]} {rvvi_synth.acev/rvviactivelist/LutMatch[5]} {rvvi_synth.acev/rvviactivelist/LutMatch[6]} {rvvi_synth.acev/rvviactivelist/LutMatch[7]} {rvvi_synth.acev/rvviactivelist/LutMatch[8]} {rvvi_synth.acev/rvviactivelist/LutMatch[9]} {rvvi_synth.acev/rvviactivelist/LutMatch[10]} {rvvi_synth.acev/rvviactivelist/LutMatch[11]} {rvvi_synth.acev/rvviactivelist/LutMatch[12]} {rvvi_synth.acev/rvviactivelist/LutMatch[13]} {rvvi_synth.acev/rvviactivelist/LutMatch[14]} {rvvi_synth.acev/rvviactivelist/LutMatch[15]} ]]
 
 # the debug hub has issues with the clocks from the mmcm so lets give up an connect to the 100Mhz input clock.
 #connect_debug_port dbg_hub/clk [get_nets default_100mhz_clk]
