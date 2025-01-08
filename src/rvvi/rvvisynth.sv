@@ -29,7 +29,9 @@
 
 module rvvisynth import cvw::*; #(parameter cvw_t P,
                                   parameter integer MAX_CSRS = 5, 
-                                  parameter integer TOTAL_CSRS = 36)(
+                                  parameter integer TOTAL_CSRS = 36,
+                                  parameter         RVVI_WIDTH = 72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16),
+                                  parameter         FRAME_COUNT_WIDTH = 16)(
   input logic clk, reset,
   input logic                                     StallE, StallM, StallW, FlushE, FlushM, FlushW,
   // required
@@ -45,7 +47,8 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
   input logic [P.XLEN-1:0]                        GPRValue, FPRValue,
   input var logic [P.XLEN-1:0]                    CSRArray [TOTAL_CSRS-1:0],
   output logic valid,
-  output logic [72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16)-1:0] rvvi
+  output logic [RVVI_WIDTH-1:0] rvvi,
+  output logic [FRAME_COUNT_WIDTH-1:0] FrameCount
   );
 
   // pipeline controlls
@@ -136,5 +139,7 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
   assign CSRCount = {{{12-MAX_CSRS}{1'b0}}, CSRCountShort};
   assign rvvi = {CSRs, Registers, Required};
   
+  counter #(FRAME_COUNT_WIDTH) framecounter(clk, reset, (InstrValidW & ~StallW), FrameCount);
+
 endmodule
                                                                  

@@ -87,7 +87,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
       if (Port1Wen) begin
         HeadPtr  <= HeadPtrNext;
         if(~Full) begin 
-          Lut[waddr] <= Port1WData[Entries+160:160];
+          Lut[waddr] <= Port1WData[Entries-1:0];
           ActiveBits[waddr] <= 1'b1;
         end
       end 

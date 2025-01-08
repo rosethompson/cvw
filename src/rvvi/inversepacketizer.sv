@@ -27,7 +27,8 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-module inversepacketizer import cvw::*; #(parameter cvw_t P) (
+module inversepacketizer import cvw::*; #(parameter cvw_t P, 
+                                          parameter FRAME_COUNT_WIDTH) (
   input logic               clk, reset,
   input logic [31:0]        RvviAxiRdata,
   input logic [3:0]         RvviAxiRstrb,
@@ -36,6 +37,7 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P) (
   output logic              Valid,
   output logic [P.XLEN-1:0] Minstr,
   output logic [31:0]       InterPacketDelay,
+  output logic [FRAME_COUNT_WIDTH-1:0] FrameCount,
   input logic [47:0]        DstMac,
   input logic [47:0]        SrcMac,
   input logic [15:0]        EthType);
@@ -84,8 +86,15 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P) (
   assign Match[3] = mem[3][15:0] == EthType;
   assign AllMatch = &Match;
   
+/* -----\/----- EXCLUDED -----\/-----
   assign Minstr = {mem[5][15:0], mem[4], mem[3][31:16]};
   assign InterPacketDelay = {mem[6][15:0], mem[5][31:16]};
+  assign FrameCount = mem[6][31:16];
+ -----/\----- EXCLUDED -----/\----- */
+  assign FrameCount = mem[3][31:16];
+  assign Minstr = {mem[5], mem[4]};
+  assign InterPacketDelay = mem[6];
+
   assign Valid = CurrState == STATE_ALL_CAPTURED & AllMatch;
   
 

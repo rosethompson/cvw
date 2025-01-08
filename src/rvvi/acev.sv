@@ -70,39 +70,41 @@ module acev import cvw::*; #(parameter cvw_t P,
   );
 
   localparam               RVVI_WIDTH = 72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16);
+  localparam               ETH_HEADER_WIDTH = 48*2 + 16;
+  localparam               FRAME_COUNT_WIDTH = 16;
   
-  (* mark_debug = "true" *)    logic                                             valid;
+  (* mark_debug = "true" *)    logic                  valid;
   (* mark_debug = "true" *)    logic [RVVI_WIDTH-1:0] rvvi;
 
   (* mark_debug = "true" *)    logic					     RVVIStall, HostStall;
-    
-    logic [32*5-1:0]				     TriggerString;
-    logic [32*5-1:0]				     SlowString;
-    logic [32*5-1:0]				     RateString;
+  
+  logic [32*5-1:0]         TriggerString;
+  logic [32*5-1:0]         SlowString;
+  logic [32*5-1:0]         RateString;
   (* mark_debug = "true" *)    logic					     HostRequestSlowDown;
 
   (* mark_debug = "true" *)        logic [31:0]                     HostFiFoFillAmt;
   
-    // axi 4 write data channel
-(* mark_debug = "true" *)    logic [31:0]                                      RvviAxiWdata;
-    logic [3:0]                                       RvviAxiWstrb;
-(* mark_debug = "true" *)    logic                                             RvviAxiWlast;
-(* mark_debug = "true" *)    logic                                             RvviAxiWvalid;
-(* mark_debug = "true" *)    logic                                             RvviAxiWready;
+  // axi 4 write data channel
+  (* mark_debug = "true" *)    logic [31:0]                                      RvviAxiWdata;
+  logic [3:0]              RvviAxiWstrb;
+  (* mark_debug = "true" *)    logic                                             RvviAxiWlast;
+  (* mark_debug = "true" *)    logic                                             RvviAxiWvalid;
+  (* mark_debug = "true" *)    logic                                             RvviAxiWready;
 
-(* mark_debug = "true" *)    logic [31:0] RvviAxiRdata;
-(* mark_debug = "true" *)    logic [3:0]                                       RvviAxiRstrb;
-(* mark_debug = "true" *)    logic RvviAxiRlast;
-(* mark_debug = "true" *)    logic RvviAxiRvalid;
+  (* mark_debug = "true" *)    logic [31:0] RvviAxiRdata;
+  (* mark_debug = "true" *)    logic [3:0]                                       RvviAxiRstrb;
+  (* mark_debug = "true" *)    logic RvviAxiRlast;
+  (* mark_debug = "true" *)    logic RvviAxiRvalid;
 
-    logic                                             tx_error_underflow, tx_fifo_overflow, tx_fifo_bad_frame, tx_fifo_good_frame, rx_error_bad_frame;
-    logic                                             rx_error_bad_fcs, rx_fifo_overflow, rx_fifo_bad_frame, rx_fifo_good_frame;
+  logic                    tx_error_underflow, tx_fifo_overflow, tx_fifo_bad_frame, tx_fifo_good_frame, rx_error_bad_frame;
+  logic                    rx_error_bad_fcs, rx_fifo_overflow, rx_fifo_bad_frame, rx_fifo_good_frame;
 
-  logic                                               RateSet;
-  logic [31:0]                                        RateMessage;
-  logic                                               HostInstrValid;
-  logic [31:0]                                        HostInterPacketDelay;
-  logic [P.XLEN-1:0]                                  HostMinstr;
+  logic                    RateSet;
+  logic [31:0]             RateMessage;
+  logic                    HostInstrValid;
+  logic [31:0]             HostInterPacketDelay;
+  logic [P.XLEN-1:0]       HostMinstr;
 
   logic [47:0]             SrcMac, DstMac;
   logic [15:0]             EthType;
@@ -111,9 +113,10 @@ module acev import cvw::*; #(parameter cvw_t P,
   (* mark_debug = "true" *) logic                    SelActiveList, PacketizerRvviValid;
   (* mark_debug = "true" *) logic [RVVI_WIDTH-1:0]   ActiveListRvvi, PacketizerRvvi;
   logic                    ActiveListWait;
-  logic [31:0]		   HostInterPacketDelayD;
-  
-    
+  logic [31:0]             HostInterPacketDelayD;
+  logic [FRAME_COUNT_WIDTH-1:0] FrameCount;
+  logic [FRAME_COUNT_WIDTH-1:0] HostFrameCount, PacketizerFrameCount, ActiveListFrameCount;
+      
   // *** fix me later
   assign DstMac = 48'h8F54_0000_1654; // made something up
   assign SrcMac = 48'h4502_1111_6843;
@@ -122,32 +125,31 @@ module acev import cvw::*; #(parameter cvw_t P,
   rvvisynth #(P, MAX_CSRS, TOTAL_CSRS) rvvisynth(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
-      .valid, .rvvi);
+      .valid, .rvvi, .FrameCount);
 
-  logic [P.XLEN+32-1:0]            Port2WData;
+  logic [P.XLEN+32+FRAME_COUNT_WIDTH-1:0]            Port2WData;
 
-  assign Port2WData = {HostInterPacketDelay, HostMinstr};
+  assign Port2WData = {HostInterPacketDelay, HostMinstr, HostFrameCount}; 
   
-  rvviactivelist #(.Entries(4), .WIDTH(RVVI_WIDTH), .WIDTH2(P.XLEN+32)) 
-  rvviactivelist (.clk, .reset, .Port1Wen(valid), .Port1WData(rvvi),
+  rvviactivelist #(.Entries(4), .WIDTH(RVVI_WIDTH+FRAME_COUNT_WIDTH), .WIDTH2(P.XLEN+32+FRAME_COUNT_WIDTH)) 
+  rvviactivelist (.clk, .reset, .Port1Wen(valid), .Port1WData({rvvi, FrameCount}),
                   .Port2Wen(HostInstrValid), .Port2WData,
-                  .Port3RData(ActiveListRvvi), .Port3RValid(SelActiveList), .Port3Stall(RVVIStall), 
+                  .Port3RData({ActiveListRvvi, ActiveListFrameCount}), .Port3RValid(SelActiveList), .Port3Stall(RVVIStall), 
                   .Full(ActiveListStall), .ActiveListWait, .Empty()); // full will stall cpu
 
-  assign PacketizerRvvi = SelActiveList ? ActiveListRvvi : rvvi;
+  assign {PacketizerRvvi, PacketizerFrameCount} = SelActiveList ? {ActiveListRvvi, ActiveListFrameCount} : {rvvi, FrameCount};
   assign PacketizerRvviValid = SelActiveList ? SelActiveList : valid;
   
 
-  inversepacketizer #(P) inversepacketizer (.clk, .reset, .RvviAxiRdata, .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid,
-    .Valid(HostInstrValid), .Minstr(HostMinstr), .InterPacketDelay(HostInterPacketDelay), .DstMac(SrcMac), .SrcMac(DstMac), .EthType);
+  inversepacketizer #(P, FRAME_COUNT_WIDTH) inversepacketizer (.clk, .reset, .RvviAxiRdata, .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid,
+    .Valid(HostInstrValid), .Minstr(HostMinstr), .InterPacketDelay(HostInterPacketDelay), .FrameCount(HostFrameCount), .DstMac(SrcMac), .SrcMac(DstMac), .EthType);
 
   flopenl #(32) hostinterpacketdelayreg(clk, reset, HostInstrValid, HostInterPacketDelay, RVVI_PACKET_DELAY, HostInterPacketDelayD);
 
-  packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi(PacketizerRvvi), .valid(PacketizerRvviValid), .m_axi_aclk(clk),
+  packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, RVVI_WIDTH, ETH_HEADER_WIDTH, FRAME_COUNT_WIDTH) packetizer(.rvvi(PacketizerRvvi), .valid(PacketizerRvviValid), .m_axi_aclk(clk),
      .m_axi_aresetn(~reset), .RVVIStall,
     .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready, .SrcMac, .DstMac, .EthType, 
-//    .InnerPktDelay(RateMessage));
-    .InnerPktDelay(HostInterPacketDelayD));
+    .InnerPktDelay(HostInterPacketDelayD), .FrameCount(PacketizerFrameCount));
 
   if (ETH_WIDTH == 8) begin : eth
     // this is the version of 1g/s ethernet
