@@ -54,7 +54,7 @@
 //#define PRINT_THRESHOLD 1024
 //#define E_TARGET_CLOCK 25000
 //#define E_TARGET_CLOCK 80000
-#define E_TARGET_CLOCK 60000
+#define E_TARGET_CLOCK 85000
 #define SYSTEM_CLOCK 50000000
 #define INNER_PKT_DELAY (SYSTEM_CLOCK / E_TARGET_CLOCK)
 
@@ -422,7 +422,7 @@ void * ReceiveLoop(void * arg){
 
       ((uint16_t*) (AckBuf + AckLen))[0] = InstructionDataPtr->FrameCount;
       ((uint64_t*) (AckBuf + AckLen+2))[0] = InstructionDataPtr->Minstret;
-      ((uint32_t*) (AckBuf + AckLen + 10))[0] = INNER_PKT_DELAY;
+      ((uint32_t*) (AckBuf + AckLen + 10))[0] = INNER_PKT_DELAY + 8 * QueueDepth;
       if (sendto(sockfd, AckBuf, AckLen + 14, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
 
     }
