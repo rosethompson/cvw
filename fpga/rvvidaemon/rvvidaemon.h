@@ -12,6 +12,7 @@ typedef struct __attribute__((packed)) {
 } CSR_t;
 
 typedef struct __attribute__((packed)) {
+  uint16_t FrameCount;
   uint64_t PC;
   uint32_t insn;
   uint64_t Mcycle;
@@ -30,6 +31,6 @@ typedef struct __attribute__((packed)) {
   uint8_t PadF3 : 3;
   uint64_t FPRValue;
   CSR_t CSR[MAXCSRS];
-} RequiredRVVI_t; // 904 bits
+} RequiredRVVI_t; // 920 bits
 
 #endif

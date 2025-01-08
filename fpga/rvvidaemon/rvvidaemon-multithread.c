@@ -393,9 +393,10 @@ void * ReceiveLoop(void * arg){
     RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes);
     Enqueue(InstructionDataPtr, InstructionQueue);
 
-    ((uint64_t*) (AckBuf + AckLen))[0] = InstructionDataPtr->Minstret;
-    ((uint32_t*) (AckBuf + AckLen + 8))[0] = INNER_PKT_DELAY;
-    if (sendto(sockfd, AckBuf, AckLen + 12, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
+      ((uint16_t*) (AckBuf + AckLen))[0] = InstructionDataPtr->FrameCount;
+      ((uint64_t*) (AckBuf + AckLen+2))[0] = InstructionDataPtr->Minstret;
+      ((uint32_t*) (AckBuf + AckLen + 10))[0] = INNER_PKT_DELAY;
+      if (sendto(sockfd, AckBuf, AckLen + 14, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
 
     pthread_cond_signal(&StartCond);  // send message to other thread to slow down
   }
@@ -419,9 +420,10 @@ void * ReceiveLoop(void * arg){
       RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes);
       Enqueue(InstructionDataPtr, InstructionQueue);
 
-      ((uint64_t*) (AckBuf + AckLen))[0] = InstructionDataPtr->Minstret;
-      ((uint32_t*) (AckBuf + AckLen + 8))[0] = INNER_PKT_DELAY;
-      if (sendto(sockfd, AckBuf, AckLen + 12, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
+      ((uint16_t*) (AckBuf + AckLen))[0] = InstructionDataPtr->FrameCount;
+      ((uint64_t*) (AckBuf + AckLen+2))[0] = InstructionDataPtr->Minstret;
+      ((uint32_t*) (AckBuf + AckLen + 10))[0] = INNER_PKT_DELAY;
+      if (sendto(sockfd, AckBuf, AckLen + 14, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
 
     }
     if(count == RATE_SET_THREAHOLD){
@@ -662,8 +664,8 @@ void set_fpr(int hart, int reg, uint64_t value){
  
 void PrintInstructionData(RequiredRVVI_t *InstructionData){
   int CSRIndex;
-  printf("PC = %lx, insn = %x, Mcycle = %lx, Minstret = %lx, Trap = %hhx, PrivilegeMode = %hhx",
-	 InstructionData->PC, InstructionData->insn, InstructionData->Mcycle, InstructionData->Minstret, InstructionData->Trap, InstructionData->PrivilegeMode);
+  printf("FrameCount = %hx, PC = %lx, insn = %x, Mcycle = %lx, Minstret = %lx, Trap = %hhx, PrivilegeMode = %hhx",
+	 InstructionData->FrameCount, InstructionData->PC, InstructionData->insn, InstructionData->Mcycle, InstructionData->Minstret, InstructionData->Trap, InstructionData->PrivilegeMode);
   if(InstructionData->GPREn){
     printf(", GPR[%d] = %lx", InstructionData->GPRReg, InstructionData->GPRValue);
   }

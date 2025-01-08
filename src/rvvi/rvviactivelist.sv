@@ -51,10 +51,10 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   logic [Entries-1:0]        waddr;
   logic [Entries-1:0]        Port2LutIndex;
   typedef enum               {STATE_IDLE, STATE_REPLAY, STATE_WAIT} statetype;
-  statetype CurrState, NextState;
+(* mark_debug = "true" *)  statetype CurrState, NextState;
   logic                      Port3CounterLoad, Port3CounterEn;
   logic                      Port3Active;
-  logic [2**Entries-1:0]     LutMatch;
+(* mark_debug = "true" *)  logic [2**Entries-1:0]     LutMatch;
   logic [(2**Entries)*2-1:0] ActiveBitsShift;
   logic [2**Entries-1:0]     ActiveBitsInvert;
   logic [(2**Entries)*2-1:0] ActiveBitsExtend;
@@ -62,12 +62,12 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
 (* mark_debug = "true" *)  logic [Entries-1:0]        TailPtr2;
 
   logic [2**Entries-1:0]     ActiveBitsRev;
+  logic [Entries-1:0]        Port3PtrLoadVal;
   
-
   // search Lut for matching Port2WData[Entries:0]. The index tells us the correct entry in the memory array.
   genvar                 index;
   for(index=0; index<2**Entries; index++) begin
-    assign LutMatch[index] = Lut[index] == Port2WData[Entries-1:0];
+    assign LutMatch[index] = Lut[index] == Port2WData[Entries-1:0] & ActiveBits[index];
   end
   // assume only one matches
   binencoder #(2**Entries) binencoder(LutMatch, Port2LutIndex);
@@ -135,9 +135,12 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
     endcase
   end
 
+  
+  assign Port3PtrLoadVal = reset ? '0 : TailPtr2;
   flopenl #(Entries) port3counterreg(clk, Port3CounterLoad, Port3CounterEn, Port3PtrNext, TailPtr2, Port3Ptr);
+
   assign Port3PtrNext = Port3Ptr + 1;
-  assign Port3CounterLoad = CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr2;
+  assign Port3CounterLoad = (CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr2) | reset;
   assign Port3CounterEn = Port3RValid;
   assign Port3Active = ActiveBits[Port3Ptr];
   assign Port3RData = mem[Port3Ptr];

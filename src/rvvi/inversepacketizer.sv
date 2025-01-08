@@ -35,9 +35,9 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P,
   input logic               RvviAxiRlast,
   input logic               RvviAxiRvalid,
   output logic              Valid,
-  output logic [P.XLEN-1:0] Minstr,
+(* mark_debug = "true" *)  output logic [P.XLEN-1:0] Minstr,
   output logic [31:0]       InterPacketDelay,
-  output logic [FRAME_COUNT_WIDTH-1:0] FrameCount,
+(* mark_debug = "true" *)  output logic [FRAME_COUNT_WIDTH-1:0] FrameCount,
   input logic [47:0]        DstMac,
   input logic [47:0]        SrcMac,
   input logic [15:0]        EthType);
@@ -45,7 +45,7 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P,
   typedef enum              {STATE_RST, STATE_ALL_CAPTURED, STATE_WAIT} statetype;
 (* mark_debug = "true" *)  statetype CurrState, NextState;
 
-(* mark_debug = "true" *)  logic [31:0]              mem [7:0];
+  logic [31:0]              mem [7:0];
 (* mark_debug = "true" *)  logic [2:0]               Counter;	
   logic                     CounterEn, CounterRst;
 (* mark_debug = "true" *)  logic [3:0]               Match;
