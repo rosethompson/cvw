@@ -139,7 +139,7 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
   assign CSRCount = {{{12-MAX_CSRS}{1'b0}}, CSRCountShort};
   assign rvvi = {CSRs, Registers, Required};
   
-  counter #(FRAME_COUNT_WIDTH) framecounter(clk, reset, (InstrValidW & ~StallW), FrameCount);
+  counter #(FRAME_COUNT_WIDTH) framecounter(clk, reset, valid, FrameCount);
 
 endmodule
                                                                  
