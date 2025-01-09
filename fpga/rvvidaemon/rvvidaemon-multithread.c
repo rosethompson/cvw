@@ -54,7 +54,7 @@
 //#define PRINT_THRESHOLD 1024
 //#define E_TARGET_CLOCK 25000
 //#define E_TARGET_CLOCK 80000
-#define E_TARGET_CLOCK 85000
+#define E_TARGET_CLOCK 60000
 #define SYSTEM_CLOCK 50000000
 #define INNER_PKT_DELAY (SYSTEM_CLOCK / E_TARGET_CLOCK)
 
@@ -635,11 +635,11 @@ int state_compare(int hart, uint64_t Minstret){
 
   if (result == 0) {
     /* Send packet */
-    /* if (sendto(sockfd, sendbuf, tx_len, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){ */
-    /*   printf("Send failed\n"); */
-    /* }else { */
-    /*   printf("send success!\n"); */
-    /* } */
+    if (sendto(sockfd, sendbuf, tx_len, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
+      printf("Send failed\n");
+    }else {
+      printf("send success!\n");
+    }
 
     sprintf(buf, "MISMATCH @ instruction # %ld\n", Minstret);
     idvMsgError(buf);
