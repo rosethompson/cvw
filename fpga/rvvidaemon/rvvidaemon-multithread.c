@@ -52,7 +52,7 @@
 #define PRINT_THRESHOLD 1
 //#define PRINT_THRESHOLD 65536
 //#define PRINT_THRESHOLD 1024
-#define LOG_THRESHOLD 0x800000 // ~128 Million instruction
+#define LOG_THRESHOLD 0x8000000 // ~128 Million instruction
 //#define E_TARGET_CLOCK 25000
 //#define E_TARGET_CLOCK 80000
 #define E_TARGET_CLOCK 60000
@@ -549,9 +549,8 @@ void * ProcessLoop(void * arg){
         printf("!!!!!!!!!!!!!!!!!!!!Logging reference model state!!!!!!!!!!!!!!!!!!!!\n");
         printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
         char buf[40];
-        uint64_t Minstret = RefModelLogCount * LOG_THRESHOLD;
 	printf("count = %ld, LOG_THRESHOLD = %d\n", count, LOG_THRESHOLD);
-        snprintf(buf, 40, "Log-%ldM-Instr-dump.txt", Minstret);
+        snprintf(buf, 40, "Log-%ldM-Instr-dump.txt", ((RefModelLogCount * LOG_THRESHOLD) >> 20));
         DumpState(0, buf, EXT_MEM_BASE, EXT_MEM_RANGE + EXT_MEM_BASE + 1);
 	RefModelLogCount++;
       }
