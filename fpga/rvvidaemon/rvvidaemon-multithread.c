@@ -52,6 +52,7 @@
 #define PRINT_THRESHOLD 1
 //#define PRINT_THRESHOLD 65536
 //#define PRINT_THRESHOLD 1024
+#define LOG_THRESHOLD 0x1000000 // ~16 Million instruction
 //#define E_TARGET_CLOCK 25000
 //#define E_TARGET_CLOCK 80000
 #define E_TARGET_CLOCK 60000
@@ -90,6 +91,9 @@
 #define QUEUE_SIZE       16384
 #define QUEUE_THREASHOLD 128
 
+#define EXT_MEM_BASE 0x80000000
+#define EXT_MEM_RANGE 0x7FFFFFFF
+
 // load wally configuration
 // must be set external to program
 // export IMPERAS_TOOLS="../../config/rv64gc/imperas.ic"
@@ -125,6 +129,7 @@ void set_csr(int hart, int csrIndex, uint64_t value);
 void set_fpr(int hart, int reg, uint64_t value);
 int state_compare(int hart, uint64_t Minstret);
 void WriteInstructionData(RequiredRVVI_t *InstructionData, FILE *fptr);
+void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uint64_t EndAddress);
 
 int main(int argc, char **argv){
   
@@ -513,7 +518,8 @@ void * SetSpeedLoop(void * arg){
       Phase = 1;
     } else if(QueueDepth <= QUEUE_SIZE){
       printf("Critial failure. SetSpeedLoop Thread Phase = %d.\n", Phase);
-      exit(-1);
+      //exit(-1);
+      break;
     }
     ((uint32_t*) (SpeedBuf + SpeedLen))[0] = (SYSTEM_CLOCK / InstrPreSec);
     printf("InstrPreSec = %d, InterPacketDelay = %d, Phase = %d, Rate = %d\n", InstrPreSec, (SYSTEM_CLOCK / InstrPreSec), Phase, Rate);
@@ -527,23 +533,26 @@ void * ProcessLoop(void * arg){
   int result;
   uint64_t last = 0;
   uint64_t count = 0;
+  uint64_t RefModelLogCount = 0;
   while(1) {
     if(!IsEmpty(InstructionQueue)){
       //printf("Before Dequeue\n");
       Dequeue(&InstructionDataPtr, InstructionQueue);
       //printf("After Dequeue\n");
       count++;
-      if(count == PRINT_THRESHOLD){
+      if(count % PRINT_THRESHOLD == 0){
         printf("Queue depth = %d \t", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size);
         PrintInstructionData(&InstructionDataPtr);
-        count = 0;
       }
-      /* current = InstructionDataPtr.Minstret; */
-      /* if(current != last + 1){ */
-      /* 	printf("Error!\n"); */
-      /* 	exit(-1); */
-      /* } */
-      /* last = current; */
+      if(count % LOG_THRESHOLD == 0) {
+        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        printf("!!!!!!!!!!!!!!!!!!!!Logging reference model state!!!!!!!!!!!!!!!!!!!!\n");
+        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        char buf[40];
+        uint64_t Minstret = RefModelLogCount * LOG_THRESHOLD;
+        snprintf(buf, 40, "Log-%ldM-Instr-dump.txt", Minstret);
+        DumpState(0, buf, EXT_MEM_BASE, (uint64_t) (EXT_MEM_RANGE) + 1); 
+      }
       result = ProcessRvviAll(&InstructionDataPtr);
       //result = 0;
       if(result == -1) {
@@ -643,6 +652,9 @@ int state_compare(int hart, uint64_t Minstret){
 
     sprintf(buf, "MISMATCH @ instruction # %ld\n", Minstret);
     idvMsgError(buf);
+
+    // copy all state out to a log file so we can rebuild in simulation
+    DumpState(hart, "mismatch-memory-dump.txt", EXT_MEM_BASE, (uint64_t) (EXT_MEM_RANGE) + 1);
     return -1;
   }
   
@@ -704,3 +716,26 @@ void WriteInstructionData(RequiredRVVI_t *InstructionData, FILE *fptr){
   fprintf(fptr, "\n");
 }
 
+void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uint64_t EndAddress){
+  uint64_t Index1, Index2;
+  uint64_t Address;
+  const uint32_t BufferSize = 4096;
+  uint64_t Total8ByteAddress = (EndAddress - StartAddress) >> 3; // i.e. 2^31 = 2G / 2^3 = 2^28 = 256M
+  uint64_t InnterLoopLimit = BufferSize >> 3;                    // i.e. 2^9 =  512
+  uint64_t OuterLoopLimit = Total8ByteAddress / InnterLoopLimit; // 2^28 / 2^9 = 2^19 = 512K
+  uint64_t Buf[InnterLoopLimit]; // 4KiB buffer
+  FILE * fp;
+  fp = fopen(FileName, "w");
+  if(fp == NULL){
+    printf("Filed to open %s for writting\n", FileName);
+    exit(-1);
+  }
+  for(Index1 = 0; Index1 < OuterLoopLimit; Index1++) {
+    for(Index2 = 0; Index2 < InnterLoopLimit; Index2++){
+      Address = StartAddress + Index1 * BufferSize + (Index2 << 3);
+      Buf[Index2] = rvviRefMemoryRead(hartId, Index2, Address);
+    }
+  }
+  fclose(fp);
+  rvviRefStateDump(hartId);
+}
