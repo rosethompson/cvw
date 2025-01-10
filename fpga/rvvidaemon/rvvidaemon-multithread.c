@@ -49,11 +49,10 @@
 #include "op/op.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
-//#define PRINT_THRESHOLD 1
-#define PRINT_THRESHOLD 65536
+#define PRINT_THRESHOLD 1
+//#define PRINT_THRESHOLD 65536
 //#define PRINT_THRESHOLD 1024
-//#define LOG_THRESHOLD 0x100000 // ~16 Million instruction
-#define LOG_THRESHOLD 0x10000 // ~16 Million instruction
+#define LOG_THRESHOLD 0x800000 // ~128 Million instruction
 //#define E_TARGET_CLOCK 25000
 //#define E_TARGET_CLOCK 80000
 #define E_TARGET_CLOCK 60000
@@ -551,8 +550,10 @@ void * ProcessLoop(void * arg){
         printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
         char buf[40];
         uint64_t Minstret = RefModelLogCount * LOG_THRESHOLD;
+	printf("count = %ld, LOG_THRESHOLD = %d\n", count, LOG_THRESHOLD);
         snprintf(buf, 40, "Log-%ldM-Instr-dump.txt", Minstret);
-        DumpState(0, buf, EXT_MEM_BASE, EXT_MEM_RANGE + EXT_MEM_BASE + 1); 
+        DumpState(0, buf, EXT_MEM_BASE, EXT_MEM_RANGE + EXT_MEM_BASE + 1);
+	RefModelLogCount++;
       }
       result = ProcessRvviAll(&InstructionDataPtr);
       //result = 0;
@@ -741,6 +742,105 @@ void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uin
     }
     fwrite(Buf, 8, InnterLoopLimit, fp);
   }
+
+  int Index;
+  CSR_unpacked_t CSRs[4096];
+  int CSRCount;
+  uint64_t GPR[32];
+  uint64_t FPR[32];
+  uint64_t PC;
+  uint64_t value;
+
+  for(Index = 0; Index<32; Index++){
+    GPR[Index] = rvviRefGprGet(hartId, Index);
+    FPR[Index] = rvviRefGprGet(hartId, Index);
+  }
+  fwrite(GPR, 8, 32, fp);
+  fwrite(FPR, 8, 32, fp);
+  PC = rvviRefPcGet(hartId);
+  fwrite(&PC, 8, 1, fp);
+
+  CSRCount = 0;
+  for(Index = 0; Index < 4096; Index++){
+    value = rvviRefCsrGet(hartId, Index);
+    if(value != 0) {
+      CSRs[CSRCount].CSRReg = Index;
+      CSRs[CSRCount].CSRValue = rvviRefCsrGet(hartId, Index);
+      CSRCount++;
+    }
+  }
+
+  fwrite(CSRs, 16, CSRCount, fp);
+
+  /// instead of all this let's read all the csrs and if it's not zero we'll write it out with csr index
+  /* int Index; */
+  /* uint64_t MSTATUS, MSTATUSH; */
+  /* uint64_t MTVEC, MEPC; */
+  /* uint64_t MCAUSE, MTVAL; */
+  /* uint64_t MCOUNTEREN, MCOUNTINHIBT; */
+  /* uint64_t MEDELEG, MIDELEG; */
+  /* uint64_t MIP, MIE; */
+  /* uint64_t MISA, MENVCFG; */
+  /* uint64_t MHARTID, MSCRATCH; */
+  /* uint64_t MVENDORID, MARCHID; */
+  /* uint64_t MIMPID, MCONFIGPTR; */
+  /* uint64_t MTINST; */
+  /* uint64_t SSTATUS, SIE; */
+  /* uint64_t STEV, SEPC; */
+  /* uint64_t SCOUNTEREN, SENVCFG; */
+  /* uint64_t SATP, SSCRATCH; */
+  /* uint64_t STVAL, SCAUSE; */
+  /* uint64_t SIDELEG; */
+  /* uint64_t SIP, STIMECMP; */
+  /* uint64_t FFLAGS, FRM, FCSR; */
+  /* uint64_t PMPADDR[NUM_PMP_REGS]; */
+  /* uint64_t PMPCFG[NUM_PMP_REGS/8]; */
+
+  /* MSTATUS      = rvviRefCsrGet(hartId, 0x300); */
+  /* MSTATUSH     = rvviRefCsrGet(hartId, 0x310); */
+  /* MTVEC        = rvviRefCsrGet(hartId, 0x305); */
+  /* MEPC         = rvviRefCsrGet(hartId, 0x341); */
+  /* MCOUNTEREN   = rvviRefCsrGet(hartId, 0x306); */
+  /* MCOUNTINHIBT = rvviRefCsrGet(hartId, 0x320); */
+  /* MEDELEG      = rvviRefCsrGet(hartId, 0x302); */
+  /* MIDELEG      = rvviRefCsrGet(hartId, 0x303); */
+  /* MIP          = rvviRefCsrGet(hartId, 0x344); */
+  /* MIE          = rvviRefCsrGet(hartId, 0x304); */
+  /* MIA          = rvviRefCsrGet(hartId, 0x301); */
+  /* MENVCFG      = rvviRefCsrGet(hartId, 0x30A); */
+  /* MHARTID      = rvviRefCsrGet(hartId, 0xF14); */
+  /* MSCRATCH     = rvviRefCsrGet(hartId, 0x340); */
+  /* MCAUSE       = rvviRefCsrGet(hartId, 0x342); */
+  /* MTVAL        = rvviRefCsrGet(hartId, 0x343); */
+  /* MVENDORID    = rvviRefCsrGet(hartId, 0xF11); */
+  /* MARCHID      = rvviRefCsrGet(hartId, 0xF12); */
+  /* MIMPID       = rvviRefCsrGet(hartId, 0xF13); */
+  /* MCONFIGPTR   = rvviRefCsrGet(hartId, 0xF15); */
+  /* MTINST       = rvviRefCsrGet(hartId, 0x34A); */
+  /* SSTATUS      = rvviRefCsrGet(hartId, 0x100); */
+  /* SIP          = rvviRefCsrGet(hartId, 0x104); */
+  /* STVEC        = rvviRefCsrGet(hartId, 0x105); */
+  /* SEPC         = rvviRefCsrGet(hartId, 0x141); */
+  /* SCOUNTEREN   = rvviRefCsrGet(hartId, 0x106); */
+  /* SENVCFG      = rvviRefCsrGet(hartId, 0x10A); */
+  /* SATP         = rvviRefCsrGet(hartId, 0x180); */
+  /* SSCRATCH     = rvviRefCsrGet(hartId, 0x140); */
+  /* STVAL        = rvviRefCsrGet(hartId, 0x143); */
+  /* SCAUSE       = rvviRefCsrGet(hartId, 0x142); */
+  /* SIDELEG      = rvviRefCsrGet(hartId, 0x144); */
+  /* STIMECMP     = rvviRefCsrGet(hartId, 0x14D); */
+  /* FFLAGS       = rvviRefCsrGet(hartId, 0x001); */
+  /* FRM          = rvviRefCsrGet(hartId, 0x002); */
+  /* FCSR         = rvviRefCsrGet(hartId, 0x003); */
+
+  /* for(Index = 0; Index < NUM_PMP_REGS; Index++) { */
+  /*   PMPADDR[Index] = rvviRefCsrGet(hartId, 0x3B0 + Index); */
+  /* } */
+
+  /* for(Index = 0; Index < NUM_PMP_REGS/8; Index++) { */
+  /*   PMPCFG[Index] = rvviRefCsrGet(hartId, 0x3A0 + Index*2); */
+  /* } */
   fclose(fp);
+
   rvviRefStateDump(hartId);
 }

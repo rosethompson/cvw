@@ -534,11 +534,11 @@ module fpgaTop  #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     assign CSRArray[13] = fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.MSCRATCH_REGW; // 12'h340
     assign CSRArray[14] = fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.MCAUSE_REGW; // 12'h342
     assign CSRArray[15] = fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.MTVAL_REGW; // 12'h343
-    assign CSRArray[16] = 0; // 12'hF11
-    assign CSRArray[17] = 0; // 12'hF12
-    assign CSRArray[18] = {{P.XLEN-12{1'b0}}, 12'h100}; //P.XLEN'h100; // 12'hF13
-    assign CSRArray[19] = 0; // 12'hF15
-    assign CSRArray[20] = 0; // 12'h34A
+    assign CSRArray[16] = 0; // 12'hF11 // *** these don't look right // mvendorid
+    assign CSRArray[17] = 0; // 12'hF12 // *** should it be 36? // marchid
+    assign CSRArray[18] = {{P.XLEN-12{1'b0}}, 12'h100}; //P.XLEN'h100; // 12'hF13 // mimpid
+    assign CSRArray[19] = 0; // 12'hF15 // mconfigptr
+    assign CSRArray[20] = 0; // 12'h34A // mtinst
     // supervisor CSRs
     assign CSRArray[21] = fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrs.csrs.SSTATUS_REGW; // 12'h100
     assign CSRArray[22] = fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.MIE_REGW & 12'h222; // 12'h104

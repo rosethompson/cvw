@@ -11,6 +11,11 @@ typedef struct __attribute__((packed)) {
   uint64_t CSRValue;
 } CSR_t;
 
+typedef struct {
+  uint64_t CSRReg;
+  uint64_t CSRValue;
+} CSR_unpacked_t;
+
 typedef struct __attribute__((packed)) {
   uint16_t FrameCount;
   uint64_t PC;
