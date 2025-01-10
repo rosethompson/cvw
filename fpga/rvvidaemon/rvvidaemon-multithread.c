@@ -49,10 +49,11 @@
 #include "op/op.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
-#define PRINT_THRESHOLD 1
-//#define PRINT_THRESHOLD 65536
+//#define PRINT_THRESHOLD 1
+#define PRINT_THRESHOLD 65536
 //#define PRINT_THRESHOLD 1024
-#define LOG_THRESHOLD 0x1000000 // ~16 Million instruction
+//#define LOG_THRESHOLD 0x100000 // ~16 Million instruction
+#define LOG_THRESHOLD 0x10000 // ~16 Million instruction
 //#define E_TARGET_CLOCK 25000
 //#define E_TARGET_CLOCK 80000
 #define E_TARGET_CLOCK 60000
@@ -91,8 +92,8 @@
 #define QUEUE_SIZE       16384
 #define QUEUE_THREASHOLD 128
 
-#define EXT_MEM_BASE 0x80000000
-#define EXT_MEM_RANGE 0x7FFFFFFF
+uint64_t EXT_MEM_BASE =  0x80000000;
+uint64_t EXT_MEM_RANGE = 0x7FFFFFFF;
 
 // load wally configuration
 // must be set external to program
@@ -551,7 +552,7 @@ void * ProcessLoop(void * arg){
         char buf[40];
         uint64_t Minstret = RefModelLogCount * LOG_THRESHOLD;
         snprintf(buf, 40, "Log-%ldM-Instr-dump.txt", Minstret);
-        DumpState(0, buf, EXT_MEM_BASE, (uint64_t) (EXT_MEM_RANGE) + 1); 
+        DumpState(0, buf, EXT_MEM_BASE, EXT_MEM_RANGE + EXT_MEM_BASE + 1); 
       }
       result = ProcessRvviAll(&InstructionDataPtr);
       //result = 0;
@@ -654,7 +655,7 @@ int state_compare(int hart, uint64_t Minstret){
     idvMsgError(buf);
 
     // copy all state out to a log file so we can rebuild in simulation
-    DumpState(hart, "mismatch-memory-dump.txt", EXT_MEM_BASE, (uint64_t) (EXT_MEM_RANGE) + 1);
+    DumpState(hart, "mismatch-memory-dump.txt", EXT_MEM_BASE, EXT_MEM_BASE + EXT_MEM_RANGE + 1);
     return -1;
   }
   
@@ -730,11 +731,25 @@ void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uin
     printf("Filed to open %s for writting\n", FileName);
     exit(-1);
   }
+  printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+  printf("!!!!!!!!!! Dumping memory state !!!!!!!!!!\n");
+  printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+  /* printf("StartAddress = %lx\n", StartAddress); */
+  /* printf("EndAddress = %lx\n", EndAddress); */
+  /* printf("Total8ByteAddress = %lx\n", Total8ByteAddress); */
+  /* printf("InnterLoopLimit = %lx\n", InnterLoopLimit); */
+  /* printf("OuterLoopLimit = %lx\n", OuterLoopLimit); */
   for(Index1 = 0; Index1 < OuterLoopLimit; Index1++) {
     for(Index2 = 0; Index2 < InnterLoopLimit; Index2++){
       Address = StartAddress + Index1 * BufferSize + (Index2 << 3);
-      Buf[Index2] = rvviRefMemoryRead(hartId, Index2, Address);
+      Buf[Index2] = rvviRefMemoryRead(hartId, Address, 8);
     }
+    /* printf("Buf is: "); */
+    /* for(Index2 = 0; Index2 < InnterLoopLimit; Index2++){ */
+    /*   printf("%lx, ", Buf[Index2]); */
+    /* } */
+    /* printf("\n"); */
+    fwrite(Buf, 8, InnterLoopLimit, fp);
   }
   fclose(fp);
   rvviRefStateDump(hartId);
