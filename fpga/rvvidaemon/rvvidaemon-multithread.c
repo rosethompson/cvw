@@ -734,21 +734,11 @@ void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uin
   printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
   printf("!!!!!!!!!! Dumping memory state !!!!!!!!!!\n");
   printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-  /* printf("StartAddress = %lx\n", StartAddress); */
-  /* printf("EndAddress = %lx\n", EndAddress); */
-  /* printf("Total8ByteAddress = %lx\n", Total8ByteAddress); */
-  /* printf("InnterLoopLimit = %lx\n", InnterLoopLimit); */
-  /* printf("OuterLoopLimit = %lx\n", OuterLoopLimit); */
   for(Index1 = 0; Index1 < OuterLoopLimit; Index1++) {
     for(Index2 = 0; Index2 < InnterLoopLimit; Index2++){
       Address = StartAddress + Index1 * BufferSize + (Index2 << 3);
       Buf[Index2] = rvviRefMemoryRead(hartId, Address, 8);
     }
-    /* printf("Buf is: "); */
-    /* for(Index2 = 0; Index2 < InnterLoopLimit; Index2++){ */
-    /*   printf("%lx, ", Buf[Index2]); */
-    /* } */
-    /* printf("\n"); */
     fwrite(Buf, 8, InnterLoopLimit, fp);
   }
   fclose(fp);
