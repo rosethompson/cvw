@@ -49,7 +49,7 @@ module testbench;
   parameter BPRED_LOGGER=0;
   parameter I_CACHE_ADDR_LOGGER=0;
   parameter D_CACHE_ADDR_LOGGER=0;
-  parameter RVVI_SYNTH_SUPPORTED=1;
+  parameter RVVI_SYNTH_SUPPORTED=0;
 
   `ifdef USE_IMPERAS_DV
     import idvPkg::*;
@@ -175,6 +175,7 @@ module testbench;
         "arch64zfaf":    if (P.ZFA_SUPPORTED)     tests = arch64zfaf;
         "arch64zfad":    if (P.ZFA_SUPPORTED & P.D_SUPPORTED)  tests = arch64zfad;
         "buildroot":                              tests = buildroot;
+        "rvvicheckpoint":                         tests = rvvicheckpoint;
         "arch64zbkb":    if (P.ZBKB_SUPPORTED)    tests = arch64zbkb;
         "arch64zbkc":    if (P.ZBKC_SUPPORTED)    tests = arch64zbkc;
         "arch64zbkx":    if (P.ZBKX_SUPPORTED)    tests = arch64zbkx;
@@ -368,6 +369,11 @@ module testbench;
         uartoutfile = $fopen(uartoutfilename, "w"); // delete UART output file
         ProgramAddrMapFile = {RISCV_DIR, "/buildroot/output/images/disassembly/vmlinux.objdump.addr"};
         ProgramLabelMapFile = {RISCV_DIR, "/buildroot/output/images/disassembly/vmlinux.objdump.lab"};
+      end else if(TEST == "rvvicheckpoint") begin
+        memfilename = "mismatch-memory-dump.bin";
+        elffilename = "buildroot";
+        ProgramAddrMapFile = "None";
+        ProgramLabelMapFile = "None";
       end else if(TEST == "fpga") begin
         bootmemfilename = {WALLY_DIR, "/fpga/src/boot.mem"};
         memfilename = {WALLY_DIR, "/fpga/src/data.mem"};

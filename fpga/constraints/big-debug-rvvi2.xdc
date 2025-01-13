@@ -251,7 +251,7 @@ connect_debug_port u_ila_0/probe46 [get_nets [list {rvvi_synth.acev/rvviactiveli
 create_debug_port u_ila_0 probe
 set_property port_width 4 [get_debug_ports u_ila_0/probe47]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe47]
-connect_debug_port u_ila_0/probe47 [get_nets [list {rvvi_synth.acev/rvviactivelist/TailPtr2[0]} {rvvi_synth.acev/rvviactivelist/TailPtr2[1]} {rvvi_synth.acev/rvviactivelist/TailPtr2[2]} {rvvi_synth.acev/rvviactivelist/TailPtr2[3]} ]]
+connect_debug_port u_ila_0/probe47 [get_nets [list {rvvi_synth.acev/rvviactivelist/TailPtr[0]} {rvvi_synth.acev/rvviactivelist/TailPtr[1]} {rvvi_synth.acev/rvviactivelist/TailPtr[2]} {rvvi_synth.acev/rvviactivelist/TailPtr[3]} ]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 4 [get_debug_ports u_ila_0/probe48]
