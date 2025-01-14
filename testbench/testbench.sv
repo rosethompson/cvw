@@ -270,6 +270,8 @@ module testbench;
   integer begin_signature_addr, end_signature_addr, signature_size;
   integer uartoutfile;
 
+  string  GPRmemfilename, FPRmemfilename, CSRmemfilename;
+
   assign ResetThreshold = 3'd5;
 
   initial begin
@@ -370,7 +372,10 @@ module testbench;
         ProgramAddrMapFile = {RISCV_DIR, "/buildroot/output/images/disassembly/vmlinux.objdump.addr"};
         ProgramLabelMapFile = {RISCV_DIR, "/buildroot/output/images/disassembly/vmlinux.objdump.lab"};
       end else if(TEST == "rvvicheckpoint") begin
-        memfilename = "mismatch-memory-dump.bin";
+        memfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-memory.bin"};
+        GPRmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-GPR.bin"};
+        FPRmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-FPR.bin"};
+        CSRmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-CSR.bin"};
         elffilename = "buildroot";
         ProgramAddrMapFile = "None";
         ProgramLabelMapFile = "None";
@@ -461,6 +466,7 @@ module testbench;
   integer BaseIndex;
   integer memFile, uncoreMemFile;
   integer readResult;
+  integer GPRmemFile, FPRmemFile, CSRmemFile;
   if (P.SDC_SUPPORTED) begin
     always @(posedge clk) begin
       if (LoadMem) begin
@@ -473,7 +479,8 @@ module testbench;
         //dut.uncoregen.uncore.sdc.SDC.LimitTimers = 1;
       end
     end
-  end else if (P.IROM_SUPPORTED) begin
+  end 
+  if (P.IROM_SUPPORTED) begin
     always @(posedge clk) begin
       if (LoadMem) begin
         $readmemh(memfilename, dut.core.ifu.irom.irom.rom.ROM);
@@ -502,6 +509,32 @@ module testbench;
           end
           readResult = $fread(dut.uncoregen.uncore.ram.ram.memory.ram.RAM, memFile);
           $fclose(memFile);
+        end else if (TEST == "rvvicheckpoint") begin
+          memFile = $fopen(memfilename, "rb");
+          if (memFile == 0) begin
+            $display("Error: Could not open file %s", memfilename);
+            $finish;
+          end
+          readResult = $fread(dut.uncoregen.uncore.ram.ram.memory.ram.RAM, memFile);
+          
+          GPRmemFile = $fopen(GPRmemfilename, "rb");
+          if (GPRmemFile == 0) begin
+            $display("Error: Could not open file %s", GPRmemfilename);
+            $finish;
+          end
+          readResult = $fread(dut.core.ieu.dp.regf.rf, GPRmemFile);
+          $fclose(GPRmemFile);
+          
+          FPRmemFile = $fopen(FPRmemfilename, "rb");
+          if (FPRmemFile == 0) begin
+            $display("Error: Could not open file %s", FPRmemfilename);
+            $finish;
+          end
+          readResult = $fread(dut.core.fpu.fpu.fregfile.rf, FPRmemFile);
+          $fclose(FPRmemFile);
+
+          // *** TODO: Add CSR checkpoint preload
+
         end else if (TEST == "fpga") begin
           memFile = $fopen(bootmemfilename, "rb");
           if (memFile == 0) begin
