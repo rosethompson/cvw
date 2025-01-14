@@ -46,9 +46,8 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   logic [WIDTH-1:0]          mem[2**Entries-1:0];
 (* mark_debug = "true" *)  logic [2**Entries-1:0]     ActiveBits;
   logic [Entries-1:0]        Lut[2**Entries-1:0];
-(* mark_debug = "true" *)  logic [Entries-1:0]        HeadPtr, Port3Ptr, Port3PtrNext;
-  logic [Entries-1:0]        HeadPtrNext;
-  logic [Entries-1:0]        waddr;
+(* mark_debug = "true" *)  logic [Entries-1:0]        HeadPtr, Port3Ptr;
+  logic [Entries-1:0]        HeadPtrNext, Port3PtrNext;
   logic [Entries-1:0]        Port2LutIndex;
   typedef enum               {STATE_IDLE, STATE_REPLAY, STATE_WAIT} statetype;
 (* mark_debug = "true" *)  statetype CurrState, NextState;
@@ -59,7 +58,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   logic [2**Entries-1:0]     ActiveBitsInvert;
   logic [(2**Entries)*2-1:0] ActiveBitsExtend;
   logic [Entries-1:0]        TailPtrUncompensated;
-(* mark_debug = "true" *)  logic [Entries-1:0]        TailPtr2;
+(* mark_debug = "true" *)  logic [Entries-1:0]        TailPtr;
 
   logic [2**Entries-1:0]     ActiveBitsRev;
   logic [Entries-1:0]        Port3PtrLoadVal;
@@ -74,7 +73,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   
   always_ff @(posedge clk)
     if (Port1Wen & ~Full) begin 
-      mem[waddr] <= Port1WData;
+      mem[HeadPtr] <= Port1WData;
     end
 
   always_ff @(posedge clk)
@@ -87,8 +86,8 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
       if (Port1Wen) begin
         HeadPtr  <= HeadPtrNext;
         if(~Full) begin 
-          Lut[waddr] <= Port1WData[Entries-1:0];
-          ActiveBits[waddr] <= 1'b1;
+          Lut[HeadPtr] <= Port1WData[Entries-1:0];
+          ActiveBits[HeadPtr] <= 1'b1;
         end
       end 
       if(Port2Wen) begin
@@ -98,7 +97,6 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
       Full <= &ActiveBits;
     end 
   
-  assign waddr = HeadPtr[Entries-1:0];
   assign HeadPtrNext = HeadPtr + {{(Entries){1'b0}}, (Port1Wen & ~Full)};
 
   // derive tail pointer from the active bits.
@@ -110,7 +108,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   assign ActiveBitsShift = ActiveBitsExtend << HeadPtr[Entries-1:0];
   assign ActiveBitsInvert = ActiveBitsShift[(2**Entries)*2-1:2**Entries];
   lzc #(2**Entries) lzc(ActiveBitsInvert, TailPtrUncompensated);
-  assign TailPtr2 = TailPtrUncompensated + HeadPtr[Entries-1:0];
+  assign TailPtr = TailPtrUncompensated + HeadPtr[Entries-1:0];
 
   // port 3
   // if port 2 writes to an address which is not the tail pointer, we iterate from the tail to the first non-active entry.
@@ -125,7 +123,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
 
   always_comb begin
     case(CurrState)
-      STATE_IDLE: if(Port2Wen & Port2LutIndex != TailPtr2) NextState = STATE_REPLAY;
+      STATE_IDLE: if(Port2Wen & Port2LutIndex != TailPtr) NextState = STATE_REPLAY;
       else NextState = STATE_IDLE;
       STATE_REPLAY: if(~Port3Active & ~Port3Stall) NextState = STATE_WAIT;
       else NextState = STATE_REPLAY;
@@ -136,11 +134,11 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   end
 
   
-  assign Port3PtrLoadVal = reset ? '0 : TailPtr2;
-  flopenl #(Entries) port3counterreg(clk, Port3CounterLoad, Port3CounterEn, Port3PtrNext, TailPtr2, Port3Ptr);
+  assign Port3PtrLoadVal = reset ? '0 : TailPtr;
+  flopenl #(Entries) port3counterreg(clk, Port3CounterLoad, Port3CounterEn, Port3PtrNext, TailPtr, Port3Ptr);
 
   assign Port3PtrNext = Port3Ptr + 1;
-  assign Port3CounterLoad = (CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr2) | reset;
+  assign Port3CounterLoad = (CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr) | reset;
   assign Port3CounterEn = Port3RValid;
   assign Port3Active = ActiveBits[Port3Ptr];
   assign Port3RData = mem[Port3Ptr];

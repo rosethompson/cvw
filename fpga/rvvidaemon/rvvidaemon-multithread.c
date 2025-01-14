@@ -718,6 +718,7 @@ void WriteInstructionData(RequiredRVVI_t *InstructionData, FILE *fptr){
 }
 
 void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uint64_t EndAddress){
+  /// **** these values are all in the wrong byte order.
   uint64_t Index1, Index2;
   uint64_t Address;
   const uint32_t BufferSize = 4096;

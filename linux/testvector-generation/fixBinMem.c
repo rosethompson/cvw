@@ -17,8 +17,7 @@ int main(int argc, char *argv[]) {
     uint64_t qemuWord;
     uint64_t verilogWord;
     int bytesReturned=0;
-    do {
-        bytesReturned=fread(&qemuWord, 8, 1, rawGDBfile);
+    while((bytesReturned=fread(&qemuWord, 8, 1, rawGDBfile)) != 0 ) {
         verilogWord = (((qemuWord>>0 )&0xff)<<56 | 
                        ((qemuWord>>8 )&0xff)<<48 | 
                        ((qemuWord>>16)&0xff)<<40 | 
@@ -28,6 +27,6 @@ int main(int argc, char *argv[]) {
                        ((qemuWord>>48)&0xff)<<8  | 
                        ((qemuWord>>56)&0xff)<<0);
         fwrite(&verilogWord, 8, 1, outFile);
-    } while(bytesReturned!=0);
+    };
     return 0;
 }

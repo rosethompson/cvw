@@ -124,6 +124,7 @@ module testbench;
   logic TestComplete;
   logic PrevPCZero;
   logic ExternalStall;
+  logic [P.XLEN-1:0] PC;
 
   initial begin
     // look for arguments passed to simulation, or use defaults
@@ -270,7 +271,7 @@ module testbench;
   integer begin_signature_addr, end_signature_addr, signature_size;
   integer uartoutfile;
 
-  string  GPRmemfilename, FPRmemfilename, CSRmemfilename;
+  string  GPRmemfilename, FPRmemfilename, PCmemfilename, CSRmemfilename;
 
   assign ResetThreshold = 3'd5;
 
@@ -375,6 +376,7 @@ module testbench;
         memfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-memory.bin"};
         GPRmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-GPR.bin"};
         FPRmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-FPR.bin"};
+        PCmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-PC.bin"};
         CSRmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-CSR.bin"};
         elffilename = "buildroot";
         ProgramAddrMapFile = "None";
@@ -466,7 +468,7 @@ module testbench;
   integer BaseIndex;
   integer memFile, uncoreMemFile;
   integer readResult;
-  integer GPRmemFile, FPRmemFile, CSRmemFile;
+  integer GPRmemFile, FPRmemFile, PCmemFile, CSRmemFile;
   if (P.SDC_SUPPORTED) begin
     always @(posedge clk) begin
       if (LoadMem) begin
@@ -533,6 +535,16 @@ module testbench;
           readResult = $fread(dut.core.fpu.fpu.fregfile.rf, FPRmemFile);
           $fclose(FPRmemFile);
 
+          // set PCF
+          PCmemFile = $fopen(PCmemfilename, "rb");
+          if (PCmemFile == 0) begin
+            $display("Error: Could not open file %s", PCmemfilename);
+            $finish;
+          end
+          readResult = $fread(PC, PCmemFile);
+          $fclose(PCmemFile);
+          force dut.core.ifu.pcresetmux.d1 =  PC;
+          
           // *** TODO: Add CSR checkpoint preload
 
         end else if (TEST == "fpga") begin

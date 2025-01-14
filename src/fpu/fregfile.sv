@@ -44,8 +44,9 @@ module fregfile #(parameter FLEN) (
    // write occurs on falling edge of clock   
    
    always_ff @(negedge clk) // or posedge reset)
-     if (reset) for(i=0; i<32; i++) rf[i] <= '0;
-     else if (we4) rf[a4] <= wd4;  
+     //if (reset) for(i=0; i<32; i++) rf[i] <= '0;
+     //else if (we4) rf[a4] <= wd4;
+     if (we4) rf[a4] <= wd4;  
    
    assign rd1 = rf[a1];
    assign rd2 = rf[a2];
