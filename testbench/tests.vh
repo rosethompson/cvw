@@ -31,6 +31,7 @@
 `define CUSTOM "4"
 `define COVERAGE "5"
 `define BUILDROOT "6"
+`define RVVICHECKPOINT "7"
 
 string tvpaths[] = '{
   "../../tests/riscof/work/riscv-arch-test/",
@@ -3427,4 +3428,9 @@ string ahb64[] = '{
 string ahb32[] = '{
   `RISCVARCHTEST,
   "rv32i_m/F/src/fadd_b11-01.S"
+};
+
+string rvvicheckpoint[] = '{
+  `RVVICHECKPOINT,
+  "rvvicheckpoint"
 };

@@ -742,7 +742,7 @@ add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/ace
 add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/ActiveBitsShift
 add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/ActiveBitsInvert
 add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/TailPtrUncompensated
-add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/TailPtr2
+add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/TailPtr
 add wave -noupdate -color Gold /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/CurrState
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/Port3Stall
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/acev/rvviactivelist/Port3RValid

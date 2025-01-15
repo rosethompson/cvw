@@ -718,6 +718,7 @@ void WriteInstructionData(RequiredRVVI_t *InstructionData, FILE *fptr){
 }
 
 void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uint64_t EndAddress){
+  /// **** these values are all in the wrong byte order.
   uint64_t Index1, Index2;
   uint64_t Address;
   const uint32_t BufferSize = 4096;
@@ -752,13 +753,15 @@ void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uin
 
   for(Index = 0; Index<32; Index++){
     GPR[Index] = rvviRefGprGet(hartId, Index);
-    FPR[Index] = rvviRefGprGet(hartId, Index);
+    FPR[Index] = rvviRefFprGet(hartId, Index);
   }
   fwrite(GPR, 8, 32, fp);
   fwrite(FPR, 8, 32, fp);
   PC = rvviRefPcGet(hartId);
   fwrite(&PC, 8, 1, fp);
 
+  // *** this method does not work as rvviRefCsrGet does not always return
+  // if the register is not implemented. Switch to the below method instead.
   CSRCount = 0;
   for(Index = 0; Index < 4096; Index++){
     value = rvviRefCsrGet(hartId, Index);
@@ -768,8 +771,6 @@ void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uin
       CSRCount++;
     }
   }
-
-  fwrite(CSRs, 16, CSRCount, fp);
 
   /// instead of all this let's read all the csrs and if it's not zero we'll write it out with csr index
   /* int Index; */
@@ -795,6 +796,9 @@ void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uin
   /* uint64_t PMPADDR[NUM_PMP_REGS]; */
   /* uint64_t PMPCFG[NUM_PMP_REGS/8]; */
 
+  fwrite(CSRs, 16, CSRCount, fp);
+
+
   /* MSTATUS      = rvviRefCsrGet(hartId, 0x300); */
   /* MSTATUSH     = rvviRefCsrGet(hartId, 0x310); */
   /* MTVEC        = rvviRefCsrGet(hartId, 0x305); */
@@ -817,7 +821,8 @@ void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uin
   /* MCONFIGPTR   = rvviRefCsrGet(hartId, 0xF15); */
   /* MTINST       = rvviRefCsrGet(hartId, 0x34A); */
   /* SSTATUS      = rvviRefCsrGet(hartId, 0x100); */
-  /* SIP          = rvviRefCsrGet(hartId, 0x104); */
+  /* SIP          = rvviRefCsrGet(hartId, 0x144); */
+  /* SIE          = rvviRefCsrGet(hartId, 0x104); */
   /* STVEC        = rvviRefCsrGet(hartId, 0x105); */
   /* SEPC         = rvviRefCsrGet(hartId, 0x141); */
   /* SCOUNTEREN   = rvviRefCsrGet(hartId, 0x106); */

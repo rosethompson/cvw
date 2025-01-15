@@ -49,7 +49,7 @@ module testbench;
   parameter BPRED_LOGGER=0;
   parameter I_CACHE_ADDR_LOGGER=0;
   parameter D_CACHE_ADDR_LOGGER=0;
-  parameter RVVI_SYNTH_SUPPORTED=1;
+  parameter RVVI_SYNTH_SUPPORTED=0;
 
   `ifdef USE_IMPERAS_DV
     import idvPkg::*;
@@ -124,7 +124,10 @@ module testbench;
   logic TestComplete;
   logic PrevPCZero;
   logic ExternalStall;
-
+  // For rvvi checkpoint 
+  logic [P.XLEN-1:0] PC;
+  logic [P.XLEN*2-1:0] CSR [55:0];
+  
   initial begin
     // look for arguments passed to simulation, or use defaults
     if (!$value$plusargs("TEST=%s", TEST))
@@ -175,6 +178,7 @@ module testbench;
         "arch64zfaf":    if (P.ZFA_SUPPORTED)     tests = arch64zfaf;
         "arch64zfad":    if (P.ZFA_SUPPORTED & P.D_SUPPORTED)  tests = arch64zfad;
         "buildroot":                              tests = buildroot;
+        "rvvicheckpoint":                         tests = rvvicheckpoint;
         "arch64zbkb":    if (P.ZBKB_SUPPORTED)    tests = arch64zbkb;
         "arch64zbkc":    if (P.ZBKC_SUPPORTED)    tests = arch64zbkc;
         "arch64zbkx":    if (P.ZBKX_SUPPORTED)    tests = arch64zbkx;
@@ -245,7 +249,7 @@ module testbench;
   // part 2: drive some of the controls
   // part 3: drive all logic and remove old inital and always @ negedge clk block
 
-  typedef enum logic [3:0]{STATE_TESTBENCH_RESET,
+  typedef enum logic [3:0] {STATE_TESTBENCH_RESET,
                            STATE_INIT_TEST,
                            STATE_RESET_MEMORIES,
                            STATE_RESET_MEMORIES2,
@@ -268,6 +272,8 @@ module testbench;
   string  signame, elffilename, memfilename, bootmemfilename, uartoutfilename, pathname;
   integer begin_signature_addr, end_signature_addr, signature_size;
   integer uartoutfile;
+
+  string  GPRmemfilename, FPRmemfilename, PCmemfilename, CSRmemfilename;
 
   assign ResetThreshold = 3'd5;
 
@@ -368,6 +374,15 @@ module testbench;
         uartoutfile = $fopen(uartoutfilename, "w"); // delete UART output file
         ProgramAddrMapFile = {RISCV_DIR, "/buildroot/output/images/disassembly/vmlinux.objdump.addr"};
         ProgramLabelMapFile = {RISCV_DIR, "/buildroot/output/images/disassembly/vmlinux.objdump.lab"};
+      end else if(TEST == "rvvicheckpoint") begin
+        memfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-memory.bin"};
+        GPRmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-GPR.bin"};
+        FPRmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-FPR.bin"};
+        PCmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-PC.bin"};
+        CSRmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-CSR.bin"};
+        elffilename = "buildroot";
+        ProgramAddrMapFile = "None";
+        ProgramLabelMapFile = "None";
       end else if(TEST == "fpga") begin
         bootmemfilename = {WALLY_DIR, "/fpga/src/boot.mem"};
         memfilename = {WALLY_DIR, "/fpga/src/data.mem"};
@@ -455,6 +470,7 @@ module testbench;
   integer BaseIndex;
   integer memFile, uncoreMemFile;
   integer readResult;
+  integer GPRmemFile, FPRmemFile, PCmemFile, CSRmemFile;
   if (P.SDC_SUPPORTED) begin
     always @(posedge clk) begin
       if (LoadMem) begin
@@ -467,7 +483,8 @@ module testbench;
         //dut.uncoregen.uncore.sdc.SDC.LimitTimers = 1;
       end
     end
-  end else if (P.IROM_SUPPORTED) begin
+  end 
+  if (P.IROM_SUPPORTED) begin
     always @(posedge clk) begin
       if (LoadMem) begin
         $readmemh(memfilename, dut.core.ifu.irom.irom.rom.ROM);
@@ -496,6 +513,53 @@ module testbench;
           end
           readResult = $fread(dut.uncoregen.uncore.ram.ram.memory.ram.RAM, memFile);
           $fclose(memFile);
+        end else if (TEST == "rvvicheckpoint") begin
+          memFile = $fopen(memfilename, "rb");
+          if (memFile == 0) begin
+            $display("Error: Could not open file %s", memfilename);
+            $finish;
+          end
+          readResult = $fread(dut.uncoregen.uncore.ram.ram.memory.ram.RAM, memFile);
+          
+          GPRmemFile = $fopen(GPRmemfilename, "rb");
+          if (GPRmemFile == 0) begin
+            $display("Error: Could not open file %s", GPRmemfilename);
+            $finish;
+          end
+          readResult = $fread(dut.core.ieu.dp.regf.rf, GPRmemFile);
+          $fclose(GPRmemFile);
+          
+          FPRmemFile = $fopen(FPRmemfilename, "rb");
+          if (FPRmemFile == 0) begin
+            $display("Error: Could not open file %s", FPRmemfilename);
+            $finish;
+          end
+          readResult = $fread(dut.core.fpu.fpu.fregfile.rf, FPRmemFile);
+          $fclose(FPRmemFile);
+
+          // set PCF
+          PCmemFile = $fopen(PCmemfilename, "rb");
+          if (PCmemFile == 0) begin
+            $display("Error: Could not open file %s", PCmemfilename);
+            $finish;
+          end
+          readResult = $fread(PC, PCmemFile);
+          $fclose(PCmemFile);
+          force dut.core.ifu.pcresetmux.d1 =  PC;
+          
+          // *** TODO: Add CSR checkpoint preload
+          CSRmemFile = $fopen(CSRmemfilename, "rb");
+          if (CSRmemFile == 0) begin
+            $display("Error: Could not open file %s", CSRmemfilename);
+            $finish;
+          end
+          readResult = $fread(CSR, CSRmemFile);
+          $fclose(CSRmemFile);
+          force dut.core.priv.priv.csr.SATP_REGW = CSR[14][P.XLEN*2-1:P.XLEN];
+          force dut.core.priv.priv.csr.csru.csru.FFLAGS_REGW = CSR[0][P.XLEN*2-1:P.XLEN];
+          force dut.core.priv.priv.csr.csru.csru.FRM_REGW = CSR[1][P.XLEN*2-1:P.XLEN];
+
+
         end else if (TEST == "fpga") begin
           memFile = $fopen(bootmemfilename, "rb");
           if (memFile == 0) begin
@@ -549,6 +613,17 @@ module testbench;
         for(ShadowIndex = StartIndex; ShadowIndex <= EndIndex; ShadowIndex++) begin
           testbench.DCacheFlushFSM.ShadowRAM[ShadowIndex] = dut.core.lsu.dtim.dtim.ram.ram.RAM[ShadowIndex - BaseIndex];
         end
+      end
+    end
+  end
+
+  if (P.BUS_SUPPORTED) begin
+    always @(posedge clk) begin
+      if (ResetCntEn) begin
+        release dut.core.priv.priv.csr.SATP_REGW;
+        release dut.core.priv.priv.csr.csru.csru.FFLAGS_REGW;
+        release dut.core.priv.priv.csr.csru.csru.FRM_REGW;
+
       end
     end
   end
