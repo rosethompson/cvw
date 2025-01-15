@@ -177,7 +177,7 @@ module csrm  import cvw::*;  #(parameter cvw_t P) (
   end else assign MCOUNTEREN_REGW = '0;
 
   // MENVCFG register
-  if (P.U_SUPPORTED) begin // menvcfg only exists if there is a lower privilege to control
+  if (P.U_SUPPORTED) begin : menvcfg // menvcfg only exists if there is a lower privilege to control
     logic WriteMENVCFGM;
     logic [63:0] MENVCFG_PreWriteValM, MENVCFG_WriteValM;
     logic [1:0] LegalizedCBIE;
@@ -195,7 +195,7 @@ module csrm  import cvw::*;  #(parameter cvw_t P) (
       3'b0,
       MENVCFG_PreWriteValM[0]   & P.S_SUPPORTED & P.VIRTMEM_SUPPORTED
     };
-    if (P.XLEN == 64) begin
+    if (P.XLEN == 64) begin : menvcfg64
       assign MENVCFG_PreWriteValM = CSRWriteValM;
       flopenr #(P.XLEN) MENVCFGreg(clk, reset, WriteMENVCFGM, MENVCFG_WriteValM, MENVCFG_REGW);
       assign MENVCFGH_REGW = '0;

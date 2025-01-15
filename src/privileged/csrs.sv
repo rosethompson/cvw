@@ -107,9 +107,9 @@ module csrs import cvw::*;  #(parameter cvw_t P) (
   flopenr #(P.XLEN) SEPCreg(clk, reset, WriteSEPCM, NextEPCM, SEPC_REGW); 
   flopenr #(P.XLEN) SCAUSEreg(clk, reset, WriteSCAUSEM, {NextCauseM[4], {(P.XLEN-5){1'b0}}, NextCauseM[3:0]}, SCAUSE_REGW);
   flopenr #(P.XLEN) STVALreg(clk, reset, WriteSTVALM, NextMtvalM, STVAL_REGW);
-  if (P.VIRTMEM_SUPPORTED)
+  if (P.VIRTMEM_SUPPORTED) begin: virtmem
     flopenr #(P.XLEN) SATPreg(clk, reset, WriteSATPM, CSRWriteValM, SATP_REGW);
-  else
+  end else
     assign SATP_REGW = '0; // hardwire to zero if virtual memory not supported
   flopenr #(32)   SCOUNTERENreg(clk, reset, WriteSCOUNTERENM, CSRWriteValM[31:0], SCOUNTEREN_REGW);
   if (P.SSTC_SUPPORTED) begin : sstc

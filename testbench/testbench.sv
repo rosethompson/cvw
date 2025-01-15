@@ -127,6 +127,8 @@ module testbench;
   // For rvvi checkpoint 
   logic [P.XLEN-1:0] PC;
   logic [P.XLEN*2-1:0] CSR [55:0];
+  logic [63:0]	       PrivilegeMode;
+  
   
   initial begin
     // look for arguments passed to simulation, or use defaults
@@ -273,7 +275,7 @@ module testbench;
   integer begin_signature_addr, end_signature_addr, signature_size;
   integer uartoutfile;
 
-  string  GPRmemfilename, FPRmemfilename, PCmemfilename, CSRmemfilename;
+  string  GPRmemfilename, FPRmemfilename, PCmemfilename, CSRmemfilename, Privmemfilename;
 
   assign ResetThreshold = 3'd5;
 
@@ -380,6 +382,7 @@ module testbench;
         FPRmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-FPR.bin"};
         PCmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-PC.bin"};
         CSRmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-CSR.bin"};
+        Privmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-PrivilegeMode.bin"};
         elffilename = "buildroot";
         ProgramAddrMapFile = "None";
         ProgramLabelMapFile = "None";
@@ -470,7 +473,7 @@ module testbench;
   integer BaseIndex;
   integer memFile, uncoreMemFile;
   integer readResult;
-  integer GPRmemFile, FPRmemFile, PCmemFile, CSRmemFile;
+  integer GPRmemFile, FPRmemFile, PCmemFile, CSRmemFile, PrivmemFile;
   if (P.SDC_SUPPORTED) begin
     always @(posedge clk) begin
       if (LoadMem) begin
@@ -519,7 +522,7 @@ module testbench;
             $display("Error: Could not open file %s", memfilename);
             $finish;
           end
-          readResult = $fread(dut.uncoregen.uncore.ram.ram.memory.ram.RAM, memFile);
+          readResult = $fread(extmem.ram.memory.ram.RAM, memFile);
           
           GPRmemFile = $fopen(GPRmemfilename, "rb");
           if (GPRmemFile == 0) begin
@@ -555,10 +558,96 @@ module testbench;
           end
           readResult = $fread(CSR, CSRmemFile);
           $fclose(CSRmemFile);
-          force dut.core.priv.priv.csr.SATP_REGW = CSR[14][P.XLEN*2-1:P.XLEN];
-          force dut.core.priv.priv.csr.csru.csru.FFLAGS_REGW = CSR[0][P.XLEN*2-1:P.XLEN];
-          force dut.core.priv.priv.csr.csru.csru.FRM_REGW = CSR[1][P.XLEN*2-1:P.XLEN];
+          force dut.core.priv.priv.csr.csru.csru.FFLAGSreg.q = CSR[0][P.XLEN-1:0];
+          force dut.core.priv.priv.csr.csru.csru.FRMreg.q = CSR[1][P.XLEN-1:0]; 
+	  // sie and sip also are restricted views of mie and mip masked by mideleg
+	  force dut.core.priv.priv.csr.csrs.csrs.STVECreg.q = CSR[5];
+	  force dut.core.priv.priv.csr.csrs.csrs.SCOUNTERENreg.q = CSR[6][P.XLEN-1:0];
+	  force dut.core.priv.priv.csr.csrs.csrs.SENVCFGreg.q = CSR[7][P.XLEN-1:0];
+	  force dut.core.priv.priv.csr.csrs.csrs.SSCRATCHreg.q = CSR[8][P.XLEN-1:0];
+	  force dut.core.priv.priv.csr.csrs.csrs.SEPCreg.q = CSR[9][P.XLEN-1:0];
+	  force dut.core.priv.priv.csr.csrs.csrs.SCAUSEreg.q = CSR[10][P.XLEN-1:0];
+	  force dut.core.priv.priv.csr.csrs.csrs.STVALreg.q = CSR[11][P.XLEN-1:0];
+	  force dut.core.priv.priv.csr.csrs.csrs.sstc.sstc64.STIMECMPreg.q = CSR[13][P.XLEN-1:0];
+          force dut.core.priv.priv.csr.csrs.csrs.virtmem.SATPreg.q = CSR[14][P.XLEN-1:0];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_SIE = CSR[15][1];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_MIE = CSR[15][3];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_SPIE = CSR[15][5];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_UBE = CSR[15][6];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_MPIE = CSR[15][7];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_SPP = CSR[15][8];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_MPP = CSR[15][12:11];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_FS = CSR[15][14:13];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_XS = CSR[15][16:15];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_MPRV = CSR[15][17];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_SUM = CSR[15][18];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_MXR = CSR[15][19];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_TVM = CSR[15][20];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_TW = CSR[15][21];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_TSR = CSR[15][22];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_UXL = CSR[15][33:32];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_SXL = CSR[15][35:34];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_SBE = CSR[15][36];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_MBE = CSR[15][37];
+	  force dut.core.priv.priv.csr.csrsr.STATUS_SD = CSR[15][63];
+	  // 16 misa is read only on wally
+          force dut.core.priv.priv.csr.csrm.deleg.MEDELEGreg.q = CSR[17][15:0];
+          force dut.core.priv.priv.csr.csrm.deleg.MIDELEGreg.q = CSR[18][11:0];
+          force dut.core.priv.priv.csr.csri.MIE_REGW = CSR[19][11:0];
+          force dut.core.priv.priv.csr.csrm.MTVECreg.q = CSR[20][P.XLEN-1:0];
+          force dut.core.priv.priv.csr.csrm.mcounteren.MCOUNTERENreg.q = CSR[21][P.XLEN-1:0];
+          force dut.core.priv.priv.csr.csrm.menvcfg.menvcfg64.MENVCFGreg.q = CSR[22][P.XLEN-1:0];
+          force dut.core.priv.priv.csr.csrm.MCOUNTINHIBITreg.q = CSR[23][31:0];
+          force dut.core.priv.priv.csr.csrm.MSCRATCHreg.q = CSR[24][P.XLEN-1:0];
+	  force dut.core.priv.priv.csr.csrm.MEPCreg.q = CSR[25][P.XLEN-1:0];
+	  force dut.core.priv.priv.csr.csrm.MCAUSEreg.q = CSR[26][P.XLEN-1:0];
+	  force dut.core.priv.priv.csr.csrm.MTVALreg.q = CSR[27][P.XLEN-1:0];
+          force dut.core.priv.priv.csr.csri.MIP_REGW = CSR[28][11:0]; // *** this one is wrong and needs to depend on interrupts 
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[0].PMPCFGreg.q = CSR[29][7:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[1].PMPCFGreg.q = CSR[29][15:8];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[2].PMPCFGreg.q = CSR[29][23:16];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[3].PMPCFGreg.q = CSR[29][31:24];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[4].PMPCFGreg.q = CSR[29][39:32];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[5].PMPCFGreg.q = CSR[29][47:40];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[6].PMPCFGreg.q = CSR[29][55:48];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[7].PMPCFGreg.q = CSR[29][63:56];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[8].PMPCFGreg.q = CSR[30][7:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[9].PMPCFGreg.q = CSR[30][15:8];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[10].PMPCFGreg.q = CSR[30][23:16];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[11].PMPCFGreg.q = CSR[30][31:24];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[12].PMPCFGreg.q = CSR[30][39:32];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[13].PMPCFGreg.q = CSR[30][47:40];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[14].PMPCFGreg.q = CSR[30][55:48];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[15].PMPCFGreg.q = CSR[30][63:56];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[0].PMPADDRreg.q = CSR[31][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[1].PMPADDRreg.q = CSR[32][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[2].PMPADDRreg.q = CSR[33][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[3].PMPADDRreg.q = CSR[34][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[4].PMPADDRreg.q = CSR[35][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[5].PMPADDRreg.q = CSR[36][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[6].PMPADDRreg.q = CSR[37][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[7].PMPADDRreg.q = CSR[38][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[8].PMPADDRreg.q = CSR[39][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[9].PMPADDRreg.q = CSR[40][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[10].PMPADDRreg.q = CSR[41][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[11].PMPADDRreg.q = CSR[42][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[12].PMPADDRreg.q = CSR[43][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[13].PMPADDRreg.q = CSR[44][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[14].PMPADDRreg.q = CSR[45][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.csrm.pmp.genblk1[15].PMPADDRreg.q = CSR[46][P.PA_BITS-1:0];
+	  force dut.core.priv.priv.csr.counters.counters.HPMCOUNTER_REGW[0] = CSR[47][P.XLEN-1:0];
+	  force dut.core.priv.priv.csr.counters.counters.HPMCOUNTER_REGW[2] = CSR[48][P.XLEN-1:0];
+	  // don't bother with mvendorid, marchid, mimpid, mhartid (*** fix later), or mconfigptr
 
+          // set privilege mode
+          PrivmemFile = $fopen(Privmemfilename, "rb");
+          if (PrivmemFile == 0) begin
+            $display("Error: Could not open file %s", Privmemfilename);
+            $finish;
+          end
+          readResult = $fread(PrivilegeMode, PrivmemFile);
+          $fclose(PrivmemFile);
+	  force dut.core.priv.priv.privmode.privmode.privmodereg.q = PrivilegeMode[1:0];
 
         end else if (TEST == "fpga") begin
           memFile = $fopen(bootmemfilename, "rb");
@@ -617,13 +706,92 @@ module testbench;
     end
   end
 
+  logic resetDelay, resetDelay2;
+  logic	ReleaseCheckPointLoad;
+  assign ReleaseCheckPointLoad = resetDelay2 & ~resetDelay;
+  flop #(1) resetdelayreg(clk, reset, resetDelay);
+  flop #(1) resetdelayreg2(clk, resetDelay, resetDelay2);
   if (P.BUS_SUPPORTED) begin
     always @(posedge clk) begin
-      if (ResetCntEn) begin
-        release dut.core.priv.priv.csr.SATP_REGW;
-        release dut.core.priv.priv.csr.csru.csru.FFLAGS_REGW;
-        release dut.core.priv.priv.csr.csru.csru.FRM_REGW;
-
+      if (ReleaseCheckPointLoad & TEST == "rvvicheckpoint") begin
+        release dut.core.priv.priv.csr.csru.csru.FFLAGSreg.q;
+        release dut.core.priv.priv.csr.csru.csru.FRMreg.q;
+	release dut.core.priv.priv.csr.csrs.csrs.STVECreg.q;
+	release dut.core.priv.priv.csr.csrs.csrs.SCOUNTERENreg.q;
+	release dut.core.priv.priv.csr.csrs.csrs.SENVCFGreg.q;
+	release dut.core.priv.priv.csr.csrs.csrs.SSCRATCHreg.q;
+	release dut.core.priv.priv.csr.csrs.csrs.SEPCreg.q;
+	release dut.core.priv.priv.csr.csrs.csrs.SCAUSEreg.q;
+	release dut.core.priv.priv.csr.csrs.csrs.STVALreg.q;
+	release dut.core.priv.priv.csr.csrs.csrs.sstc.sstc64.STIMECMPreg.q;
+        release dut.core.priv.priv.csr.csrs.csrs.virtmem.SATPreg.q;
+	release dut.core.priv.priv.csr.csrsr.STATUS_SIE;
+	release dut.core.priv.priv.csr.csrsr.STATUS_MIE;
+	release dut.core.priv.priv.csr.csrsr.STATUS_SPIE;
+	release dut.core.priv.priv.csr.csrsr.STATUS_UBE;
+	release dut.core.priv.priv.csr.csrsr.STATUS_MPIE;
+	release dut.core.priv.priv.csr.csrsr.STATUS_SPP;
+	release dut.core.priv.priv.csr.csrsr.STATUS_MPP;
+	release dut.core.priv.priv.csr.csrsr.STATUS_FS;
+	release dut.core.priv.priv.csr.csrsr.STATUS_XS;
+	release dut.core.priv.priv.csr.csrsr.STATUS_MPRV;
+	release dut.core.priv.priv.csr.csrsr.STATUS_SUM;
+	release dut.core.priv.priv.csr.csrsr.STATUS_MXR;
+	release dut.core.priv.priv.csr.csrsr.STATUS_TVM;
+	release dut.core.priv.priv.csr.csrsr.STATUS_TW;
+	release dut.core.priv.priv.csr.csrsr.STATUS_TSR;
+	release dut.core.priv.priv.csr.csrsr.STATUS_UXL;
+	release dut.core.priv.priv.csr.csrsr.STATUS_SXL;
+	release dut.core.priv.priv.csr.csrsr.STATUS_SBE;
+	release dut.core.priv.priv.csr.csrsr.STATUS_MBE;
+	release dut.core.priv.priv.csr.csrsr.STATUS_SD;
+        release dut.core.priv.priv.csr.csrm.deleg.MEDELEGreg.q;
+        release dut.core.priv.priv.csr.csrm.deleg.MIDELEGreg.q;
+        release dut.core.priv.priv.csr.csri.MIE_REGW;
+        release dut.core.priv.priv.csr.csrm.MTVECreg.q;
+        release dut.core.priv.priv.csr.csrm.mcounteren.MCOUNTERENreg.q;
+        release dut.core.priv.priv.csr.csrm.menvcfg.menvcfg64.MENVCFGreg.q;
+        release dut.core.priv.priv.csr.csrm.MCOUNTINHIBITreg.q;
+        release dut.core.priv.priv.csr.csrm.MSCRATCHreg.q;
+	release dut.core.priv.priv.csr.csrm.MEPCreg.q;
+	release dut.core.priv.priv.csr.csrm.MCAUSEreg.q;
+	release dut.core.priv.priv.csr.csrm.MTVALreg.q;
+        release dut.core.priv.priv.csr.csri.MIP_REGW;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[0].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[1].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[2].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[3].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[4].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[5].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[6].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[7].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[8].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[9].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[10].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[11].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[12].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[13].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[14].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[15].PMPCFGreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[0].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[1].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[2].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[3].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[4].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[5].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[6].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[7].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[8].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[9].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[10].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[11].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[12].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[13].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[14].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.csrm.pmp.genblk1[15].PMPADDRreg.q;
+	release dut.core.priv.priv.csr.counters.counters.HPMCOUNTER_REGW[0];
+	release dut.core.priv.priv.csr.counters.counters.HPMCOUNTER_REGW[2];
+	release dut.core.priv.priv.privmode.privmode.privmodereg.q;
       end
     end
   end
@@ -644,7 +812,7 @@ module testbench;
   assign UARTSin = 1'b1;
   assign SPIIn = 1'b0;
 
-  if(P.EXT_MEM_SUPPORTED) begin
+  if(P.EXT_MEM_SUPPORTED) begin : extmem
     ram_ahb #(.P(P), .BASE(P.EXT_MEM_BASE), .RANGE(P.EXT_MEM_RANGE))
     ram (.HCLK, .HRESETn, .HADDR, .HWRITE, .HTRANS, .HWDATA, .HSELRam(HSELEXT),
       .HREADRam(HRDATAEXT), .HREADYRam(HREADYEXT), .HRESPRam(HRESPEXT), .HREADY, .HWSTRB);
