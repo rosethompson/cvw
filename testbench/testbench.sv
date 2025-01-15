@@ -124,8 +124,10 @@ module testbench;
   logic TestComplete;
   logic PrevPCZero;
   logic ExternalStall;
+  // For rvvi checkpoint 
   logic [P.XLEN-1:0] PC;
-
+  logic [P.XLEN*2-1:0] CSR [55:0];
+  
   initial begin
     // look for arguments passed to simulation, or use defaults
     if (!$value$plusargs("TEST=%s", TEST))
@@ -247,7 +249,7 @@ module testbench;
   // part 2: drive some of the controls
   // part 3: drive all logic and remove old inital and always @ negedge clk block
 
-  typedef enum logic [3:0]{STATE_TESTBENCH_RESET,
+  typedef enum logic [3:0] {STATE_TESTBENCH_RESET,
                            STATE_INIT_TEST,
                            STATE_RESET_MEMORIES,
                            STATE_RESET_MEMORIES2,
@@ -546,6 +548,17 @@ module testbench;
           force dut.core.ifu.pcresetmux.d1 =  PC;
           
           // *** TODO: Add CSR checkpoint preload
+          CSRmemFile = $fopen(CSRmemfilename, "rb");
+          if (CSRmemFile == 0) begin
+            $display("Error: Could not open file %s", CSRmemfilename);
+            $finish;
+          end
+          readResult = $fread(CSR, CSRmemFile);
+          $fclose(CSRmemFile);
+          force dut.core.priv.priv.csr.SATP_REGW = CSR[14][P.XLEN*2-1:P.XLEN];
+          force dut.core.priv.priv.csr.csru.csru.FFLAGS_REGW = CSR[0][P.XLEN*2-1:P.XLEN];
+          force dut.core.priv.priv.csr.csru.csru.FRM_REGW = CSR[1][P.XLEN*2-1:P.XLEN];
+
 
         end else if (TEST == "fpga") begin
           memFile = $fopen(bootmemfilename, "rb");
@@ -600,6 +613,17 @@ module testbench;
         for(ShadowIndex = StartIndex; ShadowIndex <= EndIndex; ShadowIndex++) begin
           testbench.DCacheFlushFSM.ShadowRAM[ShadowIndex] = dut.core.lsu.dtim.dtim.ram.ram.RAM[ShadowIndex - BaseIndex];
         end
+      end
+    end
+  end
+
+  if (P.BUS_SUPPORTED) begin
+    always @(posedge clk) begin
+      if (ResetCntEn) begin
+        release dut.core.priv.priv.csr.SATP_REGW;
+        release dut.core.priv.priv.csr.csru.csru.FFLAGS_REGW;
+        release dut.core.priv.priv.csr.csru.csru.FRM_REGW;
+
       end
     end
   end
