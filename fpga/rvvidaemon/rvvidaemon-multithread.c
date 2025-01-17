@@ -93,6 +93,7 @@
 
 uint64_t EXT_MEM_BASE =  0x80000000;
 uint64_t EXT_MEM_RANGE = 0x7FFFFFFF;
+#define NUM_PMP_REGS 16
 
 // load wally configuration
 // must be set external to program
@@ -116,6 +117,9 @@ pthread_mutex_t SlowMessageLock;
 pthread_cond_t SlowMessageCond;
 pthread_mutex_t StartLock;
 pthread_cond_t StartCond;
+
+#define htonll(x) ((1==htonl(1)) ? (x) : ((uint64_t)htonl((x) & 0xFFFFFFFF) << 32) | htonl((x) >> 32))
+#define ntohll(x) ((1==ntohl(1)) ? (x) : ((uint64_t)ntohl((x) & 0xFFFFFFFF) << 32) | ntohl((x) >> 32))
 
 // prototypes
 void PrintInstructionData(RequiredRVVI_t *InstructionData);
@@ -550,7 +554,7 @@ void * ProcessLoop(void * arg){
         printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
         char buf[40];
 	printf("count = %ld, LOG_THRESHOLD = %d\n", count, LOG_THRESHOLD);
-        snprintf(buf, 40, "Log-%ldM-Instr-dump.txt", ((RefModelLogCount * LOG_THRESHOLD) >> 20));
+        snprintf(buf, 40, "Log-%ldM-Instr-dump", ((RefModelLogCount * LOG_THRESHOLD) >> 20));
         DumpState(0, buf, EXT_MEM_BASE, EXT_MEM_RANGE + EXT_MEM_BASE + 1);
 	RefModelLogCount++;
       }
@@ -655,7 +659,7 @@ int state_compare(int hart, uint64_t Minstret){
     idvMsgError(buf);
 
     // copy all state out to a log file so we can rebuild in simulation
-    DumpState(hart, "mismatch-memory-dump.txt", EXT_MEM_BASE, EXT_MEM_BASE + EXT_MEM_RANGE + 1);
+    DumpState(hart, "mismatch", EXT_MEM_BASE, EXT_MEM_BASE + EXT_MEM_RANGE + 1);
     return -1;
   }
   
@@ -717,7 +721,7 @@ void WriteInstructionData(RequiredRVVI_t *InstructionData, FILE *fptr){
   fprintf(fptr, "\n");
 }
 
-void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uint64_t EndAddress){
+void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress, uint64_t EndAddress){
   /// **** these values are all in the wrong byte order.
   uint64_t Index1, Index2;
   uint64_t Address;
@@ -726,21 +730,30 @@ void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uin
   uint64_t InnterLoopLimit = BufferSize >> 3;                    // i.e. 2^9 =  512
   uint64_t OuterLoopLimit = Total8ByteAddress / InnterLoopLimit; // 2^28 / 2^9 = 2^19 = 512K
   uint64_t Buf[InnterLoopLimit]; // 4KiB buffer
-  FILE * fp;
-  fp = fopen(FileName, "w");
-  if(fp == NULL){
-    printf("Filed to open %s for writting\n", FileName);
+  FILE * GPRfp, * FPRfp, * PCfp, * CSRfp, * MEMfp, * PRIVfp;
+  char GPRFileName[256], FPRFileName[256], PCFileName[256], CSRFileName[256], MEMFileName[256], PRIVFileName[256];
+  sprintf(GPRFileName, "%s-GPR.bin", FileNameRoot);
+  sprintf(FPRFileName, "%s-FPR.bin", FileNameRoot);
+  sprintf(PCFileName, "%s-PC.bin", FileNameRoot);
+  sprintf(CSRFileName, "%s-CSR.bin", FileNameRoot);
+  sprintf(MEMFileName, "%s-MEM.bin", FileNameRoot);
+  sprintf(PRIVFileName, "%s-PRIV.bin", FileNameRoot);
+  GPRfp = fopen(GPRFileName, "w");
+  FPRfp = fopen(FPRFileName, "w");
+  PCfp = fopen(PCFileName, "w");
+  CSRfp = fopen(CSRFileName, "w");
+  MEMfp = fopen(MEMFileName, "w");
+  PRIVfp = fopen(PRIVFileName, "w");
+  if(GPRfp == NULL || GPRfp == NULL || PCfp == NULL || CSRfp == NULL || MEMfp == NULL || PRIVfp == NULL){
+    printf("Filed to open one of %s, %s, %s, %s, %s, or %s for writting\n", GPRFileName, FPRFileName, PCFileName, CSRFileName, MEMFileName, PRIVFileName);
     exit(-1);
   }
-  printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-  printf("!!!!!!!!!! Dumping memory state !!!!!!!!!!\n");
-  printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
   for(Index1 = 0; Index1 < OuterLoopLimit; Index1++) {
     for(Index2 = 0; Index2 < InnterLoopLimit; Index2++){
       Address = StartAddress + Index1 * BufferSize + (Index2 << 3);
       Buf[Index2] = rvviRefMemoryRead(hartId, Address, 8);
     }
-    fwrite(Buf, 8, InnterLoopLimit, fp);
+    fwrite(Buf, 8, InnterLoopLimit, MEMfp);
   }
 
   int Index;
@@ -752,99 +765,72 @@ void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uin
   uint64_t value;
 
   for(Index = 0; Index<32; Index++){
-    GPR[Index] = rvviRefGprGet(hartId, Index);
-    FPR[Index] = rvviRefFprGet(hartId, Index);
+    GPR[Index] = htonll(rvviRefGprGet(hartId, Index));
+    FPR[Index] = htonll(rvviRefFprGet(hartId, Index));
   }
-  fwrite(GPR, 8, 32, fp);
-  fwrite(FPR, 8, 32, fp);
-  PC = rvviRefPcGet(hartId);
-  fwrite(&PC, 8, 1, fp);
+  fwrite(GPR+1, 8, 31, GPRfp); // skip x0
+  fwrite(FPR, 8, 32, GPRfp);
+  PC = htonll(rvviRefPcGet(hartId));
+  fwrite(&PC, 8, 1, PCfp);
 
-  // *** this method does not work as rvviRefCsrGet does not always return
-  // if the register is not implemented. Switch to the below method instead.
+  uint64_t CSR[4096];
   CSRCount = 0;
-  for(Index = 0; Index < 4096; Index++){
-    value = rvviRefCsrGet(hartId, Index);
-    if(value != 0) {
-      CSRs[CSRCount].CSRReg = Index;
-      CSRs[CSRCount].CSRValue = rvviRefCsrGet(hartId, Index);
-      CSRCount++;
-    }
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x001)); // 
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x002)); // FRM
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x003)); // FCSR
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x100)); // SSTATUS
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x104)); // SIE
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x105)); // STVEC
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x106)); // SCOUNTEREN
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x10A)); // SENVCFG
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x140)); // SSCRATCH
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x141)); // SEPC
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x142)); // SCAUSE
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x143)); // STVAL
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x144)); // SIP
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x144)); // SIDELEG
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x14D)); // STIMECMP
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x180)); // SATP
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x300)); // MSTATUS
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x301)); // MIA
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x302)); // MEDELEG
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x303)); // MIDELEG
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x304)); // MIE
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x305)); // MTVEC
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x306)); // MCOUNTEREN
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x30A)); // MENVCFG
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x310)); // MSTATUSH
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x320)); // MCOUNTINHIBT
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x340)); // MSCRATCH
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x341)); // MEPC
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x342)); // MCAUSE
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x343)); // MTVAL
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x344)); // MIP
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x34A)); // MTINST
+
+  for(Index = 0; Index < NUM_PMP_REGS/8; Index++) {
+    CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x3A0 + Index*2));
   }
 
-  /// instead of all this let's read all the csrs and if it's not zero we'll write it out with csr index
-  /* int Index; */
-  /* uint64_t MSTATUS, MSTATUSH; */
-  /* uint64_t MTVEC, MEPC; */
-  /* uint64_t MCAUSE, MTVAL; */
-  /* uint64_t MCOUNTEREN, MCOUNTINHIBT; */
-  /* uint64_t MEDELEG, MIDELEG; */
-  /* uint64_t MIP, MIE; */
-  /* uint64_t MISA, MENVCFG; */
-  /* uint64_t MHARTID, MSCRATCH; */
-  /* uint64_t MVENDORID, MARCHID; */
-  /* uint64_t MIMPID, MCONFIGPTR; */
-  /* uint64_t MTINST; */
-  /* uint64_t SSTATUS, SIE; */
-  /* uint64_t STEV, SEPC; */
-  /* uint64_t SCOUNTEREN, SENVCFG; */
-  /* uint64_t SATP, SSCRATCH; */
-  /* uint64_t STVAL, SCAUSE; */
-  /* uint64_t SIDELEG; */
-  /* uint64_t SIP, STIMECMP; */
-  /* uint64_t FFLAGS, FRM, FCSR; */
-  /* uint64_t PMPADDR[NUM_PMP_REGS]; */
-  /* uint64_t PMPCFG[NUM_PMP_REGS/8]; */
+  for(Index = 0; Index < NUM_PMP_REGS; Index++) {
+    CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x3B0 + Index));
+  }
 
-  fwrite(CSRs, 16, CSRCount, fp);
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0xF11)); // MVENDORID
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0xF12)); // MARCHID
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0xF13)); // MIMPID
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0xF14)); // MHARTID
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0xF15)); // MCONFIGPTR  
 
 
-  /* MSTATUS      = rvviRefCsrGet(hartId, 0x300); */
-  /* MSTATUSH     = rvviRefCsrGet(hartId, 0x310); */
-  /* MTVEC        = rvviRefCsrGet(hartId, 0x305); */
-  /* MEPC         = rvviRefCsrGet(hartId, 0x341); */
-  /* MCOUNTEREN   = rvviRefCsrGet(hartId, 0x306); */
-  /* MCOUNTINHIBT = rvviRefCsrGet(hartId, 0x320); */
-  /* MEDELEG      = rvviRefCsrGet(hartId, 0x302); */
-  /* MIDELEG      = rvviRefCsrGet(hartId, 0x303); */
-  /* MIP          = rvviRefCsrGet(hartId, 0x344); */
-  /* MIE          = rvviRefCsrGet(hartId, 0x304); */
-  /* MIA          = rvviRefCsrGet(hartId, 0x301); */
-  /* MENVCFG      = rvviRefCsrGet(hartId, 0x30A); */
-  /* MHARTID      = rvviRefCsrGet(hartId, 0xF14); */
-  /* MSCRATCH     = rvviRefCsrGet(hartId, 0x340); */
-  /* MCAUSE       = rvviRefCsrGet(hartId, 0x342); */
-  /* MTVAL        = rvviRefCsrGet(hartId, 0x343); */
-  /* MVENDORID    = rvviRefCsrGet(hartId, 0xF11); */
-  /* MARCHID      = rvviRefCsrGet(hartId, 0xF12); */
-  /* MIMPID       = rvviRefCsrGet(hartId, 0xF13); */
-  /* MCONFIGPTR   = rvviRefCsrGet(hartId, 0xF15); */
-  /* MTINST       = rvviRefCsrGet(hartId, 0x34A); */
-  /* SSTATUS      = rvviRefCsrGet(hartId, 0x100); */
-  /* SIP          = rvviRefCsrGet(hartId, 0x144); */
-  /* SIE          = rvviRefCsrGet(hartId, 0x104); */
-  /* STVEC        = rvviRefCsrGet(hartId, 0x105); */
-  /* SEPC         = rvviRefCsrGet(hartId, 0x141); */
-  /* SCOUNTEREN   = rvviRefCsrGet(hartId, 0x106); */
-  /* SENVCFG      = rvviRefCsrGet(hartId, 0x10A); */
-  /* SATP         = rvviRefCsrGet(hartId, 0x180); */
-  /* SSCRATCH     = rvviRefCsrGet(hartId, 0x140); */
-  /* STVAL        = rvviRefCsrGet(hartId, 0x143); */
-  /* SCAUSE       = rvviRefCsrGet(hartId, 0x142); */
-  /* SIDELEG      = rvviRefCsrGet(hartId, 0x144); */
-  /* STIMECMP     = rvviRefCsrGet(hartId, 0x14D); */
-  /* FFLAGS       = rvviRefCsrGet(hartId, 0x001); */
-  /* FRM          = rvviRefCsrGet(hartId, 0x002); */
-  /* FCSR         = rvviRefCsrGet(hartId, 0x003); */
+  fwrite(CSRs, 8, CSRCount, CSRfp);
 
-  /* for(Index = 0; Index < NUM_PMP_REGS; Index++) { */
-  /*   PMPADDR[Index] = rvviRefCsrGet(hartId, 0x3B0 + Index); */
-  /* } */
-
-  /* for(Index = 0; Index < NUM_PMP_REGS/8; Index++) { */
-  /*   PMPCFG[Index] = rvviRefCsrGet(hartId, 0x3A0 + Index*2); */
-  /* } */
-  fclose(fp);
+  fclose(GPRfp);
+  fclose(FPRfp);
+  fclose(CSRfp);
+  fclose(PCfp);
+  fclose(MEMfp);
+  fclose(PRIVfp);
 
   rvviRefStateDump(hartId);
 }
