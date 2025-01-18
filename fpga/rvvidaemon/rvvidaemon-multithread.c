@@ -799,14 +799,14 @@ void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress,
   CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x305)); // MTVEC
   CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x306)); // MCOUNTEREN
   CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x30A)); // MENVCFG
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x310)); // MSTATUSH
+  //CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x310)); // MSTATUSH
   CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x320)); // MCOUNTINHIBT
   CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x340)); // MSCRATCH
   CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x341)); // MEPC
   CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x342)); // MCAUSE
   CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x343)); // MTVAL
   CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x344)); // MIP
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x34A)); // MTINST
+  //CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x34A)); // MTINST
 
   for(Index = 0; Index < NUM_PMP_REGS/8; Index++) {
     CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x3A0 + Index*2));
