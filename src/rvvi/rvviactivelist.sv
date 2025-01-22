@@ -46,14 +46,14 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, FRAME_COUNT_WIDTH=16)(  
   logic [WIDTH-1:0]          mem[2**Entries-1:0];
 (* mark_debug = "true" *)  logic [2**Entries-1:0]     ActiveBits;
   logic [Entries-1:0]        Lut[2**Entries-1:0];
-(* mark_debug = "true" *)  logic [Entries-1:0]        HeadPtr, Port3Ptr;
-  logic [Entries-1:0]        HeadPtrNext, Port3PtrNext;
-  logic [Entries-1:0]        Port2LutIndex;
+(* mark_debug = "true" *)  logic [Entries-1:0]        HeadPtr, ReplayPtr;
+  logic [Entries-1:0]        HeadPtrNext, ReplayPtrNext;
+  logic [Entries-1:0]        HostMatchingIndex;
   typedef enum               {STATE_IDLE, STATE_REPLAY, STATE_WAIT} statetype;
 (* mark_debug = "true" *)  statetype CurrState, NextState;
-  logic                      Port3CounterLoad, Port3CounterEn;
+  logic                      ReplayPtrLoad;
   logic                      Port3Active;
-(* mark_debug = "true" *)  logic [2**Entries-1:0]     LutMatch;
+(* mark_debug = "true" *)  logic [2**Entries-1:0]     HostMatchingActiveBits;
   logic [(2**Entries)*2-1:0] ActiveBitsShift;
   logic [2**Entries-1:0]     ActiveBitsInvert;
   logic [(2**Entries)*2-1:0] ActiveBitsExtend;
@@ -61,16 +61,15 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, FRAME_COUNT_WIDTH=16)(  
 (* mark_debug = "true" *)  logic [Entries-1:0]        TailPtr;
 
   logic [2**Entries-1:0]     ActiveBitsRev;
-  logic [Entries-1:0]        Port3PtrLoadVal;
 (* mark_debug = "true" *)  logic                      Full, Empty;
     
   // search Lut for matching HostFrameCount[Entries:0]. The index tells us the correct entry in the memory array.
   genvar                 index;
   for(index=0; index<2**Entries; index++) begin
-    assign LutMatch[index] = Lut[index] == HostFrameCount[Entries-1:0] & ActiveBits[index];
+    assign HostMatchingActiveBits[index] = Lut[index] == HostFrameCount[Entries-1:0] & ActiveBits[index];
   end
   // assume only one matches
-  binencoder #(2**Entries) binencoder(LutMatch, Port2LutIndex);
+  binencoder #(2**Entries) binencoder(HostMatchingActiveBits, HostMatchingIndex);
   
   always_ff @(posedge clk)
     if (DutValid & ~Full) begin 
@@ -92,7 +91,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, FRAME_COUNT_WIDTH=16)(  
         end
       end 
       if(HostInstrValid) begin
-        ActiveBits[Port2LutIndex] <= 1'b0;
+        ActiveBits[HostMatchingIndex] <= 1'b0;
       end
       Empty <= ~|ActiveBits;
       Full <= &ActiveBits;
@@ -124,7 +123,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, FRAME_COUNT_WIDTH=16)(  
 
   always_comb begin
     case(CurrState)
-      STATE_IDLE: if(HostInstrValid & Port2LutIndex != TailPtr) NextState = STATE_REPLAY;
+      STATE_IDLE: if(HostInstrValid & HostMatchingIndex != TailPtr) NextState = STATE_REPLAY;
       else NextState = STATE_IDLE;
       STATE_REPLAY: if(~Port3Active & ~RVVIStall) NextState = STATE_WAIT;
       else NextState = STATE_REPLAY;
@@ -134,15 +133,12 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, FRAME_COUNT_WIDTH=16)(  
     endcase
   end
 
-  
-  assign Port3PtrLoadVal = reset ? '0 : TailPtr;
-  flopenl #(Entries) port3counterreg(clk, Port3CounterLoad, Port3CounterEn, Port3PtrNext, TailPtr, Port3Ptr);
+  flopenl #(Entries) replayptrcounterreg(clk, ReplayPtrLoad, SelActiveList, ReplayPtrNext, TailPtr, ReplayPtr);
 
-  assign Port3PtrNext = Port3Ptr + 1;
-  assign Port3CounterLoad = (CurrState == STATE_IDLE & HostInstrValid & Port2LutIndex != TailPtr) | reset;
-  assign Port3CounterEn = SelActiveList;
-  assign Port3Active = ActiveBits[Port3Ptr];
-  assign ActiveListData = mem[Port3Ptr];
+  assign ReplayPtrNext = ReplayPtr + 1;
+  assign ReplayPtrLoad = (CurrState == STATE_IDLE & HostInstrValid & HostMatchingIndex != TailPtr) | reset;
+  assign Port3Active = ActiveBits[ReplayPtr];
+  assign ActiveListData = mem[ReplayPtr];
   assign SelActiveList = CurrState == STATE_REPLAY & ~RVVIStall & Port3Active;
   assign ActiveListStall = CurrState == STATE_WAIT | CurrState == STATE_REPLAY | Full;
 
