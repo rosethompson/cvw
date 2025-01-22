@@ -115,6 +115,7 @@ if {$board=="ArtyA7"} {
     if {$rvvi == 1 } {
         #source ../constraints/big-debug-spi-rvvi.xdc
         source ../constraints/big-debug-rvvi2.xdc
+	#source ../constraints/debug-cache-rvvi.xdc
     } else {
         source ../constraints/small-debug.xdc
     }        
