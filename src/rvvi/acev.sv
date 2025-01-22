@@ -73,17 +73,11 @@ module acev import cvw::*; #(parameter cvw_t P,
   localparam               ETH_HEADER_WIDTH = 48*2 + 16;
   localparam               FRAME_COUNT_WIDTH = 16;
   
-  (* mark_debug = "true" *)    logic                  valid;
-  (* mark_debug = "true" *)    logic [RVVI_WIDTH-1:0] rvvi;
+  (* mark_debug = "true" *)    logic [RVVI_WIDTH-1:0] DutRvvi;
 
   (* mark_debug = "true" *)    logic					     RVVIStall, HostStall;
   
-  logic [32*5-1:0]         TriggerString;
-  logic [32*5-1:0]         SlowString;
-  logic [32*5-1:0]         RateString;
-  (* mark_debug = "true" *)    logic					     HostRequestSlowDown;
 
-  (* mark_debug = "true" *)        logic [31:0]                     HostFiFoFillAmt;
   
   // axi 4 write data channel
   (* mark_debug = "true" *)    logic [31:0]                                      RvviAxiWdata;
@@ -100,22 +94,20 @@ module acev import cvw::*; #(parameter cvw_t P,
   logic                    tx_error_underflow, tx_fifo_overflow, tx_fifo_bad_frame, tx_fifo_good_frame, rx_error_bad_frame;
   logic                    rx_error_bad_fcs, rx_fifo_overflow, rx_fifo_bad_frame, rx_fifo_good_frame;
 
-  logic                    RateSet;
-  logic [31:0]             RateMessage;
   logic                    HostInstrValid;
   logic [31:0]             HostInterPacketDelay;
   logic [P.XLEN-1:0]       HostMinstr;
 
   logic [47:0]             SrcMac, DstMac;
   logic [15:0]             EthType;
-  logic                    Port3Stall;
-  logic                    ActiveListStall;
   (* mark_debug = "true" *) logic                    SelActiveList, PacketizerRvviValid;
   (* mark_debug = "true" *) logic [RVVI_WIDTH-1:0]   ActiveListRvvi, PacketizerRvvi;
-  logic                    ActiveListWait;
+  logic                    ActiveListStall;
   logic [31:0]             HostInterPacketDelayD;
-  logic [FRAME_COUNT_WIDTH-1:0] FrameCount;
+  logic [FRAME_COUNT_WIDTH-1:0] DutFrameCount;
   logic [FRAME_COUNT_WIDTH-1:0] HostFrameCount, PacketizerFrameCount, ActiveListFrameCount;
+  (* mark_debug = "true" *) logic                         DutValid;
+  
       
   // *** fix me later
   assign DstMac = 48'h8F54_0000_1654; // made something up
@@ -125,20 +117,16 @@ module acev import cvw::*; #(parameter cvw_t P,
   rvvisynth #(P, MAX_CSRS, TOTAL_CSRS) rvvisynth(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
-      .valid, .rvvi, .FrameCount);
-
-  logic [P.XLEN+32+FRAME_COUNT_WIDTH-1:0]            Port2WData;
-
-  assign Port2WData = {HostInterPacketDelay, HostMinstr, HostFrameCount}; 
+      .DutValid, .DutRvvi, .DutFrameCount);
   
-  rvviactivelist #(.Entries(5), .WIDTH(RVVI_WIDTH+FRAME_COUNT_WIDTH), .WIDTH2(P.XLEN+32+FRAME_COUNT_WIDTH)) 
-  rvviactivelist (.clk, .reset, .Port1Wen(valid), .Port1WData({rvvi, FrameCount}),
-                  .Port2Wen(HostInstrValid), .Port2WData,
-                  .Port3RData({ActiveListRvvi, ActiveListFrameCount}), .Port3RValid(SelActiveList), .Port3Stall(RVVIStall), 
-                  .Full(ActiveListStall), .ActiveListWait, .Empty()); // full will stall cpu
+  rvviactivelist #(.Entries(4), .WIDTH(RVVI_WIDTH+FRAME_COUNT_WIDTH), .FRAME_COUNT_WIDTH(FRAME_COUNT_WIDTH)) 
+  rvviactivelist (.clk, .reset, .DutValid, .DutData({DutRvvi, DutFrameCount}),
+                  .HostInstrValid, .HostFrameCount,
+                  .ActiveListData({ActiveListRvvi, ActiveListFrameCount}), .SelActiveList, .RVVIStall, 
+                  .ActiveListStall);
 
-  assign {PacketizerRvvi, PacketizerFrameCount} = SelActiveList ? {ActiveListRvvi, ActiveListFrameCount} : {rvvi, FrameCount};
-  assign PacketizerRvviValid = SelActiveList ? SelActiveList : valid;
+  assign {PacketizerRvvi, PacketizerFrameCount} = SelActiveList ? {ActiveListRvvi, ActiveListFrameCount} : {DutRvvi, DutFrameCount};
+  assign PacketizerRvviValid = SelActiveList ? SelActiveList : DutValid;
   
 
   inversepacketizer #(P, FRAME_COUNT_WIDTH) inversepacketizer (.clk, .reset, .RvviAxiRdata, .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid,
@@ -150,6 +138,8 @@ module acev import cvw::*; #(parameter cvw_t P,
      .m_axi_aresetn(~reset), .RVVIStall,
     .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready, .SrcMac, .DstMac, .EthType, 
     .InnerPktDelay(HostInterPacketDelayD), .FrameCount(PacketizerFrameCount));
+
+  assign ExternalStall = RVVIStall | ActiveListStall;
 
   if (ETH_WIDTH == 8) begin : eth
     // this is the version of 1g/s ethernet
@@ -198,28 +188,6 @@ module acev import cvw::*; #(parameter cvw_t P,
                .cfg_ifg(8'd12), .cfg_tx_enable(1'b1), .cfg_rx_enable(1'b1)
                );
     end
-
-    // "igin" (trigin)__"rt", ether type 005c__src mac [47:16]__src mac [15:0], dst mac [47:32]__dst mac [31:0]
-    assign TriggerString = 160'h6e69_6769__7274_005c__8f54_0000__1654_4502__1111_6843;
-    // "emwo" (slowme)__"ls", ether type 005c__src mac [47:16]__src mac [15:0], dst mac [47:32]__dst mac [31:0]
-    assign SlowString = 160'h656D_776F__6C73_005c__8f54_0000__1654_4502__1111_6843;
-    // "niet" (ratein)__"ar", ether type 005c__src mac [47:16]__src mac [15:0], dst mac [47:32]__dst mac [31:0]
-    assign RateString = 160'h6e69_6574__6172_005c__8f54_0000__1654_4502__1111_6843;
-			  
-    triggergen triggergen(.clk, .reset, .CompareString(TriggerString), .RvviAxiRdata,
-      .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger, .TriggerMessage());
-
-    triggergen slowdown(.clk, .reset, .CompareString(SlowString), .RvviAxiRdata,
-      .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger(HostRequestSlowDown), .TriggerMessage(HostFiFoFillAmt));
-
-    triggergen #(RVVI_PACKET_DELAY) rateset(.clk, .reset, .CompareString(RateString), .RvviAxiRdata,
-      .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger(RateSet), .TriggerMessage(RateMessage));
-  
-    genslowframe genslowframe(.clk, .reset, .HostRequestSlowDown, .RVVIStall, .HostFiFoFillAmt, .HostStall);
-    
-    assign ExternalStall = RVVIStall | HostStall | ActiveListStall | ActiveListWait | SelActiveList;
-
-
 
   
 endmodule

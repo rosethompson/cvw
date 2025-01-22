@@ -46,9 +46,9 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
   input logic [4:0]                               GPRAddr, FPRAddr,
   input logic [P.XLEN-1:0]                        GPRValue, FPRValue,
   input var logic [P.XLEN-1:0]                    CSRArray [TOTAL_CSRS-1:0],
-  output logic valid,
-  output logic [RVVI_WIDTH-1:0] rvvi,
-  output logic [FRAME_COUNT_WIDTH-1:0] FrameCount
+  output logic DutValid,
+  output logic [RVVI_WIDTH-1:0] DutRvvi,
+  output logic [FRAME_COUNT_WIDTH-1:0] DutFrameCount
   );
 
   // pipeline controlls
@@ -86,7 +86,7 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
   flopenrc #(32)     InstrRawWReg (clk, reset, FlushNotTrapW, ~StallW, InstrRawM, InstrRawW);
   flopenrc #(1)      TrapWReg (clk, reset, 1'b0, ~StallW, TrapM, TrapW);
 
-  assign valid  = (InstrValidW | TrapW)  & ~StallW;
+  assign DutValid  = (InstrValidW | TrapW)  & ~StallW;
   assign Required = {4'b0, CSRCount, 3'b0, FPRWen, GPRWen, PrivilegeModeW, TrapW, Minstret, Mcycle, InstrRawW, PCW};
   assign Registers = {FPRWen, GPRWen} == 2'b11 ? {FPRValue, 3'b0, FPRAddr, GPRValue, 3'b0, GPRAddr} :
                      {FPRWen, GPRWen} == 2'b01 ? {XLENZeros, 8'b0, GPRValue, 3'b0, GPRAddr} :
@@ -104,7 +104,7 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
   // step 2
   genvar                                   index;
   for (index = 0; index < TOTAL_CSRS; index = index + 1) begin
-    regchangedetect #(P.XLEN) changedetect(clk, reset, valid, CSRArray[index], CSRArrayWen[index]);
+    regchangedetect #(P.XLEN) changedetect(clk, reset, DutValid, CSRArray[index], CSRArrayWen[index]);
   end
 
   // step 3a
@@ -137,9 +137,9 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
   /* verilator lint_on UNOPTFLAT */
 
   assign CSRCount = {{{12-MAX_CSRS}{1'b0}}, CSRCountShort};
-  assign rvvi = {CSRs, Registers, Required};
+  assign DutRvvi = {CSRs, Registers, Required};
   
-  counter #(FRAME_COUNT_WIDTH) framecounter(clk, reset, valid, FrameCount);
+  counter #(FRAME_COUNT_WIDTH) framecounter(clk, reset, DutValid, DutFrameCount);
 
 endmodule
                                                                  

@@ -49,7 +49,7 @@ module testbench;
   parameter BPRED_LOGGER=0;
   parameter I_CACHE_ADDR_LOGGER=0;
   parameter D_CACHE_ADDR_LOGGER=0;
-  parameter RVVI_SYNTH_SUPPORTED=0;
+  parameter RVVI_SYNTH_SUPPORTED=1;
 
   `ifdef USE_IMPERAS_DV
     import idvPkg::*;

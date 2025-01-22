@@ -319,7 +319,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
 
   assign FrameCounterReset = reset;
   assign FrameCounterEn = TransCurrState == STATE_FINISHED;
-  assign DontSend = FrameCounter == 4'd200;
+  assign DontSend = FrameCounter == 4'd10;
   counter #(4) framecounterreg(clk, FrameCounterReset, FrameCounterEn, FrameCounter);
   
     

@@ -31,14 +31,14 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(                 // 2^Entries entries of WIDTH bits each
-(* mark_debug = "true" *)    input logic              clk, Port1Wen, Port2Wen, reset,
-    input logic [WIDTH-1:0]  Port1WData, 
-    input logic [WIDTH2-1:0] Port2WData, 
-    output logic [WIDTH-1:0] Port3RData,
-(* mark_debug = "true" *)    output logic             Port3RValid,
-(* mark_debug = "true" *)    input  logic             Port3Stall,
-(* mark_debug = "true" *)    output logic             Full, Empty, ActiveListWait);
+module rvviactivelist #(parameter Entries=3, WIDTH=792, FRAME_COUNT_WIDTH=16)(                 // 2^Entries entries of WIDTH bits each
+(* mark_debug = "true" *)    input logic              clk, DutValid, HostInstrValid, reset,
+    input logic [WIDTH-1:0]  DutData, 
+    input logic [FRAME_COUNT_WIDTH-1:0] HostFrameCount, 
+    output logic [WIDTH-1:0] ActiveListData,
+(* mark_debug = "true" *)    output logic             SelActiveList,
+(* mark_debug = "true" *)    input  logic             RVVIStall,
+(* mark_debug = "true" *)    output logic             ActiveListStall);
 
   // port 2 data is
   // InstrPackDelay (32-bit), Minstret (64-bit), eth src (16-bit), src mac (48-bit) , dst mac (48-bit)
@@ -62,18 +62,19 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
 
   logic [2**Entries-1:0]     ActiveBitsRev;
   logic [Entries-1:0]        Port3PtrLoadVal;
-  
-  // search Lut for matching Port2WData[Entries:0]. The index tells us the correct entry in the memory array.
+(* mark_debug = "true" *)  logic                      Full, Empty;
+    
+  // search Lut for matching HostFrameCount[Entries:0]. The index tells us the correct entry in the memory array.
   genvar                 index;
   for(index=0; index<2**Entries; index++) begin
-    assign LutMatch[index] = Lut[index] == Port2WData[Entries-1:0] & ActiveBits[index];
+    assign LutMatch[index] = Lut[index] == HostFrameCount[Entries-1:0] & ActiveBits[index];
   end
   // assume only one matches
   binencoder #(2**Entries) binencoder(LutMatch, Port2LutIndex);
   
   always_ff @(posedge clk)
-    if (Port1Wen & ~Full) begin 
-      mem[HeadPtr] <= Port1WData;
+    if (DutValid & ~Full) begin 
+      mem[HeadPtr] <= DutData;
     end
 
   always_ff @(posedge clk)
@@ -83,21 +84,21 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
       Empty <= 1'b1;
       ActiveBits <= '0;
     end else begin 
-      if (Port1Wen) begin
+      if (DutValid) begin
         HeadPtr  <= HeadPtrNext;
         if(~Full) begin 
-          Lut[HeadPtr] <= Port1WData[Entries-1:0];
+          Lut[HeadPtr] <= DutData[Entries-1:0];
           ActiveBits[HeadPtr] <= 1'b1;
         end
       end 
-      if(Port2Wen) begin
+      if(HostInstrValid) begin
         ActiveBits[Port2LutIndex] <= 1'b0;
       end
       Empty <= ~|ActiveBits;
       Full <= &ActiveBits;
     end 
   
-  assign HeadPtrNext = HeadPtr + {{(Entries){1'b0}}, (Port1Wen & ~Full)};
+  assign HeadPtrNext = HeadPtr + {{(Entries){1'b0}}, (DutValid & ~Full)};
 
   // derive tail pointer from the active bits.
   // it is the first 1 after the head pointer.  The easiest way to find it is a leading zero detector, but we first have to align the bits
@@ -112,7 +113,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
 
   // port 3
   // if port 2 writes to an address which is not the tail pointer, we iterate from the tail to the first non-active entry.
-  // read out each memory entry through Port3RData asserting Port3RValid. Wait until Port3Stall is low between transmissions.
+  // read out each memory entry through ActiveListData asserting SelActiveList. Wait until RVVIStall is low between transmissions.
   // During this time it is likely more instructions will arrive out of order on port 2. While the AL is in this state don't
   // restart this process. Wait until it is complete to begin again.
 
@@ -123,9 +124,9 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
 
   always_comb begin
     case(CurrState)
-      STATE_IDLE: if(Port2Wen & Port2LutIndex != TailPtr) NextState = STATE_REPLAY;
+      STATE_IDLE: if(HostInstrValid & Port2LutIndex != TailPtr) NextState = STATE_REPLAY;
       else NextState = STATE_IDLE;
-      STATE_REPLAY: if(~Port3Active & ~Port3Stall) NextState = STATE_WAIT;
+      STATE_REPLAY: if(~Port3Active & ~RVVIStall) NextState = STATE_WAIT;
       else NextState = STATE_REPLAY;
       STATE_WAIT: if(Empty) NextState = STATE_IDLE;
       else NextState = STATE_WAIT;
@@ -138,11 +139,11 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, WIDTH2=96)(             
   flopenl #(Entries) port3counterreg(clk, Port3CounterLoad, Port3CounterEn, Port3PtrNext, TailPtr, Port3Ptr);
 
   assign Port3PtrNext = Port3Ptr + 1;
-  assign Port3CounterLoad = (CurrState == STATE_IDLE & Port2Wen & Port2LutIndex != TailPtr) | reset;
-  assign Port3CounterEn = Port3RValid;
+  assign Port3CounterLoad = (CurrState == STATE_IDLE & HostInstrValid & Port2LutIndex != TailPtr) | reset;
+  assign Port3CounterEn = SelActiveList;
   assign Port3Active = ActiveBits[Port3Ptr];
-  assign Port3RData = mem[Port3Ptr];
-  assign Port3RValid = CurrState == STATE_REPLAY & ~Port3Stall & Port3Active;
-  assign ActiveListWait = CurrState == STATE_WAIT | CurrState == STATE_REPLAY;
+  assign ActiveListData = mem[Port3Ptr];
+  assign SelActiveList = CurrState == STATE_REPLAY & ~RVVIStall & Port3Active;
+  assign ActiveListStall = CurrState == STATE_WAIT | CurrState == STATE_REPLAY | Full;
 
 endmodule
