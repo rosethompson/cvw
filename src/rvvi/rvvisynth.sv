@@ -30,7 +30,7 @@
 module rvvisynth import cvw::*; #(parameter cvw_t P,
                                   parameter integer MAX_CSRS = 5, 
                                   parameter integer TOTAL_CSRS = 36,
-                                  parameter         RVVI_WIDTH = 72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16),
+                                  parameter         RVVI_WIDTH = 64+(4*P.XLEN) + MAX_CSRS*(P.XLEN+16),
                                   parameter         FRAME_COUNT_WIDTH = 16)(
   input logic clk, reset,
   input logic                                     StallE, StallM, StallW, FlushE, FlushM, FlushW,
@@ -69,7 +69,7 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
   logic [MAX_CSRS-1:0]                      CSRCountShort;
   logic [11:0]                              CSRCount;
   logic [56+3*P.XLEN-1:0]                   Required;
-  logic [16+2*P.XLEN-1:0]                   Registers;
+  logic [8+P.XLEN-1:0]                      Registers;
   logic [MAX_CSRS*(P.XLEN+16)-1:0]          CSRs;
   logic                                     FlushNotTrapW;
   
@@ -88,9 +88,14 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
 
   assign DutValid  = (InstrValidW | TrapW)  & ~StallW;
   assign Required = {4'b0, CSRCount, 3'b0, FPRWen, GPRWen, PrivilegeModeW, TrapW, Minstret, Mcycle, InstrRawW, PCW};
+/* -----\/----- EXCLUDED -----\/-----
   assign Registers = {FPRWen, GPRWen} == 2'b11 ? {FPRValue, 3'b0, FPRAddr, GPRValue, 3'b0, GPRAddr} :
                      {FPRWen, GPRWen} == 2'b01 ? {XLENZeros, 8'b0, GPRValue, 3'b0, GPRAddr} :
                      {FPRWen, GPRWen} == 2'b10 ? {FPRValue, 3'b0, FPRAddr, XLENZeros, 8'b0} :
+                     '0;
+ -----/\----- EXCLUDED -----/\----- */
+  assign Registers = GPRWen ? {GPRValue, 3'b0, GPRAddr} :
+                     FPRWen ? {FPRValue, 3'b0, FPRAddr} :
                      '0;
 
   /* verilator lint_off UNOPTFLAT */

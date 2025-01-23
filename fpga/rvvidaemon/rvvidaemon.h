@@ -29,12 +29,9 @@ typedef struct __attribute__((packed)) {
   uint8_t Pad3: 3;
   uint16_t CSRCount : 12;
   uint16_t Pad4 : 4;
-  uint8_t GPRReg : 5;
+  uint8_t GPRReg : 5; // or FPRReg
   uint8_t PadG3 : 3;
-  uint64_t GPRValue;
-  uint8_t FPRReg : 5;
-  uint8_t PadF3 : 3;
-  uint64_t FPRValue;
+  uint64_t GPRValue; // or FPRValue
   CSR_t CSR[MAXCSRS];
 } RequiredRVVI_t; // 920 bits
 

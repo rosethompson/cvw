@@ -49,13 +49,14 @@
 #include "op/op.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
-#define PRINT_THRESHOLD 1
-//#define PRINT_THRESHOLD 65536
+//#define PRINT_THRESHOLD 1
+#define PRINT_THRESHOLD 65536
 //#define PRINT_THRESHOLD 1024
 #define LOG_THRESHOLD 0x8000000 // ~128 Million instruction
 //#define E_TARGET_CLOCK 25000
 //#define E_TARGET_CLOCK 80000
-#define E_TARGET_CLOCK 60000
+#define E_TARGET_CLOCK 105000
+//#define E_TARGET_CLOCK 90000
 #define SYSTEM_CLOCK 50000000
 #define INNER_PKT_DELAY (SYSTEM_CLOCK / E_TARGET_CLOCK)
 
@@ -422,7 +423,6 @@ void * ReceiveLoop(void * arg){
       }
     }
     numbytes = recvfrom(sockfd, buf, BUF_SIZ, 0, NULL, NULL);
-    headerbytes = (sizeof(struct ether_header));
     DstMAC = *((uint64_t*)buf);
     DstMAC = DstMAC & 0xFFFFFFFFFFFF;
     if(DstMAC == DEST_MAC){
@@ -603,7 +603,7 @@ int ProcessRvviAll(RequiredRVVI_t *InstructionData){
 
   result = 0;
   if(InstructionData->GPREn) rvviDutGprSet(0, InstructionData->GPRReg, InstructionData->GPRValue);
-  if(InstructionData->FPREn) rvviDutFprSet(0, InstructionData->FPRReg, InstructionData->FPRValue);
+  if(InstructionData->FPREn) rvviDutFprSet(0, InstructionData->GPRReg, InstructionData->GPRValue);
   if(InstructionData->CSRCount > 0) {
     int TotalCSRs = MAX_CSRS >= InstructionData->CSRCount ? MAX_CSRS : InstructionData->CSRCount;
     for(CSRIndex = 0; CSRIndex < TotalCSRs; CSRIndex++){
@@ -687,7 +687,7 @@ void PrintInstructionData(RequiredRVVI_t *InstructionData){
     printf(", GPR[%d] = %lx", InstructionData->GPRReg, InstructionData->GPRValue);
   }
   if(InstructionData->FPREn){
-    printf(", FPR[%d] = %lx", InstructionData->FPRReg, InstructionData->FPRValue);
+    printf(", FPR[%d] = %lx", InstructionData->GPRReg, InstructionData->GPRValue);
   }
   if(InstructionData->CSRCount > 0) {
     printf( ", Num CSR = %d", InstructionData->CSRCount);
@@ -708,7 +708,7 @@ void WriteInstructionData(RequiredRVVI_t *InstructionData, FILE *fptr){
     fprintf(fptr, ", GPR[%d] = %lx", InstructionData->GPRReg, InstructionData->GPRValue);
   }
   if(InstructionData->FPREn){
-    fprintf(fptr, ", FPR[%d] = %lx", InstructionData->FPRReg, InstructionData->FPRValue);
+    fprintf(fptr, ", FPR[%d] = %lx", InstructionData->GPRReg, InstructionData->GPRValue);
   }
   if(InstructionData->CSRCount > 0) {
     fprintf(fptr, ", Num CSR = %d", InstructionData->CSRCount);

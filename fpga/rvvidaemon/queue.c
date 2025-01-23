@@ -92,6 +92,23 @@ void Dequeue(RequiredRVVI_t * InstructionData, queue_t *queue){
   
 }
 
+RequiredRVVI_t * Peak(queue_t *queue){
+  #if SAFE != 0
+  if(IsEmpty(queue)) return;
+  #endif
+  
+  pthread_mutex_lock(&(queue->TailLock));
+  return &(queue->InstructionData[queue->tail]);
+}
+
+void Release(queue_t *queue){
+
+  if(queue->tail == (queue->size - 1)) queue->tail = 0;
+  else (queue->tail)++;
+  pthread_mutex_unlock(&(queue->TailLock));
+  
+}
+
 bool IsFull(queue_t *queue){
   bool result;
   
