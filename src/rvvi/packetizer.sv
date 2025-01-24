@@ -60,12 +60,11 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   localparam TotalFrameLengthBytes = TotalFrameLengthBits / 8;
 
   logic [9:0]              WordCount;
-  logic [11:0]             BytesInFrame;
+
   logic                    TransReady;
   logic                    BurstDone;
   logic                    WordCountReset;
   logic                    WordCountEnable;
-  logic [15:0]             Length;
   logic [TotalFrameLengthBits-1:0] TotalFrame;
   logic [31:0] TotalFrameWords [TotalFrameLengthBytes/4-1:0];
   logic [WordPadLen-1:0]     WordPad;
@@ -121,12 +120,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
 
 
   counter #(10) WordCounter(m_axi_aclk, WordCountReset, WordCountEnable, WordCount);
-  // *** BUG BytesInFrame will eventually depend on the length of the data stored into the ethernet frame
-  // for now this will be exactly 608 bits (76 bytes, 19 words) + the ethernet frame overhead and 2-byte padding = 92-bytes
-  //assign BytesInFrame = 12'd2 + 12'd76 + 12'd6 + 12'd6 + 12'd2;
-  // 5-csrs
-  assign BytesInFrame = 12'd3 + 12'd99 + 12'd6 + 12'd6 + 12'd2 + 12'd2;
-  //assign BurstDone = WordCount == (BytesInFrame[11:2] - 1'b1);
+
   assign BurstDone = WordCount == (TotalFrameLengthBytes[11:2] - 1'b1);
 
   genvar index;
@@ -134,7 +128,6 @@ module packetizer import cvw::*; #(parameter cvw_t P,
     assign TotalFrameWords[index] = TotalFrame[(index*32)+32-1 : (index*32)];
   end
 
-  assign Length = {4'b0, BytesInFrame};
   assign WordPad = '0;
   assign TotalFrame = {WordPad, rvviDelay, EthType, DstMac, SrcMac};
 

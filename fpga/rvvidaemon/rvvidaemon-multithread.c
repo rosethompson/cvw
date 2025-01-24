@@ -49,8 +49,8 @@
 #include "op/op.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
-//#define PRINT_THRESHOLD 1
-#define PRINT_THRESHOLD 65536
+#define PRINT_THRESHOLD 1
+//#define PRINT_THRESHOLD 65536
 //#define PRINT_THRESHOLD 1024
 #define LOG_THRESHOLD 0x8000000 // ~128 Million instruction
 //#define E_TARGET_CLOCK 25000
@@ -113,6 +113,7 @@ uint8_t ratebuf[BUF_SIZ];
 struct ether_header *rateeh = (struct ether_header *) ratebuf;
 int PercentFull;
 
+uint64_t InitialMCycle, InitialMInstr;
 
 pthread_mutex_t SlowMessageLock;
 pthread_cond_t SlowMessageCond;
@@ -400,13 +401,13 @@ void * ReceiveLoop(void * arg){
   DstMAC = *((uint64_t*)buf);
   DstMAC = DstMAC & 0xFFFFFFFFFFFF;
   if(DstMAC == DEST_MAC){
-    RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes);
+    RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes + 2);
     Enqueue(InstructionDataPtr, InstructionQueue);
 
-      ((uint16_t*) (AckBuf + AckLen))[0] = InstructionDataPtr->FrameCount;
-      ((uint64_t*) (AckBuf + AckLen+2))[0] = InstructionDataPtr->Minstret;
-      ((uint32_t*) (AckBuf + AckLen + 10))[0] = INNER_PKT_DELAY;
-      if (sendto(sockfd, AckBuf, AckLen + 14, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
+    ((uint16_t*) (AckBuf + AckLen))[0] = *(uint16_t *) (buf + headerbytes);
+    ((uint64_t*) (AckBuf + AckLen+2))[0] = 0;
+    ((uint32_t*) (AckBuf + AckLen + 10))[0] = INNER_PKT_DELAY;
+    if (sendto(sockfd, AckBuf, AckLen + 14, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
 
     pthread_cond_signal(&StartCond);  // send message to other thread to slow down
   }
@@ -423,14 +424,15 @@ void * ReceiveLoop(void * arg){
       }
     }
     numbytes = recvfrom(sockfd, buf, BUF_SIZ, 0, NULL, NULL);
+    headerbytes = (sizeof(struct ether_header));
     DstMAC = *((uint64_t*)buf);
     DstMAC = DstMAC & 0xFFFFFFFFFFFF;
     if(DstMAC == DEST_MAC){
-      RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes);
+      RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes + 2);
       Enqueue(InstructionDataPtr, InstructionQueue);
 
-      ((uint16_t*) (AckBuf + AckLen))[0] = InstructionDataPtr->FrameCount;
-      ((uint64_t*) (AckBuf + AckLen+2))[0] = InstructionDataPtr->Minstret;
+      ((uint16_t*) (AckBuf + AckLen))[0] = *(uint16_t *) (buf + headerbytes);
+      ((uint64_t*) (AckBuf + AckLen+2))[0] = 0;
       ((uint32_t*) (AckBuf + AckLen + 10))[0] = INNER_PKT_DELAY + 8 * QueueDepth;
       if (sendto(sockfd, AckBuf, AckLen + 14, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
 
@@ -603,13 +605,13 @@ int ProcessRvviAll(RequiredRVVI_t *InstructionData){
 
   result = 0;
   if(InstructionData->GPREn) rvviDutGprSet(0, InstructionData->GPRReg, InstructionData->GPRValue);
-  if(InstructionData->FPREn) rvviDutFprSet(0, InstructionData->GPRReg, InstructionData->GPRValue);
+  if(InstructionData->FPREn) rvviDutFprSet(0, InstructionData->FPRReg, InstructionData->GPRValue);
   if(InstructionData->CSRCount > 0) {
     int TotalCSRs = MAX_CSRS >= InstructionData->CSRCount ? MAX_CSRS : InstructionData->CSRCount;
     for(CSRIndex = 0; CSRIndex < TotalCSRs; CSRIndex++){
-      if(InstructionData->CSR[CSRIndex].CSRReg != 0){
-        rvviDutCsrSet(0, InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
-	printf("Setting CSR %x\n", InstructionData->CSR[CSRIndex].CSRReg);
+      if(InstructionData->CSRReg[CSRIndex] != 0){
+        rvviDutCsrSet(0, InstructionData->CSRReg[CSRIndex], InstructionData->CSRValue[CSRIndex]);
+	printf("Setting CSR %x\n", InstructionData->CSRReg[CSRIndex]);
       }
     }
   }
@@ -681,22 +683,27 @@ void set_fpr(int hart, int reg, uint64_t value){
  
 void PrintInstructionData(RequiredRVVI_t *InstructionData){
   int CSRIndex;
-  printf("FrameCount = %hx, PC = %lx, insn = %x, Mcycle = %lx, Minstret = %lx, Trap = %hhx, PrivilegeMode = %hhx",
-	 InstructionData->FrameCount, InstructionData->PC, InstructionData->insn, InstructionData->Mcycle, InstructionData->Minstret, InstructionData->Trap, InstructionData->PrivilegeMode);
+  printf("PC = %lx, insn = %x, Mcycle = %lx, Minstret = %lx, Trap = %hhx, PrivilegeMode = %hhx",
+	 InstructionData->PC, InstructionData->insn, InstructionData->Mcycle, InstructionData->Minstret, InstructionData->Trap, InstructionData->PrivilegeMode);
   if(InstructionData->GPREn){
     printf(", GPR[%d] = %lx", InstructionData->GPRReg, InstructionData->GPRValue);
   }
   if(InstructionData->FPREn){
-    printf(", FPR[%d] = %lx", InstructionData->GPRReg, InstructionData->GPRValue);
+    printf(", FPR[%d] = %lx", InstructionData->FPRReg, InstructionData->GPRValue);
   }
   if(InstructionData->CSRCount > 0) {
     printf( ", Num CSR = %d", InstructionData->CSRCount);
     for(CSRIndex = 0; CSRIndex < MAX_CSRS; CSRIndex++){
-      if(InstructionData->CSR[CSRIndex].CSRReg != 0){
-	printf(", CSR[%x] = %lx", InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
+      if(InstructionData->CSRReg[CSRIndex] != 0){
+	printf(", CSR[%x] = %lx", InstructionData->CSRReg[CSRIndex], InstructionData->CSRValue[CSRIndex]);
       }
     }
   }
+  uint64_t Mcycles, Minstrs;
+  Mcycles = InstructionData->Mcycle - InitialMCycle;
+  Minstrs = InstructionData->Minstret - InitialMInstr;
+  double freq = Minstrs / (Mcycles * (1.0 / SYSTEM_CLOCK));
+  printf(", Freq = %f", freq);
   printf("\n");
 }
 
@@ -708,13 +715,13 @@ void WriteInstructionData(RequiredRVVI_t *InstructionData, FILE *fptr){
     fprintf(fptr, ", GPR[%d] = %lx", InstructionData->GPRReg, InstructionData->GPRValue);
   }
   if(InstructionData->FPREn){
-    fprintf(fptr, ", FPR[%d] = %lx", InstructionData->GPRReg, InstructionData->GPRValue);
+    fprintf(fptr, ", FPR[%d] = %lx", InstructionData->FPRReg, InstructionData->GPRValue);
   }
   if(InstructionData->CSRCount > 0) {
     fprintf(fptr, ", Num CSR = %d", InstructionData->CSRCount);
     for(CSRIndex = 0; CSRIndex < 3; CSRIndex++){
-      if(InstructionData->CSR[CSRIndex].CSRReg != 0){
-	fprintf(fptr, ", CSR[%x] = %lx", InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
+      if(InstructionData->CSRReg[CSRIndex] != 0){
+	fprintf(fptr, ", CSR[%x] = %lx", InstructionData->CSRReg[CSRIndex], InstructionData->CSRValue[CSRIndex]);
       }
     }
   }

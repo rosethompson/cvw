@@ -69,7 +69,7 @@ module acev import cvw::*; #(parameter cvw_t P,
   output logic             IlaTrigger
   );
 
-  localparam               RVVI_WIDTH = 64+(4*P.XLEN) + MAX_CSRS*(P.XLEN+16);
+  localparam               RVVI_WIDTH = 128+(4*P.XLEN) + MAX_CSRS*(P.XLEN+16);
   localparam               ETH_HEADER_WIDTH = 48*2 + 16;
   localparam               FRAME_COUNT_WIDTH = 16;
   

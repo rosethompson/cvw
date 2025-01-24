@@ -24,7 +24,5 @@ int HowFull(queue_t *queue);
 bool IsEmpty(queue_t *queue);
 void PrintQueue(queue_t *queue);
 void PrintValidQueue(queue_t *queue);
-void Release(queue_t *queue);
-RequiredRVVI_t * Peak(queue_t *queue);
 
 #endif

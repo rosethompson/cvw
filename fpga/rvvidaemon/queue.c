@@ -92,23 +92,6 @@ void Dequeue(RequiredRVVI_t * InstructionData, queue_t *queue){
   
 }
 
-RequiredRVVI_t * Peak(queue_t *queue){
-  #if SAFE != 0
-  if(IsEmpty(queue)) return;
-  #endif
-  
-  pthread_mutex_lock(&(queue->TailLock));
-  return &(queue->InstructionData[queue->tail]);
-}
-
-void Release(queue_t *queue){
-
-  if(queue->tail == (queue->size - 1)) queue->tail = 0;
-  else (queue->tail)++;
-  pthread_mutex_unlock(&(queue->TailLock));
-  
-}
-
 bool IsFull(queue_t *queue){
   bool result;
   
@@ -227,13 +210,13 @@ void PrintInstructionDataCopy(RequiredRVVI_t *InstructionData){
     printf(", GPR[%d] = %lx", InstructionData->GPRReg, InstructionData->GPRValue);
   }
   if(InstructionData->FPREn){
-    printf(", FPR[%d] = %lx", InstructionData->FPRReg, InstructionData->FPRValue);
+    printf(", FPR[%d] = %lx", InstructionData->FPRReg, InstructionData->GPRValue);
   }
   if(InstructionData->CSRCount > 0) {
     printf( ", Num CSR = %d", InstructionData->CSRCount);
-    for(CSRIndex = 0; CSRIndex < 3; CSRIndex++){
-      if(InstructionData->CSR[CSRIndex].CSRReg != 0){
-	printf(", CSR[%x] = %lx", InstructionData->CSR[CSRIndex].CSRReg, InstructionData->CSR[CSRIndex].CSRValue);
+    for(CSRIndex = 0; CSRIndex < MAXCSRS; CSRIndex++){ 
+      if(InstructionData->CSRReg[CSRIndex] != 0){
+	printf(", CSR[%x] = %lx", InstructionData->CSRReg[CSRIndex], InstructionData->CSRValue[CSRIndex]);
       }
     }
   }

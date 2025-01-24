@@ -30,7 +30,7 @@
 module rvvisynth import cvw::*; #(parameter cvw_t P,
                                   parameter integer MAX_CSRS = 5, 
                                   parameter integer TOTAL_CSRS = 36,
-                                  parameter         RVVI_WIDTH = 64+(4*P.XLEN) + MAX_CSRS*(P.XLEN+16),
+                                  parameter         RVVI_WIDTH = 128+(4*P.XLEN) + MAX_CSRS*(P.XLEN+16),
                                   parameter         FRAME_COUNT_WIDTH = 16)(
   input logic clk, reset,
   input logic                                     StallE, StallM, StallW, FlushE, FlushM, FlushW,
@@ -68,10 +68,12 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
   logic [MAX_CSRS-1:0]                      EnabledCSRs;
   logic [MAX_CSRS-1:0]                      CSRCountShort;
   logic [11:0]                              CSRCount;
-  logic [56+3*P.XLEN-1:0]                   Required;
-  logic [8+P.XLEN-1:0]                      Registers;
+  logic [32+8*8+32+3*P.XLEN-1:0]            Required;
+  logic [P.XLEN-1:0]                        Registers;
   logic [MAX_CSRS*(P.XLEN+16)-1:0]          CSRs;
   logic                                     FlushNotTrapW;
+  logic [4:0]                               RegAddr;
+  
   
   assign XLENZeros = '0;
   assign FlushNotTrapW = FlushW & ~TrapM; // This is subtle. rvvi needs to keep Instr and PC even when there is a trap.
@@ -87,16 +89,40 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
   flopenrc #(1)      TrapWReg (clk, reset, 1'b0, ~StallW, TrapM, TrapW);
 
   assign DutValid  = (InstrValidW | TrapW)  & ~StallW;
-  assign Required = {4'b0, CSRCount, 3'b0, FPRWen, GPRWen, PrivilegeModeW, TrapW, Minstret, Mcycle, InstrRawW, PCW};
+  // need a more efficient encoding so we align everthing to 8 bytes
+  // 0: pc
+  // 8: Mcycyle
+  // 10: Minstret
+  // 18: Instr (4-bytes)
+  // 1C: (CSRCount) + pad (2-byte)
+  // 1E: Trap
+  // 1F: PrivilegeModeW
+  // 20: GPRWen
+  // 21: FPRWen
+  // 22: GPRAddr
+  // 23: FPRAddr
+  // 24: zeros (4-bytes)
+  // 28: register write data
+  // 28: CSR WriteData0
+  // 30: CSR WriteData1
+  // 38: CSR WriteData2
+  // 40: CSR WriteData3
+  // 48: CSR WriteData4
+  // 50: CSR WriteAdr0 2-bytes
+  // 52: CSR WriteAdr1 2-bytes
+  // 54: CSR WriteAdr2 2-bytes
+  // 56: CSR WriteAdr3 2-bytes
+  // 58: CSR WriteAdr4 2-bytes
+  //assign Required = {4'b0, CSRCount, 3'b0, FPRWen, GPRWen, PrivilegeModeW, TrapW, Minstret, Mcycle, InstrRawW, PCW};
+  assign Required = {32'b0, 3'b0, FPRAddr, 3'b0, GPRAddr, 7'b0, FPRWen, 7'b0, GPRWen, 6'b0, PrivilegeModeW, 7'b0, TrapW, 4'b0, CSRCount, InstrRawW, Minstret, Mcycle, PCW};
 /* -----\/----- EXCLUDED -----\/-----
   assign Registers = {FPRWen, GPRWen} == 2'b11 ? {FPRValue, 3'b0, FPRAddr, GPRValue, 3'b0, GPRAddr} :
                      {FPRWen, GPRWen} == 2'b01 ? {XLENZeros, 8'b0, GPRValue, 3'b0, GPRAddr} :
                      {FPRWen, GPRWen} == 2'b10 ? {FPRValue, 3'b0, FPRAddr, XLENZeros, 8'b0} :
                      '0;
  -----/\----- EXCLUDED -----/\----- */
-  assign Registers = GPRWen ? {GPRValue, 3'b0, GPRAddr} :
-                     FPRWen ? {FPRValue, 3'b0, FPRAddr} :
-                     '0;
+  assign RegAddr = GPRWen ? GPRAddr : FPRWen ? FPRAddr : '0;
+  assign Registers = GPRWen ? GPRValue : FPRWen ? FPRValue : '0;
 
   /* verilator lint_off UNOPTFLAT */
   // For some reason verilator complains about CSRWenFilterMatrix being in a circular loop when it is not.
@@ -126,7 +152,9 @@ module rvvisynth import cvw::*; #(parameter cvw_t P,
   for(index = 0; index < MAX_CSRS; index = index + 1) begin
     // step 3b
     csrindextoaddr #(TOTAL_CSRS) csrindextoaddr(CSRWenPriorityMatrix[index], CSRAddr[index]);
-    assign CSRs[(index+1) * (P.XLEN + 16)- 1: index * (P.XLEN + 16)] = {CSRValue[index], 4'b0, CSRAddr[index]};
+    //assign CSRs[(index+1) * (P.XLEN + 16)- 1: index * (P.XLEN + 16)] = {CSRValue[index], 4'b0, CSRAddr[index]};
+    assign CSRs[((index+1) * P.XLEN)- 1: index * P.XLEN] = CSRValue[index];
+    assign CSRs[(MAX_CSRS * P.XLEN) + ((index+1) * 16)- 1: (MAX_CSRS * P.XLEN) + (index * 16)] = {4'b0, CSRAddr[index]};
     assign EnabledCSRs[index] = |CSRWenPriorityMatrix[index];
   end
 
