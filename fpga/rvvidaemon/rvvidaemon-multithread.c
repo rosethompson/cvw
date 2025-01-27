@@ -49,18 +49,20 @@
 #include "op/op.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
-#define PRINT_THRESHOLD 1
-//#define PRINT_THRESHOLD 65536
+//#define PRINT_THRESHOLD 1
+#define PRINT_THRESHOLD 65536
 //#define PRINT_THRESHOLD 1024
 #define LOG_THRESHOLD 0x8000000 // ~128 Million instruction
 //#define E_TARGET_CLOCK 25000
 //#define E_TARGET_CLOCK 80000
+//#define E_TARGET_CLOCK 60000
 #define E_TARGET_CLOCK 105000
-//#define E_TARGET_CLOCK 90000
 #define SYSTEM_CLOCK 50000000
 #define INNER_PKT_DELAY (SYSTEM_CLOCK / E_TARGET_CLOCK)
 
 #define RATE_SET_THREAHOLD 65536
+
+#define HIST_LEN 8
 
 #include "rvvidaemon.h"
 #include "queue.h"
@@ -96,6 +98,19 @@ uint64_t EXT_MEM_BASE =  0x80000000;
 uint64_t EXT_MEM_RANGE = 0x7FFFFFFF;
 #define NUM_PMP_REGS 16
 
+typedef struct {
+  uint64_t MCycleHistory[HIST_LEN];
+  uint64_t MInstretHistory[HIST_LEN];
+  int Index;
+} History_t;
+
+typedef struct {
+  History_t * History;
+  queue_t * InstructionQueue;
+} ReceiveLoop_t;
+
+
+
 // load wally configuration
 // must be set external to program
 // export IMPERAS_TOOLS="../../config/rv64gc/imperas.ic"
@@ -113,8 +128,6 @@ uint8_t ratebuf[BUF_SIZ];
 struct ether_header *rateeh = (struct ether_header *) ratebuf;
 int PercentFull;
 
-uint64_t InitialMCycle, InitialMInstr;
-
 pthread_mutex_t SlowMessageLock;
 pthread_cond_t SlowMessageCond;
 pthread_mutex_t StartLock;
@@ -124,20 +137,32 @@ pthread_cond_t StartCond;
 #define ntohll(x) ((1==ntohl(1)) ? (x) : ((uint64_t)ntohl((x) & 0xFFFFFFFF) << 32) | ntohl((x) >> 32))
 
 // prototypes
-void PrintInstructionData(RequiredRVVI_t *InstructionData);
+void PrintInstructionData(RequiredRVVI_t *InstructionData, History_t * History);
 void * ReceiveLoop(void * arg);
 void * ProcessLoop(void * arg);
 void * SendSlowMessage(void * arg);
 void * SetSpeedLoop(void * arg);
-int ProcessRvviAll(RequiredRVVI_t *InstructionData);
+int ProcessRvviAll(RequiredRVVI_t *InstructionData, History_t * History);
 void set_gpr(int hart, int reg, uint64_t value);
 void set_csr(int hart, int csrIndex, uint64_t value);
 void set_fpr(int hart, int reg, uint64_t value);
 int state_compare(int hart, uint64_t Minstret);
 void WriteInstructionData(RequiredRVVI_t *InstructionData, FILE *fptr);
 void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uint64_t EndAddress);
+double UpdateHistory(RequiredRVVI_t *InstructionDataPtr, History_t *History);
 
 int main(int argc, char **argv){
+
+  // get Wally environment var
+  char ImperasToolStr [256];
+  const char* WALLY = getenv("WALLY");
+  if(WALLY) {
+    snprintf(ImperasToolStr, 256, "IMPERAS_TOOLS=%s/config/rv64gc/imperas-fpga.ic", WALLY);
+    putenv(ImperasToolStr);
+  } else {
+    printf("WALLY environment variable not set. Did you run source ./setup.sh in cvw?\n");
+  }
+  History_t HistoryValues;
   
   if(argc != 2){
     printf("Wrong number of arguments.\n");
@@ -345,9 +370,12 @@ int main(int argc, char **argv){
   ratebuf[rate_len++] = 'n';
   ((uint32_t*) (ratebuf + rate_len))[0] = INNER_PKT_DELAY;
 
+  ReceiveLoop_t ReceiveThreadObj;
+  ReceiveThreadObj.InstructionQueue = InstructionQueue;
+  ReceiveThreadObj.History = &HistoryValues;
   pthread_t ReceiveID, ProcessID, SlowID, SetSpeedLoopID;
-  pthread_create(&ReceiveID, NULL, &ReceiveLoop, (void *) InstructionQueue);
-  pthread_create(&ProcessID, NULL, &ProcessLoop, (void *) InstructionQueue);
+  pthread_create(&ReceiveID, NULL, &ReceiveLoop, (void *) &ReceiveThreadObj);
+  pthread_create(&ProcessID, NULL, &ProcessLoop, (void *) &ReceiveThreadObj);
   //pthread_create(&SlowID, NULL, &SendSlowMessage, (void *) InstructionQueue);
   //pthread_create(&SetSpeedLoopID, NULL, &SetSpeedLoop, (void *) InstructionQueue);
   //pthread_join(ReceiveID, NULL);
@@ -361,7 +389,9 @@ int main(int argc, char **argv){
 void * ReceiveLoop(void * arg){
   uint8_t buf[BUF_SIZ];
   ssize_t headerbytes, numbytes;
-  queue_t * InstructionQueue = (queue_t *) arg;
+  //queue_t * InstructionQueue = (queue_t *) arg;
+  ReceiveLoop_t * ThreadPtr = (ReceiveLoop_t *) arg;
+  queue_t * InstructionQueue = ThreadPtr->InstructionQueue;
 
   uint8_t AckBuf[BUF_SIZ];
   int AckLen = 0;
@@ -450,91 +480,93 @@ void * ReceiveLoop(void * arg){
   pthread_exit(NULL);
 }
 
-void * SetSpeedLoop(void * arg){
-  queue_t * InstructionQueue = (queue_t *) arg;
+/* void * SetSpeedLoop(void * arg){ */
+/*   queue_t * InstructionQueue = (queue_t *) arg; */
 
-  int INIT_INSTR_PRE_SEC = 10000;
-  int InstrPreSec = INIT_INSTR_PRE_SEC;
-  int Phase = 0;
-  int Slope = 10000; // Instr/s to change in phase 1.
+/*   int INIT_INSTR_PRE_SEC = 10000; */
+/*   int InstrPreSec = INIT_INSTR_PRE_SEC; */
+/*   int Phase = 0; */
+/*   int Slope = 10000; // Instr/s to change in phase 1. */
 
-  struct timespec UpdateInterval = { .tv_sec = 0, .tv_nsec = 10000000 }; // 0.01 seconds
-  //struct timespec UpdateInterval = { .tv_sec = 3, .tv_nsec = 0 }; // 0.1 seconds
-  int Rate = ((UpdateInterval.tv_nsec * Slope) / 1000000000) + UpdateInterval.tv_sec * Slope;
+/*   struct timespec UpdateInterval = { .tv_sec = 0, .tv_nsec = 10000000 }; // 0.01 seconds */
+/*   //struct timespec UpdateInterval = { .tv_sec = 3, .tv_nsec = 0 }; // 0.1 seconds */
+/*   int Rate = ((UpdateInterval.tv_nsec * Slope) / 1000000000) + UpdateInterval.tv_sec * Slope; */
 
-  int THREASHOLD_C1 = 4; // Soft limit. Start slow down
-  int THREASHOLD_C2 = 16; // Critial limit. Dramatic slow down
-  int THREASHOLD_C3 = QUEUE_SIZE - (QUEUE_SIZE/8); // Near limit. Critial Warning.
+/*   int THREASHOLD_C1 = 4; // Soft limit. Start slow down */
+/*   int THREASHOLD_C2 = 16; // Critial limit. Dramatic slow down */
+/*   int THREASHOLD_C3 = QUEUE_SIZE - (QUEUE_SIZE/8); // Near limit. Critial Warning. */
 
-  int QueueDepth = 0;
+/*   int QueueDepth = 0; */
   
-  uint8_t SpeedBuf[BUF_SIZ];
-  int SpeedLen = 0;
-  struct ether_header *SpeedHeader = (struct ether_header *) SpeedBuf;
-  memset(SpeedBuf, 0, BUF_SIZ);
-  SpeedBuf[0] = DEST_MAC0;
-  SpeedBuf[1] = DEST_MAC1;
-  SpeedBuf[2] = DEST_MAC2;
-  SpeedBuf[3] = DEST_MAC3;
-  SpeedBuf[4] = DEST_MAC4;
-  SpeedBuf[5] = DEST_MAC5;
-  SpeedBuf[6] = SRC_MAC0;
-  SpeedBuf[7] = SRC_MAC1;
-  SpeedBuf[8] = SRC_MAC2;
-  SpeedBuf[9] = SRC_MAC3;
-  SpeedBuf[10] = SRC_MAC4;
-  SpeedBuf[11] = SRC_MAC5;
+/*   uint8_t SpeedBuf[BUF_SIZ]; */
+/*   int SpeedLen = 0; */
+/*   struct ether_header *SpeedHeader = (struct ether_header *) SpeedBuf; */
+/*   memset(SpeedBuf, 0, BUF_SIZ); */
+/*   SpeedBuf[0] = DEST_MAC0; */
+/*   SpeedBuf[1] = DEST_MAC1; */
+/*   SpeedBuf[2] = DEST_MAC2; */
+/*   SpeedBuf[3] = DEST_MAC3; */
+/*   SpeedBuf[4] = DEST_MAC4; */
+/*   SpeedBuf[5] = DEST_MAC5; */
+/*   SpeedBuf[6] = SRC_MAC0; */
+/*   SpeedBuf[7] = SRC_MAC1; */
+/*   SpeedBuf[8] = SRC_MAC2; */
+/*   SpeedBuf[9] = SRC_MAC3; */
+/*   SpeedBuf[10] = SRC_MAC4; */
+/*   SpeedBuf[11] = SRC_MAC5; */
 
-  SpeedHeader->ether_type = htons(ETHER_TYPE);
-  SpeedLen += sizeof(struct ether_header);
-  /* Packet data */
-  SpeedBuf[SpeedLen++] = 'r';
-  SpeedBuf[SpeedLen++] = 'a';
-  SpeedBuf[SpeedLen++] = 't';
-  SpeedBuf[SpeedLen++] = 'e';
-  SpeedBuf[SpeedLen++] = 'i';
-  SpeedBuf[SpeedLen++] = 'n';
-  // set initial value
+/*   SpeedHeader->ether_type = htons(ETHER_TYPE); */
+/*   SpeedLen += sizeof(struct ether_header); */
+/*   /\* Packet data *\/ */
+/*   SpeedBuf[SpeedLen++] = 'r'; */
+/*   SpeedBuf[SpeedLen++] = 'a'; */
+/*   SpeedBuf[SpeedLen++] = 't'; */
+/*   SpeedBuf[SpeedLen++] = 'e'; */
+/*   SpeedBuf[SpeedLen++] = 'i'; */
+/*   SpeedBuf[SpeedLen++] = 'n'; */
+/*   // set initial value */
 
-  // wait until we receive first frame.
-  pthread_mutex_lock(&StartLock);
-  pthread_cond_wait(&StartCond, &StartLock);
-  pthread_mutex_unlock(&StartLock);
+/*   // wait until we receive first frame. */
+/*   pthread_mutex_lock(&StartLock); */
+/*   pthread_cond_wait(&StartCond, &StartLock); */
+/*   pthread_mutex_unlock(&StartLock); */
   
-  ((uint32_t*) (SpeedBuf + SpeedLen))[0] = (SYSTEM_CLOCK / InstrPreSec);
-  if (sendto(sockfd, SpeedBuf, SpeedLen+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
-  else printf("send success!\n");
+/*   ((uint32_t*) (SpeedBuf + SpeedLen))[0] = (SYSTEM_CLOCK / InstrPreSec); */
+/*   if (sendto(sockfd, SpeedBuf, SpeedLen+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n"); */
+/*   else printf("send success!\n"); */
 
-  while(1){
-    nanosleep(&UpdateInterval, NULL);
-    QueueDepth = HowFull(InstructionQueue);
-    if(QueueDepth <= THREASHOLD_C1 / 2) {
-      if(!Phase) InstrPreSec = InstrPreSec * 2;
-      else InstrPreSec = InstrPreSec + Rate;
-    } else if(QueueDepth <= THREASHOLD_C1) {
-      if(!Phase){
-        InstrPreSec = InstrPreSec / 4;
-        Phase = 1;
-      } else InstrPreSec = InstrPreSec - Rate;
-    } else if(QueueDepth <= THREASHOLD_C2) {
-      InstrPreSec = InstrPreSec / 2;
-    } else if(QueueDepth <= THREASHOLD_C3) {
-      printf("Near upper limit of queue depth. Revert to 10K Instr/s, Phase = %d\n", Phase);
-      InstrPreSec = INIT_INSTR_PRE_SEC;
-      Phase = 1;
-    } else if(QueueDepth <= QUEUE_SIZE){
-      printf("Critial failure. SetSpeedLoop Thread Phase = %d.\n", Phase);
-      //exit(-1);
-      break;
-    }
-    ((uint32_t*) (SpeedBuf + SpeedLen))[0] = (SYSTEM_CLOCK / InstrPreSec);
-    printf("InstrPreSec = %d, InterPacketDelay = %d, Phase = %d, Rate = %d\n", InstrPreSec, (SYSTEM_CLOCK / InstrPreSec), Phase, Rate);
-    if (sendto(sockfd, SpeedBuf, SpeedLen+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
-  }  
-}
+/*   while(1){ */
+/*     nanosleep(&UpdateInterval, NULL); */
+/*     QueueDepth = HowFull(InstructionQueue); */
+/*     if(QueueDepth <= THREASHOLD_C1 / 2) { */
+/*       if(!Phase) InstrPreSec = InstrPreSec * 2; */
+/*       else InstrPreSec = InstrPreSec + Rate; */
+/*     } else if(QueueDepth <= THREASHOLD_C1) { */
+/*       if(!Phase){ */
+/*         InstrPreSec = InstrPreSec / 4; */
+/*         Phase = 1; */
+/*       } else InstrPreSec = InstrPreSec - Rate; */
+/*     } else if(QueueDepth <= THREASHOLD_C2) { */
+/*       InstrPreSec = InstrPreSec / 2; */
+/*     } else if(QueueDepth <= THREASHOLD_C3) { */
+/*       printf("Near upper limit of queue depth. Revert to 10K Instr/s, Phase = %d\n", Phase); */
+/*       InstrPreSec = INIT_INSTR_PRE_SEC; */
+/*       Phase = 1; */
+/*     } else if(QueueDepth <= QUEUE_SIZE){ */
+/*       printf("Critial failure. SetSpeedLoop Thread Phase = %d.\n", Phase); */
+/*       //exit(-1); */
+/*       break; */
+/*     } */
+/*     ((uint32_t*) (SpeedBuf + SpeedLen))[0] = (SYSTEM_CLOCK / InstrPreSec); */
+/*     printf("InstrPreSec = %d, InterPacketDelay = %d, Phase = %d, Rate = %d\n", InstrPreSec, (SYSTEM_CLOCK / InstrPreSec), Phase, Rate); */
+/*     if (sendto(sockfd, SpeedBuf, SpeedLen+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n"); */
+/*   }   */
+/* } */
 
 void * ProcessLoop(void * arg){
-  queue_t * InstructionQueue = (queue_t *) arg;
+  ReceiveLoop_t * ThreadPtr = (ReceiveLoop_t *) arg;
+  queue_t * InstructionQueue = ThreadPtr->InstructionQueue;
+  History_t * History = ThreadPtr->History;
   RequiredRVVI_t  InstructionDataPtr;
   int result;
   uint64_t last = 0;
@@ -548,7 +580,7 @@ void * ProcessLoop(void * arg){
       count++;
       if(count % PRINT_THRESHOLD == 0){
         printf("Queue depth = %d \t", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size);
-        PrintInstructionData(&InstructionDataPtr);
+        PrintInstructionData(&InstructionDataPtr, History);
       }
       if(count % LOG_THRESHOLD == 0) {
         printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
@@ -560,10 +592,10 @@ void * ProcessLoop(void * arg){
         DumpState(0, buf, EXT_MEM_BASE, EXT_MEM_RANGE + EXT_MEM_BASE + 1);
 	RefModelLogCount++;
       }
-      result = ProcessRvviAll(&InstructionDataPtr);
+      result = ProcessRvviAll(&InstructionDataPtr, History);
       //result = 0;
       if(result == -1) {
-        PrintInstructionData(&InstructionDataPtr);
+        PrintInstructionData(&InstructionDataPtr, History);
         break;
       }
     }
@@ -571,35 +603,33 @@ void * ProcessLoop(void * arg){
   pthread_exit(NULL);
 }
 
-void * SendSlowMessage(void * arg){
-  queue_t * InstructionQueue = (queue_t *) arg;
-  while(1){
-    pthread_mutex_lock(&SlowMessageLock);
-    pthread_cond_wait(&SlowMessageCond, &SlowMessageLock);
-    pthread_mutex_unlock(&SlowMessageLock);
-    ((uint32_t*) (slowbuf + slow_len))[0] = PercentFull;
-    if (sendto(sockfd, slowbuf, slow_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){
-      printf("Send failed\n");
-    }else {
-      printf("send success!\n");
-    }
-    /* if (sendto(sockfd, ratebuf, rate_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){ */
-    /*   printf("Send failed\n"); */
-    /* }else { */
-    /*   printf("!?!?!?!?!?!?RATE SET RATE RATE RATE !?!?!!?!?!?!? success!\n"); */
-    /* } */
+/* void * SendSlowMessage(void * arg){ */
+/*   queue_t * InstructionQueue = (queue_t *) arg; */
+/*   while(1){ */
+/*     pthread_mutex_lock(&SlowMessageLock); */
+/*     pthread_cond_wait(&SlowMessageCond, &SlowMessageLock); */
+/*     pthread_mutex_unlock(&SlowMessageLock); */
+/*     ((uint32_t*) (slowbuf + slow_len))[0] = PercentFull; */
+/*     if (sendto(sockfd, slowbuf, slow_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){ */
+/*       printf("Send failed\n"); */
+/*     }else { */
+/*       printf("send success!\n"); */
+/*     } */
+/*     /\* if (sendto(sockfd, ratebuf, rate_len+4, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0){ *\/ */
+/*     /\*   printf("Send failed\n"); *\/ */
+/*     /\* }else { *\/ */
+/*     /\*   printf("!?!?!?!?!?!?RATE SET RATE RATE RATE !?!?!!?!?!?!? success!\n"); *\/ */
+/*     /\* } *\/ */
     
-    printf("WARNING the Receive Queue is Almost Full %d !!!!!!!!!!!!!!!!!! %d\n", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size, PercentFull);
-  }
+/*     printf("WARNING the Receive Queue is Almost Full %d !!!!!!!!!!!!!!!!!! %d\n", (InstructionQueue->head + InstructionQueue->size - InstructionQueue->tail) % InstructionQueue->size, PercentFull); */
+/*   } */
   
-}
+/* } */
 
 
-int ProcessRvviAll(RequiredRVVI_t *InstructionData){
+int ProcessRvviAll(RequiredRVVI_t *InstructionData, History_t * History){
   long int found;
-  uint64_t time = InstructionData->Mcycle;
   uint8_t trap = InstructionData->Trap;
-  uint64_t order = InstructionData->Minstret;
   int result;
   int CSRIndex;
 
@@ -618,7 +648,7 @@ int ProcessRvviAll(RequiredRVVI_t *InstructionData){
 
   if (trap) {
     printf("Got a Trap!\n");
-    PrintInstructionData(InstructionData);
+    PrintInstructionData(InstructionData, History);
     printf("The instruction is %x\n", InstructionData->insn);
     rvviDutTrap(0, InstructionData->PC, InstructionData->insn);
   } else {
@@ -667,21 +697,21 @@ int state_compare(int hart, uint64_t Minstret){
   
 }
 
-void set_csr(int hart, int csrIndex, uint64_t value){
-  rvviDutCsrSet(hart, csrIndex, value);
-}
+/* void set_csr(int hart, int csrIndex, uint64_t value){ */
+/*   rvviDutCsrSet(hart, csrIndex, value); */
+/* } */
 
-void set_gpr(int hart, int reg, uint64_t value){
-  rvviDutGprSet(hart, reg, value);
-}
+/* void set_gpr(int hart, int reg, uint64_t value){ */
+/*   rvviDutGprSet(hart, reg, value); */
+/* } */
 
-void set_fpr(int hart, int reg, uint64_t value){
-  rvviDutFprSet(hart, reg, value);
-}
+/* void set_fpr(int hart, int reg, uint64_t value){ */
+/*   rvviDutFprSet(hart, reg, value); */
+/* } */
 
 
  
-void PrintInstructionData(RequiredRVVI_t *InstructionData){
+void PrintInstructionData(RequiredRVVI_t *InstructionData, History_t *History){
   int CSRIndex;
   printf("PC = %lx, insn = %x, Mcycle = %lx, Minstret = %lx, Trap = %hhx, PrivilegeMode = %hhx",
 	 InstructionData->PC, InstructionData->insn, InstructionData->Mcycle, InstructionData->Minstret, InstructionData->Trap, InstructionData->PrivilegeMode);
@@ -699,11 +729,8 @@ void PrintInstructionData(RequiredRVVI_t *InstructionData){
       }
     }
   }
-  uint64_t Mcycles, Minstrs;
-  Mcycles = InstructionData->Mcycle - InitialMCycle;
-  Minstrs = InstructionData->Minstret - InitialMInstr;
-  double freq = Minstrs / (Mcycles * (1.0 / SYSTEM_CLOCK));
-  printf(", Freq = %f", freq);
+  double freq = UpdateHistory(InstructionData, History);
+  printf(", Freq = %.0f", freq);
   printf("\n");
 }
 
@@ -840,4 +867,17 @@ void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress,
   fclose(PRIVfp);
 
   rvviRefStateDump(hartId);
+}
+
+double UpdateHistory(RequiredRVVI_t *InstructionDataPtr, History_t *History){
+  int Index = History->Index;
+  uint64_t MCycleDelta, MInstretDelta;
+  History->MCycleHistory[Index] = InstructionDataPtr->Mcycle;
+  History->MInstretHistory[Index] = InstructionDataPtr->Minstret;
+  Index = (Index + 1) % HIST_LEN;
+  MCycleDelta = InstructionDataPtr->Mcycle - History->MCycleHistory[Index];
+  MInstretDelta = InstructionDataPtr->Minstret - History->MInstretHistory[Index];
+  History->Index = Index;
+  double freq = MInstretDelta / (MCycleDelta * (1.0 / SYSTEM_CLOCK));
+  return freq;
 }
