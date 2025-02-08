@@ -420,6 +420,8 @@ void * ReceiveLoop(void * arg){
   int count = 0;
   int result;
   uint64_t DstMAC;
+  uint16_t Sequence, LastSequence;
+  LastSequence = 0xffff;
   LogFile = fopen("receive-log.txt", "w");
   if(LogFile == NULL) {
     printf("Error opening receive.txt for writing!");   
@@ -433,7 +435,11 @@ void * ReceiveLoop(void * arg){
   DstMAC = DstMAC & 0xFFFFFFFFFFFF;
   if(DstMAC == DEST_MAC){
     RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes + 2);
-    Enqueue(InstructionDataPtr, InstructionQueue);
+    Sequence = *(uint16_t *) (buf + headerbytes);
+    if(Sequence == (LastSequence + 1) % 65536){
+      Enqueue(InstructionDataPtr, InstructionQueue);
+      LastSequence = Sequence;
+    }
 
     ((uint16_t*) (AckBuf + AckLen))[0] = *(uint16_t *) (buf + headerbytes);
     ((uint64_t*) (AckBuf + AckLen+2))[0] = 0;
@@ -460,7 +466,12 @@ void * ReceiveLoop(void * arg){
     DstMAC = DstMAC & 0xFFFFFFFFFFFF;
     if(DstMAC == DEST_MAC){
       RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes + 2);
-      Enqueue(InstructionDataPtr, InstructionQueue);
+      Sequence = *(uint16_t *) (buf + headerbytes);
+      if(Sequence == (LastSequence + 1) % 65536){
+        Enqueue(InstructionDataPtr, InstructionQueue);
+        LastSequence = Sequence;
+      }
+      //      Enqueue(InstructionDataPtr, InstructionQueue);
 
       ((uint16_t*) (AckBuf + AckLen))[0] = *(uint16_t *) (buf + headerbytes);
       ((uint64_t*) (AckBuf + AckLen+2))[0] = 0;
