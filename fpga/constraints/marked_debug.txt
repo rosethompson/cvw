@@ -9,7 +9,7 @@ lsu/lsu.sv: logic        WriteDataM
 lsu/lsu.sv: logic       MemRWM
 privileged/csrc.sv: logic      HPMCOUNTER_REGW
 mmu/hptw.sv: logic	   SATP_REGW
-mmu/hptw.sv: logic	   WalkerState
+mmu/hptw.sv: statetype	   WalkerState
 uncore/uncore.sv: logic SDCCmd
 uncore/uncore.sv: logic SDCCLK
 uncore/uncore.sv: logic SDCIn
@@ -46,3 +46,6 @@ uncore/spi_fifo.sv: logic rptr
 uncore/spi_fifo.sv: logic rptrnext
 uncore/spi_fifo.sv: logic raddr
 uncore/spi_fifo.sv: logic waddr
+cache/cachefsm.sv: statetype CurrState
+cache/cacheway.sv: logic ValidBits
+cache/cacheway.sv: logic ReadTag

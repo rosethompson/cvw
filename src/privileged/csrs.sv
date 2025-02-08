@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 module csrs import cvw::*;  #(parameter cvw_t P) (
-  input  logic              clk, reset, 
+  input  logic              clk, reset, StallW,
   input  logic              CSRSWriteM, STrapM,
   input  logic [11:0]       CSRAdrM,
   input  logic [P.XLEN-1:0] NextEPCM, NextMtvalM, SSTATUS_REGW, 
@@ -86,9 +86,9 @@ module csrs import cvw::*;  #(parameter cvw_t P) (
   assign WriteSSTATUSM    = CSRSWriteM & (CSRAdrM == SSTATUS);
   assign WriteSTVECM      = CSRSWriteM & (CSRAdrM == STVEC);
   assign WriteSSCRATCHM   = CSRSWriteM & (CSRAdrM == SSCRATCH);
-  assign WriteSEPCM       = STrapM | (CSRSWriteM & (CSRAdrM == SEPC));
-  assign WriteSCAUSEM     = STrapM | (CSRSWriteM & (CSRAdrM == SCAUSE));
-  assign WriteSTVALM      = STrapM | (CSRSWriteM & (CSRAdrM == STVAL));
+  assign WriteSEPCM       = (STrapM & ~StallW) | (CSRSWriteM & (CSRAdrM == SEPC));
+  assign WriteSCAUSEM     = (STrapM & ~StallW) | (CSRSWriteM & (CSRAdrM == SCAUSE));
+  assign WriteSTVALM      = (STrapM & ~StallW) | (CSRSWriteM & (CSRAdrM == STVAL));
   if(P.XLEN == 64) begin
     logic LegalSatpModeM;
     assign LegalSatpModeM = P.VIRTMEM_SUPPORTED & (CSRWriteValM[63:60] == 0 | CSRWriteValM[63:60] == P.SV39 | CSRWriteValM[63:60] == P.SV48); // supports SV39 and 48

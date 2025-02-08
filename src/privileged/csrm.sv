@@ -33,7 +33,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 module csrm  import cvw::*;  #(parameter cvw_t P) (
-  input  logic                     clk, reset, 
+  input  logic                     clk, reset, StallW,
   input  logic                     UngatedCSRMWriteM, CSRMWriteM, MTrapM,
   input  logic [11:0]              CSRAdrM,
   input  logic [P.XLEN-1:0]        NextEPCM, NextMtvalM, MSTATUS_REGW, MSTATUSH_REGW,
@@ -151,9 +151,9 @@ module csrm  import cvw::*;  #(parameter cvw_t P) (
   assign WriteMEDELEGM       = CSRMWriteM & (CSRAdrM == MEDELEG);
   assign WriteMIDELEGM       = CSRMWriteM & (CSRAdrM == MIDELEG);
   assign WriteMSCRATCHM      = CSRMWriteM & (CSRAdrM == MSCRATCH);
-  assign WriteMEPCM          = MTrapM | (CSRMWriteM & (CSRAdrM == MEPC));
-  assign WriteMCAUSEM        = MTrapM | (CSRMWriteM & (CSRAdrM == MCAUSE));
-  assign WriteMTVALM         = MTrapM | (CSRMWriteM & (CSRAdrM == MTVAL));
+  assign WriteMEPCM          = (MTrapM & ~StallW) | (CSRMWriteM & (CSRAdrM == MEPC));
+  assign WriteMCAUSEM        = (MTrapM & ~StallW) | (CSRMWriteM & (CSRAdrM == MCAUSE));
+  assign WriteMTVALM         = (MTrapM & ~StallW) | (CSRMWriteM & (CSRAdrM == MTVAL));
   assign WriteMCOUNTERENM    = CSRMWriteM & (CSRAdrM == MCOUNTEREN);
   assign WriteMCOUNTINHIBITM = CSRMWriteM & (CSRAdrM == MCOUNTINHIBIT);
 

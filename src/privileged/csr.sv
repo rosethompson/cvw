@@ -228,7 +228,7 @@ module csr import cvw::*;  #(parameter cvw_t P) (
     .STATUS_MIE, .STATUS_SIE, .STATUS_MXR, .STATUS_SUM, .STATUS_MPRV, .STATUS_TVM,
     .STATUS_FS, .BigEndianM);
 
-  csrm #(P) csrm(.clk, .reset, 
+  csrm #(P) csrm(.clk, .reset, .StallW,
     .UngatedCSRMWriteM, .CSRMWriteM, .MTrapM, .CSRAdrM,
     .NextEPCM, .NextCauseM, .NextMtvalM, .MSTATUS_REGW, .MSTATUSH_REGW,
     .CSRWriteValM, .CSRMReadValM, .MTVEC_REGW,
@@ -242,7 +242,7 @@ module csr import cvw::*;  #(parameter cvw_t P) (
   if (P.S_SUPPORTED) begin:csrs
     logic STCE; 
     assign STCE = P.SSTC_SUPPORTED & (PrivilegeModeW == P.M_MODE | (MCOUNTEREN_REGW[1] & ENVCFG_STCE));
-    csrs #(P) csrs(.clk, .reset,
+    csrs #(P) csrs(.clk, .reset, .StallW,
       .CSRSWriteM, .STrapM, .CSRAdrM,
       .NextEPCM, .NextCauseM, .NextMtvalM, .SSTATUS_REGW, 
       .STATUS_TVM, 

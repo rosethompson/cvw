@@ -49,14 +49,15 @@
 #include "op/op.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
-//#define PRINT_THRESHOLD 1
-#define PRINT_THRESHOLD 65536
+#define PRINT_THRESHOLD 1
+//#define PRINT_THRESHOLD 65536
 //#define PRINT_THRESHOLD 1024
+//#define PRINT_THRESHOLD 8192
 #define LOG_THRESHOLD 0x8000000 // ~128 Million instruction
 //#define E_TARGET_CLOCK 25000
 //#define E_TARGET_CLOCK 80000
 //#define E_TARGET_CLOCK 60000
-#define E_TARGET_CLOCK 110000
+#define E_TARGET_CLOCK 72000
 #define SYSTEM_CLOCK 50000000
 #define INNER_PKT_DELAY (SYSTEM_CLOCK / E_TARGET_CLOCK)
 

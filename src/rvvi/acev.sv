@@ -78,7 +78,7 @@ module acev import cvw::*; #(parameter cvw_t P,
   (* mark_debug = "true" *)    logic					     RVVIStall, HostStall;
   
 
-  
+  logic [32*5-1:0]	   TriggerString;  
   // axi 4 write data channel
   (* mark_debug = "true" *)    logic [31:0]                                      RvviAxiWdata;
   logic [3:0]              RvviAxiWstrb;
@@ -188,6 +188,12 @@ module acev import cvw::*; #(parameter cvw_t P,
                .cfg_ifg(8'd12), .cfg_tx_enable(1'b1), .cfg_rx_enable(1'b1)
                );
     end
+
+// "igin" (trigin)__"rt", ether type 005c__src mac [47:16]__src mac [15:0], dst mac [47:32]__dst mac [31:0]
+    assign TriggerString = 160'h6e69_6769__7274_005c__8f54_0000__1654_4502__1111_6843;
+
+    triggergen triggergen(.clk, .reset, .CompareString(TriggerString), .RvviAxiRdata,
+      .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger, .TriggerMessage());  
 
   
 endmodule
