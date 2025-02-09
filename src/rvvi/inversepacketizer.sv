@@ -45,13 +45,13 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P,
   typedef enum              {STATE_RST, STATE_ALL_CAPTURED, STATE_WAIT} statetype;
 (* mark_debug = "true" *)  statetype CurrState, NextState;
 
-  logic [31:0]              mem [7:0];
-(* mark_debug = "true" *)  logic [2:0]               Counter;	
+  logic [31:0]              mem [8:0];
+(* mark_debug = "true" *)  logic [3:0]               Counter;	
   logic                     CounterEn, CounterRst;
 (* mark_debug = "true" *)  logic [3:0]               Match;
 (* mark_debug = "true" *)  logic                     AllMatch;
 
-  counter #(3) counter(clk, CounterRst, CounterEn, Counter);
+  counter #(4) counter(clk, CounterRst, CounterEn, Counter);
   
   always_ff @(posedge clk) begin
     if(reset) CurrState <= STATE_RST;
@@ -60,7 +60,7 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P,
 
   always_comb begin
     case(CurrState)
-      STATE_RST: if(RvviAxiRvalid & Counter == 3'h6) NextState = STATE_ALL_CAPTURED;
+      STATE_RST: if(RvviAxiRvalid & Counter == 4'h8) NextState = STATE_ALL_CAPTURED;
                  else NextState = STATE_RST;
       STATE_ALL_CAPTURED: if(RvviAxiRlast) NextState = STATE_RST;
                           else NextState = STATE_WAIT;
@@ -91,9 +91,11 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P,
   assign InterPacketDelay = {mem[6][15:0], mem[5][31:16]};
   assign FrameCount = mem[6][31:16];
  -----/\----- EXCLUDED -----/\----- */
-  assign FrameCount = mem[3][31:16];
-  assign Minstr = {mem[5], mem[4]};
-  assign InterPacketDelay = mem[6];
+  //assign FrameCount = mem[3][31:16];
+  // pad mem[3][31:16]
+  assign FrameCount = {mem[5], mem[4]};
+  assign Minstr = {mem[7], mem[6]};
+  assign InterPacketDelay = mem[8];
 
   assign Valid = CurrState == STATE_ALL_CAPTURED & AllMatch;
   

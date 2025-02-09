@@ -33,7 +33,8 @@ module packetizer import cvw::*; #(parameter cvw_t P,
                                    parameter logic [31:0] RVVI_PACKET_DELAY = 32'd2,
                                    parameter              RVVI_WIDTH = 72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16),
                                    parameter              ETH_HEAD_WIDTH = 96,
-                                   parameter              FRAME_COUNT_WIDTH = 16
+                                   parameter              FRAME_COUNT_WIDTH = 64,
+				   parameter              RVVI_PREFIX_PAD = 16
 
 )(
   input logic [RVVI_WIDTH-1:0]         rvvi,
@@ -54,7 +55,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   );
 
   //localparam NearTotalFrameLengthBits = FRAME_COUNT_WIDTH + ETH_HEAD_WIDTH + RVVI_WIDTH;
-  localparam NearTotalFrameLengthBits = ETH_HEAD_WIDTH + RVVI_WIDTH;
+  localparam NearTotalFrameLengthBits = ETH_HEAD_WIDTH + RVVI_PREFIX_PAD + RVVI_WIDTH;
   localparam WordPadLen = 32 - (NearTotalFrameLengthBits % 32);
   localparam TotalFrameLengthBits = NearTotalFrameLengthBits + WordPadLen;
   localparam TotalFrameLengthBytes = TotalFrameLengthBits / 8;
@@ -68,6 +69,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   logic [TotalFrameLengthBits-1:0] TotalFrame;
   logic [31:0] TotalFrameWords [TotalFrameLengthBytes/4-1:0];
   logic [WordPadLen-1:0]     WordPad;
+  logic [RVVI_PREFIX_PAD-1:0] HeaderPad;
 
   logic [RVVI_WIDTH+FRAME_COUNT_WIDTH-1:0] rvviDelay;
   
@@ -129,7 +131,8 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   end
 
   assign WordPad = '0;
-  assign TotalFrame = {WordPad, rvviDelay, EthType, DstMac, SrcMac};
+  assign HeaderPad = '0;
+  assign TotalFrame = {WordPad, rvviDelay, HeaderPad, EthType, DstMac, SrcMac};
 
   
   assign RvviAxiWdata = TotalFrameWords[WordCount[4:0]];

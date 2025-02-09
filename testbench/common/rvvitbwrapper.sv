@@ -269,8 +269,8 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   TransStateType TransCurrState, TransNextState;
 
   logic        TransCounterEn, TransCounterReset;
-  logic [2:0]  TransCounter;
-  logic [31:0] TransMem [6:0];
+  logic [3:0]  TransCounter;
+  logic [31:0] TransMem [8:0];
   logic        TransCounterThreshold;
 
   always_ff @(posedge clk)
@@ -291,27 +291,19 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
     endcase
   end
 
-  assign TransCounterThreshold = TransCounter == 3'd6;
+  assign TransCounterThreshold = TransCounter == 4'd8;
   assign TransCounterEn = RvviAxiWready & TransCurrState == STATE_TRANS;
   assign TransCounterReset = TransCurrState == STATE_RDY;
-  counter #(3) transcounterreg(clk, TransCounterReset, TransCounterEn, TransCounter);
+  counter #(4) transcounterreg(clk, TransCounterReset, TransCounterEn, TransCounter);
   assign TransMem[0] = mem[0]; // dst mac 
   assign TransMem[1] = mem[1]; // dst mac & src mac 
   assign TransMem[2] = mem[2]; // src mac
-  assign TransMem[3] = mem[3]; // eth type & frame count
-  assign TransMem[4][15:0] = mem[8][31:16];  // Minstret
-  assign TransMem[4][31:16] = mem[9][15:0];  // Minstret
-  assign TransMem[5][15:0] = mem[9][31:16];  // Minstret
-  assign TransMem[5][31:16] = mem[10][15:0]; // Minstret
-  assign TransMem[6] = 31'b1;
-  //assign TransMem[3][15:0] = mem[3][15:0];
-  //assign TransMem[3][31:16] = mem[8][31:16];
-  //assign TransMem[4] = mem[9]; 
-  //assign TransMem[5][15:0] = mem[10][15:0];
-  //assign TransMem[5][31:16] = 16'b1;// 32-bit system load lower bits
-  //assign TransMem[6][15:0] = '0; // 32-bit system load  uppwer bits 
-  //assign TransMem[6][31:16] = '0;
-
+  assign TransMem[3] = mem[3]; // eth type & pad
+  assign TransMem[4] = mem[4];  // frame count
+  assign TransMem[5] = mem[5];  // frame count
+  assign TransMem[6] = mem[9];  // Minstret
+  assign TransMem[7] = mem[10];  // Minstret
+  assign TransMem[8] = 31'b1;
   assign RvviAxiWdata = TransMem[TransCounter];
   assign RvviAxiWstrb = '1;
   assign RvviAxiWlast = TransCounterThreshold & TransCurrState == STATE_TRANS & ~DontSend;

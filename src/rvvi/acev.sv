@@ -71,7 +71,8 @@ module acev import cvw::*; #(parameter cvw_t P,
 
   localparam               RVVI_WIDTH = 128+(4*P.XLEN) + MAX_CSRS*(P.XLEN+16);
   localparam               ETH_HEADER_WIDTH = 48*2 + 16;
-  localparam               FRAME_COUNT_WIDTH = 16;
+  localparam		   RVVI_PREFIX_PAD = 16;
+  localparam               FRAME_COUNT_WIDTH = 64;
   
   (* mark_debug = "true" *)    logic [RVVI_WIDTH-1:0] DutRvvi;
 
@@ -114,7 +115,7 @@ module acev import cvw::*; #(parameter cvw_t P,
   assign SrcMac = 48'h4502_1111_6843;
   assign EthType = 16'h005c;
 
-  rvvisynth #(P, MAX_CSRS, TOTAL_CSRS) rvvisynth(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+  rvvisynth #(P, MAX_CSRS, TOTAL_CSRS, RVVI_WIDTH, FRAME_COUNT_WIDTH) rvvisynth(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
       .DutValid, .DutRvvi, .DutFrameCount);
@@ -134,7 +135,8 @@ module acev import cvw::*; #(parameter cvw_t P,
 
   flopenl #(32) hostinterpacketdelayreg(clk, reset, HostInstrValid, HostInterPacketDelay, RVVI_PACKET_DELAY, HostInterPacketDelayD);
 
-  packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, RVVI_WIDTH, ETH_HEADER_WIDTH, FRAME_COUNT_WIDTH) packetizer(.rvvi(PacketizerRvvi), .valid(PacketizerRvviValid), .m_axi_aclk(clk),
+  packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, RVVI_WIDTH, ETH_HEADER_WIDTH, FRAME_COUNT_WIDTH, RVVI_PREFIX_PAD) 
+  packetizer(.rvvi(PacketizerRvvi), .valid(PacketizerRvviValid), .m_axi_aclk(clk),
      .m_axi_aresetn(~reset), .RVVIStall,
     .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready, .SrcMac, .DstMac, .EthType, 
     .InnerPktDelay(HostInterPacketDelayD), .FrameCount(PacketizerFrameCount));
