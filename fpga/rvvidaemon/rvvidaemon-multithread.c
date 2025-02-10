@@ -57,7 +57,7 @@
 //#define E_TARGET_CLOCK 25000
 //#define E_TARGET_CLOCK 80000
 //#define E_TARGET_CLOCK 60000
-#define E_TARGET_CLOCK 72000
+#define E_TARGET_CLOCK 69000
 #define SYSTEM_CLOCK 50000000
 #define INNER_PKT_DELAY (SYSTEM_CLOCK / E_TARGET_CLOCK)
 
@@ -98,6 +98,8 @@
 uint64_t EXT_MEM_BASE =  0x80000000;
 uint64_t EXT_MEM_RANGE = 0x7FFFFFFF;
 #define NUM_PMP_REGS 16
+
+//#define MAX_64 ((uint64_t) 1 << (uint64_t) 64)
 
 typedef struct {
   uint64_t MCycleHistory[HIST_LEN];
@@ -420,8 +422,8 @@ void * ReceiveLoop(void * arg){
   int count = 0;
   int result;
   uint64_t DstMAC;
-  uint16_t Sequence, LastSequence;
-  LastSequence = 0xffff;
+  uint64_t Sequence, LastSequence;
+  LastSequence = 0xffffffffffffffff;//(MAX_64 - 1);
   LogFile = fopen("receive-log.txt", "w");
   if(LogFile == NULL) {
     printf("Error opening receive.txt for writing!");   
@@ -435,16 +437,17 @@ void * ReceiveLoop(void * arg){
   DstMAC = DstMAC & 0xFFFFFFFFFFFF;
   if(DstMAC == DEST_MAC){
     RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes + 2);
-    Sequence = *(uint16_t *) (buf + headerbytes);
-    if(Sequence == (LastSequence + 1) % 65536){
+    Sequence = InstructionDataPtr->Sequence;
+    if(Sequence == (LastSequence + 1)){
       Enqueue(InstructionDataPtr, InstructionQueue);
       LastSequence = Sequence;
     }
 
-    ((uint16_t*) (AckBuf + AckLen))[0] = *(uint16_t *) (buf + headerbytes);
-    ((uint64_t*) (AckBuf + AckLen+2))[0] = 0;
-    ((uint32_t*) (AckBuf + AckLen + 10))[0] = INNER_PKT_DELAY;
-    if (sendto(sockfd, AckBuf, AckLen + 14, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
+    ((uint16_t*) (AckBuf + AckLen))[0] = 0;
+    ((uint64_t*) (AckBuf + AckLen + 2))[0] = InstructionDataPtr->Sequence;
+    ((uint64_t*) (AckBuf + AckLen + 10))[0] = 0;
+    ((uint32_t*) (AckBuf + AckLen + 18))[0] = INNER_PKT_DELAY;
+    if (sendto(sockfd, AckBuf, AckLen + 22, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
 
     pthread_cond_signal(&StartCond);  // send message to other thread to slow down
   }
@@ -466,17 +469,18 @@ void * ReceiveLoop(void * arg){
     DstMAC = DstMAC & 0xFFFFFFFFFFFF;
     if(DstMAC == DEST_MAC){
       RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes + 2);
-      Sequence = *(uint16_t *) (buf + headerbytes);
-      if(Sequence == (LastSequence + 1) % 65536){
+      Sequence = InstructionDataPtr->Sequence;
+      if(Sequence == (LastSequence + 1)){
         Enqueue(InstructionDataPtr, InstructionQueue);
-        LastSequence = Sequence;
+	LastSequence = Sequence;
       }
       //      Enqueue(InstructionDataPtr, InstructionQueue);
 
-      ((uint16_t*) (AckBuf + AckLen))[0] = *(uint16_t *) (buf + headerbytes);
-      ((uint64_t*) (AckBuf + AckLen+2))[0] = 0;
-      ((uint32_t*) (AckBuf + AckLen + 10))[0] = INNER_PKT_DELAY + 8 * QueueDepth;
-      if (sendto(sockfd, AckBuf, AckLen + 14, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
+      ((uint16_t*) (AckBuf + AckLen))[0] = 0;
+      ((uint64_t*) (AckBuf + AckLen + 2))[0] = InstructionDataPtr->Sequence;
+      ((uint64_t*) (AckBuf + AckLen + 10))[0] = 0;
+      ((uint32_t*) (AckBuf + AckLen + 18))[0] = INNER_PKT_DELAY + 8 * QueueDepth;
+      if (sendto(sockfd, AckBuf, AckLen + 22, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
 
     }
     if(count == RATE_SET_THREAHOLD){
@@ -735,10 +739,8 @@ void PrintInstructionData(RequiredRVVI_t *InstructionData, History_t *History){
   }
   if(InstructionData->CSRCount > 0) {
     printf( ", Num CSR = %d", InstructionData->CSRCount);
-    for(CSRIndex = 0; CSRIndex < MAX_CSRS; CSRIndex++){
-      if(InstructionData->CSRReg[CSRIndex] != 0){
-	printf(", CSR[%x] = %lx", InstructionData->CSRReg[CSRIndex], InstructionData->CSRValue[CSRIndex]);
-      }
+    for(CSRIndex = 0; CSRIndex < InstructionData->CSRCount; CSRIndex++){
+      printf(", CSR[%x] = %lx", InstructionData->CSRReg[CSRIndex], InstructionData->CSRValue[CSRIndex]);
     }
   }
   double freq = UpdateHistory(InstructionData, History);

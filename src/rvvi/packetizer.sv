@@ -55,7 +55,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   );
 
   //localparam NearTotalFrameLengthBits = FRAME_COUNT_WIDTH + ETH_HEAD_WIDTH + RVVI_WIDTH;
-  localparam NearTotalFrameLengthBits = ETH_HEAD_WIDTH + RVVI_PREFIX_PAD + RVVI_WIDTH;
+  localparam NearTotalFrameLengthBits = ETH_HEAD_WIDTH + RVVI_PREFIX_PAD + FRAME_COUNT_WIDTH + RVVI_WIDTH;
   localparam WordPadLen = 32 - (NearTotalFrameLengthBits % 32);
   localparam TotalFrameLengthBits = NearTotalFrameLengthBits + WordPadLen;
   localparam TotalFrameLengthBytes = TotalFrameLengthBits / 8;

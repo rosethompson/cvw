@@ -12,6 +12,7 @@ typedef struct {
 
 //typedef struct __attribute__((packed)) {
 typedef struct {
+  uint64_t Sequence;
   uint64_t PC;
   uint64_t Mcycle;
   uint64_t Minstret;
