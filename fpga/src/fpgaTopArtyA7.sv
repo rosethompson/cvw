@@ -591,7 +591,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     
 /* -----\/----- EXCLUDED -----\/-----
 
-    rvvisynth #(P, MAX_CSRS) rvvisynth(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+    rvviprobes #(P, MAX_CSRS) rvviprobes(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
       .valid, .rvvi);

@@ -1,5 +1,5 @@
 ///////////////////////////////////////////
-// rvvisynth.sv
+// rvviprobes.sv
 //
 // Written: Rose Thompson rose@rosethompson.net
 // Created: 23 January 2024
@@ -27,7 +27,7 @@
 // and limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-module rvvisynth import cvw::*; #(parameter cvw_t P,
+module rvviprobes import cvw::*; #(parameter cvw_t P,
                                   parameter integer MAX_CSRS = 5, 
                                   parameter integer TOTAL_CSRS = 36,
                                   parameter         RVVI_WIDTH = 128+(4*P.XLEN) + MAX_CSRS*(P.XLEN+16),
