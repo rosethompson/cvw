@@ -150,7 +150,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   assign CSRArray[34] = dut.core.priv.priv.csr.csru.csru.FRM_REGW; // 12'h002
   assign CSRArray[35] = {dut.core.priv.priv.csr.csru.csru.FRM_REGW, dut.core.priv.priv.csr.csru.csru.FFLAGS_REGW}; // 12'h003
 
-    acev #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, ETH_WIDTH, "GENERIC") acev(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+    hwrvvitracer #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, ETH_WIDTH, "GENERIC") hwrvvitracer(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
       .phy_rx_clk,
@@ -172,7 +172,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   counter #(32) ethernexttxcounter(clk, reset, EthernetTXCounterEn, EthernetTXCount);
 
 
-  // receive the rvvi packets from acev. Remove instruction's data except for Minstret. Then add 32-bit kind of random value which represents the load on the host computer.
+  // receive the rvvi packets from hwrvvitracer. Remove instruction's data except for Minstret. Then add 32-bit kind of random value which represents the load on the host computer.
   // Finally drop some frames.
 
     // axi 4 write data channel

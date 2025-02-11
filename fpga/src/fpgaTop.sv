@@ -573,7 +573,7 @@ module fpgaTop  #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
 						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+1],
 						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+0]};
     end
-    acev #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, 8, "XILINX") acev(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+    hwrvvitracer #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, 8, "XILINX") hwrvvitracer(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
       .phy_rx_clk(phy_gmii_clk_int),

@@ -267,72 +267,72 @@ connect_debug_port u_ila_0/probe48 [get_nets [list {wallypipelinedsoc/core/priv.
 create_debug_port u_ila_0 probe
 set_property port_width 8 [get_debug_ports u_ila_0/probe49]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe49]
-connect_debug_port u_ila_0/probe49 [get_nets [list {rvvi_synth.acev/phy_txd[0]} {rvvi_synth.acev/phy_txd[1]} {rvvi_synth.acev/phy_txd[2]} {rvvi_synth.acev/phy_txd[3]} {rvvi_synth.acev/phy_txd[4]} {rvvi_synth.acev/phy_txd[5]} {rvvi_synth.acev/phy_txd[6]} {rvvi_synth.acev/phy_txd[7]}]]
+connect_debug_port u_ila_0/probe49 [get_nets [list {rvvi_synth.hwrvvitracer/phy_txd[0]} {rvvi_synth.hwrvvitracer/phy_txd[1]} {rvvi_synth.hwrvvitracer/phy_txd[2]} {rvvi_synth.hwrvvitracer/phy_txd[3]} {rvvi_synth.hwrvvitracer/phy_txd[4]} {rvvi_synth.hwrvvitracer/phy_txd[5]} {rvvi_synth.hwrvvitracer/phy_txd[6]} {rvvi_synth.hwrvvitracer/phy_txd[7]}]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 1 [get_debug_ports u_ila_0/probe50]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe50]
-connect_debug_port u_ila_0/probe50 [get_nets [list {rvvi_synth.acev/phy_tx_en}]]
+connect_debug_port u_ila_0/probe50 [get_nets [list {rvvi_synth.hwrvvitracer/phy_tx_en}]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 32 [get_debug_ports u_ila_0/probe51]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe51]
-connect_debug_port u_ila_0/probe51 [get_nets [list {rvvi_synth.acev/RvviAxiWdata[0]} {rvvi_synth.acev/RvviAxiWdata[1]} {rvvi_synth.acev/RvviAxiWdata[2]} {rvvi_synth.acev/RvviAxiWdata[3]} {rvvi_synth.acev/RvviAxiWdata[4]} {rvvi_synth.acev/RvviAxiWdata[5]} {rvvi_synth.acev/RvviAxiWdata[6]} {rvvi_synth.acev/RvviAxiWdata[7]} {rvvi_synth.acev/RvviAxiWdata[8]} {rvvi_synth.acev/RvviAxiWdata[9]} {rvvi_synth.acev/RvviAxiWdata[10]} {rvvi_synth.acev/RvviAxiWdata[11]} {rvvi_synth.acev/RvviAxiWdata[12]} {rvvi_synth.acev/RvviAxiWdata[13]} {rvvi_synth.acev/RvviAxiWdata[14]} {rvvi_synth.acev/RvviAxiWdata[15]} {rvvi_synth.acev/RvviAxiWdata[16]} {rvvi_synth.acev/RvviAxiWdata[17]} {rvvi_synth.acev/RvviAxiWdata[18]} {rvvi_synth.acev/RvviAxiWdata[19]} {rvvi_synth.acev/RvviAxiWdata[20]} {rvvi_synth.acev/RvviAxiWdata[21]} {rvvi_synth.acev/RvviAxiWdata[22]} {rvvi_synth.acev/RvviAxiWdata[23]} {rvvi_synth.acev/RvviAxiWdata[24]} {rvvi_synth.acev/RvviAxiWdata[25]} {rvvi_synth.acev/RvviAxiWdata[26]} {rvvi_synth.acev/RvviAxiWdata[27]} {rvvi_synth.acev/RvviAxiWdata[28]} {rvvi_synth.acev/RvviAxiWdata[29]} {rvvi_synth.acev/RvviAxiWdata[30]} {rvvi_synth.acev/RvviAxiWdata[31]} ]]
+connect_debug_port u_ila_0/probe51 [get_nets [list {rvvi_synth.hwrvvitracer/RvviAxiWdata[0]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[1]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[2]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[3]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[4]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[5]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[6]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[7]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[8]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[9]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[10]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[11]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[12]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[13]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[14]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[15]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[16]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[17]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[18]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[19]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[20]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[21]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[22]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[23]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[24]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[25]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[26]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[27]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[28]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[29]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[30]} {rvvi_synth.hwrvvitracer/RvviAxiWdata[31]} ]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 1 [get_debug_ports u_ila_0/probe52]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe52]
-connect_debug_port u_ila_0/probe52 [get_nets [list {rvvi_synth.acev/RvviAxiWlast}]]
+connect_debug_port u_ila_0/probe52 [get_nets [list {rvvi_synth.hwrvvitracer/RvviAxiWlast}]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 1 [get_debug_ports u_ila_0/probe53]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe53]
-connect_debug_port u_ila_0/probe53 [get_nets [list {rvvi_synth.acev/RvviAxiWvalid}]]
+connect_debug_port u_ila_0/probe53 [get_nets [list {rvvi_synth.hwrvvitracer/RvviAxiWvalid}]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 1 [get_debug_ports u_ila_0/probe54]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe54]
-connect_debug_port u_ila_0/probe54 [get_nets [list {rvvi_synth.acev/RvviAxiWready}]]
+connect_debug_port u_ila_0/probe54 [get_nets [list {rvvi_synth.hwrvvitracer/RvviAxiWready}]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 1 [get_debug_ports u_ila_0/probe55]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe55]
-connect_debug_port u_ila_0/probe55 [get_nets [list {rvvi_synth.acev/phy_tx_er}]]
+connect_debug_port u_ila_0/probe55 [get_nets [list {rvvi_synth.hwrvvitracer/phy_tx_er}]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 1 [get_debug_ports u_ila_0/probe56]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe56]
-connect_debug_port u_ila_0/probe56 [get_nets [list {rvvi_synth.acev/HostRequestSlowDown}]]
+connect_debug_port u_ila_0/probe56 [get_nets [list {rvvi_synth.hwrvvitracer/HostRequestSlowDown}]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 1 [get_debug_ports u_ila_0/probe57]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe57]
-connect_debug_port u_ila_0/probe57 [get_nets [list {rvvi_synth.acev/genslowframe/PendingHostRequest}]]
+connect_debug_port u_ila_0/probe57 [get_nets [list {rvvi_synth.hwrvvitracer/genslowframe/PendingHostRequest}]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 10 [get_debug_ports u_ila_0/probe58]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe58]
-connect_debug_port u_ila_0/probe58 [get_nets [list {rvvi_synth.acev/genslowframe/ConcurrentCount[0]} {rvvi_synth.acev/genslowframe/ConcurrentCount[1]} {rvvi_synth.acev/genslowframe/ConcurrentCount[2]} {rvvi_synth.acev/genslowframe/ConcurrentCount[3]} {rvvi_synth.acev/genslowframe/ConcurrentCount[4]} {rvvi_synth.acev/genslowframe/ConcurrentCount[5]} {rvvi_synth.acev/genslowframe/ConcurrentCount[6]} {rvvi_synth.acev/genslowframe/ConcurrentCount[7]} {rvvi_synth.acev/genslowframe/ConcurrentCount[8]} {rvvi_synth.acev/genslowframe/ConcurrentCount[9]}]]
+connect_debug_port u_ila_0/probe58 [get_nets [list {rvvi_synth.hwrvvitracer/genslowframe/ConcurrentCount[0]} {rvvi_synth.hwrvvitracer/genslowframe/ConcurrentCount[1]} {rvvi_synth.hwrvvitracer/genslowframe/ConcurrentCount[2]} {rvvi_synth.hwrvvitracer/genslowframe/ConcurrentCount[3]} {rvvi_synth.hwrvvitracer/genslowframe/ConcurrentCount[4]} {rvvi_synth.hwrvvitracer/genslowframe/ConcurrentCount[5]} {rvvi_synth.hwrvvitracer/genslowframe/ConcurrentCount[6]} {rvvi_synth.hwrvvitracer/genslowframe/ConcurrentCount[7]} {rvvi_synth.hwrvvitracer/genslowframe/ConcurrentCount[8]} {rvvi_synth.hwrvvitracer/genslowframe/ConcurrentCount[9]}]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 17 [get_debug_ports u_ila_0/probe59]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe59]
-connect_debug_port u_ila_0/probe59 [get_nets [list {rvvi_synth.acev/genslowframe/Count[0]} {rvvi_synth.acev/genslowframe/Count[1]} {rvvi_synth.acev/genslowframe/Count[2]} {rvvi_synth.acev/genslowframe/Count[3]} {rvvi_synth.acev/genslowframe/Count[4]} {rvvi_synth.acev/genslowframe/Count[5]} {rvvi_synth.acev/genslowframe/Count[6]} {rvvi_synth.acev/genslowframe/Count[7]} {rvvi_synth.acev/genslowframe/Count[8]} {rvvi_synth.acev/genslowframe/Count[9]} {rvvi_synth.acev/genslowframe/Count[10]} {rvvi_synth.acev/genslowframe/Count[11]} {rvvi_synth.acev/genslowframe/Count[12]} {rvvi_synth.acev/genslowframe/Count[13]} {rvvi_synth.acev/genslowframe/Count[14]} {rvvi_synth.acev/genslowframe/Count[15]} {rvvi_synth.acev/genslowframe/Count[16]} ]]
+connect_debug_port u_ila_0/probe59 [get_nets [list {rvvi_synth.hwrvvitracer/genslowframe/Count[0]} {rvvi_synth.hwrvvitracer/genslowframe/Count[1]} {rvvi_synth.hwrvvitracer/genslowframe/Count[2]} {rvvi_synth.hwrvvitracer/genslowframe/Count[3]} {rvvi_synth.hwrvvitracer/genslowframe/Count[4]} {rvvi_synth.hwrvvitracer/genslowframe/Count[5]} {rvvi_synth.hwrvvitracer/genslowframe/Count[6]} {rvvi_synth.hwrvvitracer/genslowframe/Count[7]} {rvvi_synth.hwrvvitracer/genslowframe/Count[8]} {rvvi_synth.hwrvvitracer/genslowframe/Count[9]} {rvvi_synth.hwrvvitracer/genslowframe/Count[10]} {rvvi_synth.hwrvvitracer/genslowframe/Count[11]} {rvvi_synth.hwrvvitracer/genslowframe/Count[12]} {rvvi_synth.hwrvvitracer/genslowframe/Count[13]} {rvvi_synth.hwrvvitracer/genslowframe/Count[14]} {rvvi_synth.hwrvvitracer/genslowframe/Count[15]} {rvvi_synth.hwrvvitracer/genslowframe/Count[16]} ]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 3 [get_debug_ports u_ila_0/probe60]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe60]
-connect_debug_port u_ila_0/probe60 [get_nets [list {rvvi_synth.acev/genslowframe/CurrState[0]} {rvvi_synth.acev/genslowframe/CurrState[1]} {rvvi_synth.acev/genslowframe/CurrState[2]} ]]
+connect_debug_port u_ila_0/probe60 [get_nets [list {rvvi_synth.hwrvvitracer/genslowframe/CurrState[0]} {rvvi_synth.hwrvvitracer/genslowframe/CurrState[1]} {rvvi_synth.hwrvvitracer/genslowframe/CurrState[2]} ]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 1 [get_debug_ports u_ila_0/probe61]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe61]
-connect_debug_port u_ila_0/probe61 [get_nets [list {rvvi_synth.acev/RVVIStall}]]
+connect_debug_port u_ila_0/probe61 [get_nets [list {rvvi_synth.hwrvvitracer/RVVIStall}]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 1 [get_debug_ports u_ila_0/probe62]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe62]
-connect_debug_port u_ila_0/probe62 [get_nets [list {rvvi_synth.acev/HostStall}]]
+connect_debug_port u_ila_0/probe62 [get_nets [list {rvvi_synth.hwrvvitracer/HostStall}]]
 
 
 # the debug hub has issues with the clocks from the mmcm so lets give up an connect to the 100Mhz input clock.

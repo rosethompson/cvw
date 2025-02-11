@@ -377,12 +377,12 @@ module testbench;
         ProgramAddrMapFile = {RISCV_DIR, "/buildroot/output/images/disassembly/vmlinux.objdump.addr"};
         ProgramLabelMapFile = {RISCV_DIR, "/buildroot/output/images/disassembly/vmlinux.objdump.lab"};
       end else if(TEST == "rvvicheckpoint") begin
-        memfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-memory.bin"};
-        GPRmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-GPR.bin"};
-        FPRmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-FPR.bin"};
-        PCmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-PC.bin"};
-        CSRmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-CSR.bin"};
-        Privmemfilename = {WALLY_DIR, "/tests/custom/acev-dump/rvvicheckpoint-PrivilegeMode.bin"};
+        memfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-memory.bin"};
+        GPRmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-GPR.bin"};
+        FPRmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-FPR.bin"};
+        PCmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-PC.bin"};
+        CSRmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-CSR.bin"};
+        Privmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-PrivilegeMode.bin"};
         elffilename = "buildroot";
         ProgramAddrMapFile = "None";
         ProgramLabelMapFile = "None";
