@@ -55,9 +55,9 @@
 //#define PRINT_THRESHOLD 8192
 #define LOG_THRESHOLD 0x8000000 // ~128 Million instruction
 //#define E_TARGET_CLOCK 25000
-//#define E_TARGET_CLOCK 80000
+#define E_TARGET_CLOCK 95000
 //#define E_TARGET_CLOCK 60000
-#define E_TARGET_CLOCK 69000
+//#define E_TARGET_CLOCK 69000
 #define SYSTEM_CLOCK 50000000
 #define INNER_PKT_DELAY (SYSTEM_CLOCK / E_TARGET_CLOCK)
 
@@ -653,7 +653,7 @@ int ProcessRvviAll(RequiredRVVI_t *InstructionData, History_t * History){
   if(InstructionData->GPREn) rvviDutGprSet(0, InstructionData->GPRReg, InstructionData->GPRValue);
   if(InstructionData->FPREn) rvviDutFprSet(0, InstructionData->FPRReg, InstructionData->GPRValue);
   if(InstructionData->CSRCount > 0) {
-    int TotalCSRs = MAX_CSRS >= InstructionData->CSRCount ? MAX_CSRS : InstructionData->CSRCount;
+    int TotalCSRs = MAX_CSRS <= InstructionData->CSRCount ? MAX_CSRS : InstructionData->CSRCount;
     for(CSRIndex = 0; CSRIndex < TotalCSRs; CSRIndex++){
       if(InstructionData->CSRReg[CSRIndex] != 0){
         rvviDutCsrSet(0, InstructionData->CSRReg[CSRIndex], InstructionData->CSRValue[CSRIndex]);

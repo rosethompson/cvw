@@ -28,6 +28,7 @@ typedef struct {
   uint64_t GPRValue; // or FPRValue
   uint64_t CSRValue[MAXCSRS];
   uint16_t CSRReg[MAXCSRS];
+  uint16_t Pad16;
 } RequiredRVVI_t; // 920 bits
 
 #endif
