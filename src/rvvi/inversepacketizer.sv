@@ -35,24 +35,71 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P,
   input logic               RvviAxiRlast,
   input logic               RvviAxiRvalid,
   output logic              Valid,
+  output logic              IlaTrigger,
 (* mark_debug = "true" *)  output logic [P.XLEN-1:0] Minstr,
   output logic [31:0]       InterPacketDelay,
 (* mark_debug = "true" *)  output logic [FRAME_COUNT_WIDTH-1:0] FrameCount,
   input logic [47:0]        DstMac,
   input logic [47:0]        SrcMac,
-  input logic [15:0]        EthType);
+  input logic [15:0]        EthType,
+  input logic [15:0]        AckType,
+  input logic [15:0]        TriggerType,
+  input logic [32*5-1:0]    TriggerString);
 
   typedef enum              {STATE_RST, STATE_ALL_CAPTURED, STATE_WAIT} statetype;
 (* mark_debug = "true" *)  statetype CurrState, NextState;
 
-  logic [31:0]              mem [8:0];
 (* mark_debug = "true" *)  logic [3:0]               Counter;	
   logic                     CounterEn, CounterRst;
-(* mark_debug = "true" *)  logic [3:0]               Match;
-(* mark_debug = "true" *)  logic                     AllMatch;
+
+  logic [31:0]		    ROM [3:0];
+  logic [31:0]		    Mask;
+  logic [31:0]		    ROMReadData;
+  logic [31:0]		    Rdata;
+  logic			    CurrentMatch;
+  logic [3:0]		    BeatMatch;
+  logic			    NewFrame;
+  logic			    MatchAll;
+  logic			    TriggerTypeSig, AckTypeSig;
+  logic			    TriggerTypeSigDelay, AckTypeSigDelay;
+  logic [31:0]		    FrameCountLow, FrameCountHigh;
+
+  logic [31:0]		    TriggerROM[8:0];
+  logic			    CurrentTriggerMatch;
+  logic			    TriggerReadData;
+  logic			    TriggerRegEn;
+  logic			    NextTriggerSig;
+  logic			    TriggerPulse;
+  genvar		    index;
+    
+  assign ROM[0] = DstMac[31:0];
+  assign ROM[1] = {SrcMac[15:0], DstMac[47:32]};
+  assign ROM[2] = SrcMac[47:16];
+  assign ROM[3] = {16'b0, EthType};
+  assign ROMReadData = ROM[Counter[1:0]];
+  assign Mask = Counter == 4'd3 ? 32'h0000ffff : '1;
+  assign Rdata = RvviAxiRdata & Mask;
+  assign CurrentMatch = Rdata == ROMReadData;
+  assign NewFrame = reset | RvviAxiRlast;
+  
+  flopenr #(1) matchreg0 (clk, NewFrame, CurrentMatch & Counter == 4'd0, CurrentMatch, BeatMatch[0]);
+  flopenr #(1) matchreg1 (clk, NewFrame, CurrentMatch & Counter == 4'd1, CurrentMatch, BeatMatch[1]);
+  flopenr #(1) matchreg2 (clk, NewFrame, CurrentMatch & Counter == 4'd2, CurrentMatch, BeatMatch[2]);
+  flopenr #(1) matchreg3 (clk, NewFrame, CurrentMatch & Counter == 4'd3, CurrentMatch, BeatMatch[3]);
+  assign MatchAll = &BeatMatch;  
 
   counter #(4) counter(clk, CounterRst, CounterEn, Counter);
+
+  flopenr #(32) framecountlowreg(clk, reset, Counter == 4'd4 & MatchAll & RvviAxiRvalid, RvviAxiRdata, FrameCount[31:0]);
+  flopenr #(32) framecounthighreg(clk, reset, Counter == 4'd5 & MatchAll & RvviAxiRvalid, RvviAxiRdata, FrameCount[63:32]);
+  flopenr #(32) interpacketdelayreg(clk, reset, Counter == 4'd8 & MatchAll & RvviAxiRvalid, RvviAxiRdata, InterPacketDelay);
+
+  assign TriggerTypeSig = RvviAxiRdata[31:16] == TriggerType;
+  assign AckTypeSig = RvviAxiRdata[31:16] == AckType;
+
+  flopenr #(1) acktypereg(clk, NewFrame, CurrentMatch & Counter == 4'd3, AckTypeSig, AckTypeSigDelay);
   
+    
   always_ff @(posedge clk) begin
     if(reset) CurrState <= STATE_RST;
     else      CurrState <= NextState;
@@ -73,31 +120,37 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P,
   assign CounterRst = RvviAxiRlast | reset;
   assign CounterEn = RvviAxiRvalid;
 
-  always_ff @(posedge clk) begin
-    if(RvviAxiRvalid) begin
-      mem[Counter] <= RvviAxiRdata;
-    end
+  assign Minstr = '0;
+
+  assign Valid = CurrState == STATE_ALL_CAPTURED & MatchAll & AckTypeSigDelay;
+
+
+  // trigger logic
+  for(index = 0; index < 5; index++) begin
+    assign TriggerROM[index+4] = TriggerString[index*32+31:index*32];
   end
+  assign TriggerReadData = TriggerROM[Counter];
+  assign CurrentTriggerMatch = TriggerReadData == RvviAxiRdata;
 
-  // *** This is very inefficient. Can reduce to a single compare.
-  assign Match[0] = mem[0] == DstMac[31:0];
-  assign Match[1] = mem[1] == {SrcMac[15:0], DstMac[47:32]};
-  assign Match[2] = mem[2] == SrcMac[47:16];
-  assign Match[3] = mem[3][15:0] == EthType;
-  assign AllMatch = &Match;
+  assign TriggerRegEn = (CurrentMatch & Counter == 4'd3 & RvviAxiRvalid) |
+			(CurrentTriggerMatch & Counter[3:2] == 2'b10 & RvviAxiRvalid) | // 4, 5, 6, 7
+			(CurrentTriggerMatch & Counter == 4'd8 & RvviAxiRvalid) ;
+  mux2 #(1) triggermux(CurrentTriggerMatch & TriggerTypeSigDelay, TriggerTypeSig, Counter == 4'd3,
+		       NextTriggerSig);
   
-/* -----\/----- EXCLUDED -----\/-----
-  assign Minstr = {mem[5][15:0], mem[4], mem[3][31:16]};
-  assign InterPacketDelay = {mem[6][15:0], mem[5][31:16]};
-  assign FrameCount = mem[6][31:16];
- -----/\----- EXCLUDED -----/\----- */
-  //assign FrameCount = mem[3][31:16];
-  // pad mem[3][31:16]
-  assign FrameCount = {mem[5], mem[4]};
-  assign Minstr = {mem[7], mem[6]};
-  assign InterPacketDelay = mem[8];
+  flopenr #(1) triggertypereg(clk, NewFrame, TriggerRegEn, 
+			      NextTriggerSig, TriggerTypeSigDelay);
+  
+  assign TriggerPulse = CurrState == STATE_ALL_CAPTURED & MatchAll & TriggerTypeSigDelay;
 
-  assign Valid = CurrState == STATE_ALL_CAPTURED & AllMatch;
+  // this is a bit hacky, but it works!
+  logic [3:0] TriggerCount;
+  logic       TriggerReset, TriggerEn;
+  counter #(4) triggercounter(clk, reset | TriggerReset, TriggerEn, TriggerCount);
+  assign TriggerReset = TriggerCount == 4'd10;
+  assign TriggerEn = TriggerPulse | (TriggerCount != 4'd0 & TriggerCount < 4'd10);
+  assign IlaTrigger = TriggerEn;
+
   
 
 endmodule

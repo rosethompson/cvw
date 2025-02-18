@@ -50,6 +50,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   input logic                          RvviAxiWready,
   input logic [47:0]                   SrcMac, DstMac,
   input logic [15:0]                   EthType,
+  input logic [15:0]                   AckType,
   (* mark_debug = "true" *)  input logic [31:0] InnerPktDelay,
   input logic [FRAME_COUNT_WIDTH-1:0] FrameCount
   );
@@ -132,7 +133,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
 
   assign WordPad = '0;
   assign HeaderPad = '0;
-  assign TotalFrame = {WordPad, rvviDelay, HeaderPad, EthType, DstMac, SrcMac};
+  assign TotalFrame = {WordPad, rvviDelay, AckType, EthType, DstMac, SrcMac};
 
   
   assign RvviAxiWdata = TotalFrameWords[WordCount[4:0]];

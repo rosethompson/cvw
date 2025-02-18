@@ -100,7 +100,7 @@ module hwrvvitracer import cvw::*; #(parameter cvw_t P,
   logic [P.XLEN-1:0]       HostMinstr;
 
   logic [47:0]             SrcMac, DstMac;
-  logic [15:0]             EthType;
+  logic [15:0]             EthType, AckType, TriggerType;
   (* mark_debug = "true" *) logic                    SelActiveList, PacketizerRvviValid;
   (* mark_debug = "true" *) logic [RVVI_WIDTH-1:0]   ActiveListRvvi, PacketizerRvvi;
   logic                    ActiveListStall;
@@ -108,13 +108,16 @@ module hwrvvitracer import cvw::*; #(parameter cvw_t P,
   logic [FRAME_COUNT_WIDTH-1:0] DutFrameCount;
   logic [FRAME_COUNT_WIDTH-1:0] HostFrameCount, PacketizerFrameCount, ActiveListFrameCount;
   (* mark_debug = "true" *) logic                         DutValid;
-  
+// "igin" (trigin)__"rt", ether type 005c__src mac [47:16]__src mac [15:0], dst mac [47:32]__dst mac [31:0]
+    assign TriggerString = 160'h6e69_6769__7274_005c__8f54_0000__1654_4502__1111_6843;
       
   // *** fix me later
   assign DstMac = 48'h8F54_0000_1654; // made something up
   assign SrcMac = 48'h4502_1111_6843;
   assign EthType = 16'h005c;
-
+  assign AckType = 16'h6B61;
+  assign TriggerType = 16'h736D;
+  
   rvviprobes #(P, MAX_CSRS, TOTAL_CSRS, RVVI_WIDTH, FRAME_COUNT_WIDTH) rvviprobes(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
@@ -131,14 +134,14 @@ module hwrvvitracer import cvw::*; #(parameter cvw_t P,
   
 
   inversepacketizer #(P, FRAME_COUNT_WIDTH) inversepacketizer (.clk, .reset, .RvviAxiRdata, .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid,
-    .Valid(HostInstrValid), .Minstr(HostMinstr), .InterPacketDelay(HostInterPacketDelay), .FrameCount(HostFrameCount), .DstMac(SrcMac), .SrcMac(DstMac), .EthType);
+    .Valid(HostInstrValid), .IlaTrigger, .Minstr(HostMinstr), .InterPacketDelay(HostInterPacketDelay), .FrameCount(HostFrameCount), .DstMac(SrcMac), .SrcMac(DstMac), .EthType, .AckType, .TriggerType, .TriggerString);
 
   flopenl #(32) hostinterpacketdelayreg(clk, reset, HostInstrValid, HostInterPacketDelay, RVVI_PACKET_DELAY, HostInterPacketDelayD);
 
   packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, RVVI_WIDTH, ETH_HEADER_WIDTH, FRAME_COUNT_WIDTH, RVVI_PREFIX_PAD) 
   packetizer(.rvvi(PacketizerRvvi), .valid(PacketizerRvviValid), .m_axi_aclk(clk),
      .m_axi_aresetn(~reset), .RVVIStall,
-    .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready, .SrcMac, .DstMac, .EthType, 
+    .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready, .SrcMac, .DstMac, .EthType, .AckType,
     .InnerPktDelay(HostInterPacketDelayD), .FrameCount(PacketizerFrameCount));
 
   assign ExternalStall = RVVIStall | ActiveListStall;
@@ -191,11 +194,11 @@ module hwrvvitracer import cvw::*; #(parameter cvw_t P,
                );
     end
 
-// "igin" (trigin)__"rt", ether type 005c__src mac [47:16]__src mac [15:0], dst mac [47:32]__dst mac [31:0]
-    assign TriggerString = 160'h6e69_6769__7274_005c__8f54_0000__1654_4502__1111_6843;
 
+/* -----\/----- EXCLUDED -----\/-----
     triggergen triggergen(.clk, .reset, .CompareString(TriggerString), .RvviAxiRdata,
       .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger, .TriggerMessage());  
+ -----/\----- EXCLUDED -----/\----- */
 
   
 endmodule
