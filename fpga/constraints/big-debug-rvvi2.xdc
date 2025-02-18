@@ -145,9 +145,9 @@ set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe25]
 connect_debug_port u_ila_0/probe25 [get_nets [list {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[0]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[1]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[2]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[3]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[4]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[5]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[6]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[7]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[8]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[9]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[10]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[11]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[12]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[13]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[14]} {rvvi_synth.hwrvvitracer/rvviactivelist/HostMatchingActiveBits[15]} ]]
 
 create_debug_port u_ila_0 probe
-set_property port_width 4 [get_debug_ports u_ila_0/probe26]
+set_property port_width 1 [get_debug_ports u_ila_0/probe26]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe26]
-connect_debug_port u_ila_0/probe26 [get_nets [list {rvvi_synth.hwrvvitracer/inversepacketizer/Match[0]} {rvvi_synth.hwrvvitracer/inversepacketizer/Match[1]} {rvvi_synth.hwrvvitracer/inversepacketizer/Match[2]} {rvvi_synth.hwrvvitracer/inversepacketizer/Match[3]}  ]]
+connect_debug_port u_ila_0/probe26 [get_nets [list {rvvi_synth.hwrvvitracer/rvviactivelist/ActiveListStall} ]]
 
 create_debug_port u_ila_0 probe
 set_property port_width 1 [get_debug_ports u_ila_0/probe27]
@@ -234,10 +234,6 @@ set_property port_width 1 [get_debug_ports u_ila_0/probe43]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe43]
 connect_debug_port u_ila_0/probe43 [get_nets [list {rvvi_synth.hwrvvitracer/rvviactivelist/Empty} ]]
 
-create_debug_port u_ila_0 probe
-set_property port_width 1 [get_debug_ports u_ila_0/probe44]
-set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe44]
-connect_debug_port u_ila_0/probe44 [get_nets [list {rvvi_synth.hwrvvitracer/rvviactivelist/ActiveListStall} ]]
 
 
 # the debug hub has issues with the clocks from the mmcm so lets give up an connect to the 100Mhz input clock.

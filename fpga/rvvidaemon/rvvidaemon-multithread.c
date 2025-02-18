@@ -49,13 +49,13 @@
 #include "op/op.h" // *** bug fix me when this file gets included into the correct directory.
 #include "idv/idv.h"
 
-#define PRINT_THRESHOLD 1
-//#define PRINT_THRESHOLD 65536
+//#define PRINT_THRESHOLD 1
+#define PRINT_THRESHOLD 65536
 //#define PRINT_THRESHOLD 1024
 //#define PRINT_THRESHOLD 8192
 #define LOG_THRESHOLD 0x8000000 // ~128 Million instruction
 //#define E_TARGET_CLOCK 25000
-#define E_TARGET_CLOCK 95000
+#define E_TARGET_CLOCK 97000
 //#define E_TARGET_CLOCK 60000
 //#define E_TARGET_CLOCK 69000
 #define SYSTEM_CLOCK 50000000
@@ -257,6 +257,8 @@ int main(int argc, char **argv){
   sendeh->ether_type = htons(ETHER_TYPE);
   tx_len += sizeof(struct ether_header);
   /* Packet data */
+  sendbuf[tx_len++] = 'm';
+  sendbuf[tx_len++] = 's';
   sendbuf[tx_len++] = 't';
   sendbuf[tx_len++] = 'r';
   sendbuf[tx_len++] = 'i';
@@ -443,7 +445,7 @@ void * ReceiveLoop(void * arg){
       LastSequence = Sequence;
     }
 
-    ((uint16_t*) (AckBuf + AckLen))[0] = 0;
+    ((uint16_t*) (AckBuf + AckLen))[0] = 0x6b61;
     ((uint64_t*) (AckBuf + AckLen + 2))[0] = InstructionDataPtr->Sequence;
     ((uint64_t*) (AckBuf + AckLen + 10))[0] = 0;
     ((uint32_t*) (AckBuf + AckLen + 18))[0] = INNER_PKT_DELAY;
@@ -476,7 +478,7 @@ void * ReceiveLoop(void * arg){
       }
       //      Enqueue(InstructionDataPtr, InstructionQueue);
 
-      ((uint16_t*) (AckBuf + AckLen))[0] = 0;
+      ((uint16_t*) (AckBuf + AckLen))[0] = 0x6b61;
       ((uint64_t*) (AckBuf + AckLen + 2))[0] = InstructionDataPtr->Sequence;
       ((uint64_t*) (AckBuf + AckLen + 10))[0] = 0;
       ((uint32_t*) (AckBuf + AckLen + 18))[0] = INNER_PKT_DELAY + 8 * QueueDepth;
@@ -817,43 +819,43 @@ void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress,
     FPR[Index] = htonll(rvviRefFprGet(hartId, Index));
   }
   fwrite(GPR+1, 8, 31, GPRfp); // skip x0
-  fwrite(FPR, 8, 32, GPRfp);
+  fwrite(FPR, 8, 32, FPRfp);
   PC = htonll(rvviRefPcGet(hartId));
   fwrite(&PC, 8, 1, PCfp);
 
   uint64_t CSR[4096];
   CSRCount = 0;
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x001)); // 
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x002)); // FRM
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x003)); // FCSR
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x100)); // SSTATUS
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x104)); // SIE
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x105)); // STVEC
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x106)); // SCOUNTEREN
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x10A)); // SENVCFG
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x140)); // SSCRATCH
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x141)); // SEPC
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x142)); // SCAUSE
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x143)); // STVAL
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x144)); // SIP
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x144)); // SIDELEG
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x14D)); // STIMECMP
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x180)); // SATP
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x300)); // MSTATUS
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x301)); // MIA
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x302)); // MEDELEG
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x303)); // MIDELEG
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x304)); // MIE
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x305)); // MTVEC
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x306)); // MCOUNTEREN
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x30A)); // MENVCFG
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x001)); // 0 FFLAGS
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x002)); // 1 FRM
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x003)); // 2 FCSR
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x100)); // 3 SSTATUS
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x104)); // 4 SIE
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x105)); // 5 STVEC
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x106)); // 6 SCOUNTEREN
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x10A)); // 7 SENVCFG
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x140)); // 8 SSCRATCH
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x141)); // 9 SEPC
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x142)); // 10 SCAUSE
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x143)); // 11 STVAL
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x144)); // 12 SIP      not used
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x144)); // 13 SIDELEG
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x14D)); // 14 STIMECMP
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x180)); // 15 SATP
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x300)); // 16 MSTATUS
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x301)); // 17 MISA
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x302)); // 18 MEDELEG
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x303)); // 19 MIDELEG
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x304)); // 20 MIE
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x305)); // 21 MTVEC
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x306)); // 22 MCOUNTEREN
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x30A)); // 23 MENVCFG
   //CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x310)); // MSTATUSH
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x320)); // MCOUNTINHIBT
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x340)); // MSCRATCH
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x341)); // MEPC
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x342)); // MCAUSE
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x343)); // MTVAL
-  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x344)); // MIP
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x320)); // 24 MCOUNTINHIBT
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x340)); // 25 MSCRATCH
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x341)); // 26 MEPC
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x342)); // 27 MCAUSE
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x343)); // 28 MTVAL
+  CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x344)); // 29 MIP
   //CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x34A)); // MTINST
 
   for(Index = 0; Index < NUM_PMP_REGS/8; Index++) {
