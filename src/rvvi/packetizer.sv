@@ -34,7 +34,8 @@ module packetizer import cvw::*; #(parameter cvw_t P,
                                    parameter              RVVI_WIDTH = 72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16),
                                    parameter              ETH_HEAD_WIDTH = 96,
                                    parameter              FRAME_COUNT_WIDTH = 64,
-				   parameter              RVVI_PREFIX_PAD = 16
+				                   parameter              RVVI_PREFIX_PAD = 16,
+                                   parameter              RVVI_ENCODING = 0
 
 )(
   input logic [RVVI_WIDTH-1:0]         rvvi,
@@ -55,7 +56,6 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   input logic [FRAME_COUNT_WIDTH-1:0] FrameCount
   );
 
-  //localparam NearTotalFrameLengthBits = FRAME_COUNT_WIDTH + ETH_HEAD_WIDTH + RVVI_WIDTH;
   localparam NearTotalFrameLengthBits = ETH_HEAD_WIDTH + RVVI_PREFIX_PAD + FRAME_COUNT_WIDTH + RVVI_WIDTH;
   localparam WordPadLen = 32 - (NearTotalFrameLengthBits % 32);
   localparam TotalFrameLengthBits = NearTotalFrameLengthBits + WordPadLen;
@@ -124,7 +124,27 @@ module packetizer import cvw::*; #(parameter cvw_t P,
 
   counter #(10) WordCounter(m_axi_aclk, WordCountReset, WordCountEnable, WordCount);
 
-  assign BurstDone = WordCount == (TotalFrameLengthBytes[11:2] - 1'b1);
+  if (RVVI_ENCODING == 1) begin 
+    logic [11:0] CSRCount;
+    logic        GPRWen, FPRWen;
+    logic [11:0] BaseLength;
+    logic [11:0] ActualLength;
+    assign GPRWen = rvviDelay[320];
+    assign FPRWen = rvviDelay[328];
+    assign CSRCount = rvviDelay[299:288];
+
+    // base length = 48 bytes + (ETH_HEAD_WIDTH + RVVI_PREFIX_PAD + FRAME_COUNT_WIDTH)/8
+    // if GPRwen | FPRWen then + 1
+    // + 10 * CSRCount
+    // if CSRCount is non-zero, then GPRWen/FPRWen is automatically included to keep everything aligned
+    assign BaseLength =  48 + (ETH_HEAD_WIDTH + RVVI_PREFIX_PAD + FRAME_COUNT_WIDTH)/8;
+    assign ActualLength = CSRCount != '0 ? BaseLength + 12'd50 + 12'd2 ://12'd8 + (CSRCount * 12'd10) :
+                          GPRWen | FPRWen ? BaseLength + 12'd8 :
+                          BaseLength;
+    assign BurstDone = WordCount == (ActualLength[9:2] - 1'b1);
+  end else begin  
+    assign BurstDone = WordCount == (TotalFrameLengthBytes[11:2] - 1'b1);
+  end
 
   genvar index;
   for (index = 0; index < TotalFrameLengthBytes/4; index++) begin 

@@ -65,7 +65,10 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, FRAME_COUNT_WIDTH=16)(  
   logic [WIDTH-1:0]	     ReadData;
   logic			     HostMatches;
   logic [FRAME_COUNT_WIDTH-1:0]	Tag;
-    
+  logic ReplayStop;
+  logic OutOfOrder;
+  
+
   // search Lut for matching HostFrameCount[Entries:0]. The index tells us the correct entry in the memory array.
   genvar                 index;
   for(index=0; index<2**Entries; index++) begin
@@ -97,7 +100,7 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, FRAME_COUNT_WIDTH=16)(  
           ActiveBits[HeadPtr] <= 1'b1;
         end
       end 
-      if(HostInstrValid & HostMatches) begin
+      if(HostInstrValid & HostMatches & HostMatchingIndex == TailPtr) begin
         ActiveBits[HostMatchingIndex] <= 1'b0;
       end
       Empty <= ~|ActiveBits;
@@ -117,6 +120,8 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, FRAME_COUNT_WIDTH=16)(  
   lzc #(2**Entries) lzc(ActiveBitsInvert, TailPtrUncompensated);
   assign TailPtr = TailPtrUncompensated + HeadPtr[Entries-1:0];
 
+  assign OutOfOrder = HostMatchingIndex != TailPtr;
+
   // port 3
   // if port 2 writes to an address which is not the tail pointer, we iterate from the tail to the first non-active entry.
   // read out each memory entry through ActiveListData asserting SelActiveList. Wait until RVVIStall is low between transmissions.
@@ -130,15 +135,16 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, FRAME_COUNT_WIDTH=16)(  
 
   always_comb begin
     case(CurrState)
-      STATE_IDLE: if(HostInstrValid & (HostMatchingIndex != TailPtr | ~HostMatches)) NextState = STATE_REPLAY;
+      STATE_IDLE: if(HostInstrValid & (OutOfOrder | ~HostMatches)) NextState = STATE_REPLAY;
       // this case is tricky.
       // 1. if the sequence number does not match the tail then it's out of order and we need to replay.
       // 2. if it does match because there are multiple sequencies which map into the same index (set) we need to
       // check the tags to see if that entry is even in the active list with ~HostMatches.
       else NextState = STATE_IDLE;
-      STATE_REPLAY: if(~Port3Active & ~RVVIStall) NextState = STATE_WAIT;
+      STATE_REPLAY: if(ReplayStop & ~RVVIStall) NextState = STATE_WAIT;
       else NextState = STATE_REPLAY;
-      STATE_WAIT: if(Empty) NextState = STATE_IDLE;
+      STATE_WAIT: if(HostInstrValid & OutOfOrder) NextState = STATE_REPLAY;
+      else if(Empty) NextState = STATE_IDLE;
       else NextState = STATE_WAIT;
       default: NextState = STATE_IDLE;
     endcase
@@ -146,11 +152,12 @@ module rvviactivelist #(parameter Entries=3, WIDTH=792, FRAME_COUNT_WIDTH=16)(  
 
   flopenl #(Entries) replayptrcounterreg(clk, ReplayPtrLoad, SelActiveList, ReplayPtrNext, TailPtr, ReplayPtr);
 
+  assign ReplayStop = (ReplayPtr == HeadPtr) & ~Full;
   assign ReplayPtrNext = ReplayPtr + 1;
-  assign ReplayPtrLoad = (CurrState == STATE_IDLE & HostInstrValid & HostMatchingIndex != TailPtr) | reset;
+  assign ReplayPtrLoad = ((CurrState == STATE_IDLE | CurrState == STATE_WAIT) & HostInstrValid & OutOfOrder) | reset;
   assign Port3Active = ActiveBits[ReplayPtr];
   assign ActiveListData = mem[ReplayPtr];
-  assign SelActiveList = CurrState == STATE_REPLAY & ~RVVIStall & Port3Active;
+  assign SelActiveList = CurrState == STATE_REPLAY & ~RVVIStall & ~ReplayStop;
   assign ActiveListStall = CurrState == STATE_WAIT | CurrState == STATE_REPLAY | Full;
 
 endmodule

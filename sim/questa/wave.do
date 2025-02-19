@@ -671,7 +671,9 @@ add wave -noupdate -group wfi /testbench/dut/core/priv/priv/pmd/STATUS_TW
 add wave -noupdate -group wfi /testbench/dut/core/priv/priv/pmd/PrivilegeModeW
 add wave -noupdate -group wfi /testbench/dut/core/priv/priv/pmd/wfi/WFICount
 add wave -noupdate -group wfi /testbench/dut/core/priv/priv/pmd/WFITimeoutM
-add wave -noupdate -group testbench /testbench/DCacheFlushStart
+add wave -noupdate -expand -group testbench /testbench/DCacheFlushStart
+add wave -noupdate -expand -group testbench /testbench/rvvi_synth/rvvitbwrapper/DontSend
+add wave -noupdate -expand -group testbench /testbench/rvvi_synth/rvvitbwrapper/FrameCounter
 add wave -noupdate /testbench/dut/core/fpu/fpu/fdivsqrt/WS
 add wave -noupdate /testbench/dut/core/fpu/fpu/fdivsqrt/WC
 add wave -noupdate /testbench/dut/core/fpu/fpu/fdivsqrt/X
@@ -704,6 +706,7 @@ add wave -noupdate -expand -group hwrvvitracer -group rvvi-ethernet /testbench/r
 add wave -noupdate -expand -group hwrvvitracer -group rvvi-ethernet /testbench/rvvi_synth/rvvitbwrapper/phy_rx_dv
 add wave -noupdate -expand -group hwrvvitracer -group rvvi-ethernet /testbench/rvvi_synth/rvvitbwrapper/phy_rx_er
 add wave -noupdate -expand -group hwrvvitracer -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/valid
+add wave -noupdate -expand -group hwrvvitracer -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/DutFrameCount
 add wave -noupdate -expand -group hwrvvitracer -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/rvvi
 add wave -noupdate -expand -group hwrvvitracer -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/CSRCountShort
 add wave -noupdate -expand -group hwrvvitracer -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/CSRAddr
@@ -712,27 +715,27 @@ add wave -noupdate -expand -group hwrvvitracer -expand -group packetizer /testbe
 add wave -noupdate -expand -group hwrvvitracer -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/RvviAxiWlast
 add wave -noupdate -expand -group hwrvvitracer -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/RvviAxiWvalid
 add wave -noupdate -expand -group hwrvvitracer -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/RvviAxiWready
+add wave -noupdate -expand -group hwrvvitracer -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/rvviDelay
 add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/HostStall
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RvviAxiRdata
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/mem
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RecvDone
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RecvCurrState
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RecvCounter
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RecvCounter
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RecvCounterEn
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RecvCounterReset
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/TransCurrState
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWdata
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWstrb
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWlast
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWvalid
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWready
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/TransCounter
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/TransMem
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RvviAxiRdata
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/mem
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RecvDone
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RecvCurrState
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RecvCounter
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RecvCounter
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RecvCounterEn
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RecvCounterReset
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/TransCurrState
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWdata
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWstrb
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWlast
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWvalid
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWready
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/TransCounter
+add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/TransMem
 add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/clk
 add wave -noupdate -expand -group {invser packetizer} -color Gold /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/CurrState
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/FrameCountLow
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/FrameCountHigh
+add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/FrameCount
 add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/ROM
 add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/RvviAxiRdata
 add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/ROMReadData
@@ -750,29 +753,31 @@ add wave -noupdate -expand -group {invser packetizer} -group input /testbench/rv
 add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/Valid
 add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/Minstr
 add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/InterPacketDelay
-add wave -noupdate -expand -group {invser packetizer} -expand /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/mem
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/Match
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/AllMatch
 add wave -noupdate -expand -group {invser packetizer} -expand -group receive /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/RvviAxiRdata
 add wave -noupdate -expand -group {invser packetizer} -expand -group receive /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/RvviAxiRlast
 add wave -noupdate -expand -group {invser packetizer} -expand -group receive /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/RvviAxiRvalid
-add wave -noupdate -group {active list} -color Orange -expand -subitemconfig {{/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[15]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[14]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[13]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[12]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[11]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[10]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[9]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[8]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[7]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[6]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[5]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[4]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[3]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[2]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[1]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[0]} {-color Orange -height 17}} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits
-add wave -noupdate -group {active list} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/Full
-add wave -noupdate -group {active list} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/Empty
-add wave -noupdate -group {active list} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/mem
-add wave -noupdate -group {active list} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/Lut
+add wave -noupdate -expand -group {active list} -color Orange -expand -subitemconfig {{/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[15]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[14]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[13]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[12]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[11]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[10]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[9]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[8]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[7]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[6]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[5]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[4]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[3]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[2]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[1]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[0]} {-color Orange -height 17}} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits
+add wave -noupdate -expand -group {active list} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/Full
+add wave -noupdate -expand -group {active list} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/Empty
+add wave -noupdate -expand -group {active list} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/mem
+add wave -noupdate -expand -group {active list} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/Lut
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/HostInterPacketDelay
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/HostMinstr
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/Full
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/HeadPtr
-add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/HeadPtr
-add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits
-add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBitsRev
-add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBitsExtend
-add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBitsShift
-add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBitsInvert
-add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/TailPtrUncompensated
-add wave -noupdate -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/TailPtr
+add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/HeadPtr
+add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits
+add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBitsRev
+add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBitsExtend
+add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBitsShift
+add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBitsInvert
+add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/TailPtrUncompensated
+add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/TailPtr
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ReplayPtr
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/TailPtr
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ReplayStop
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/HostMatchingIndex
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/SelActiveList
 add wave -noupdate -color Gold /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/CurrState
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/Port3Active
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/SelActiveList
@@ -787,8 +792,9 @@ add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/N
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/NearTotalFrameLengthBits
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/TotalFrame
 add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/rvviDelay
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/OutOfOrder
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {19105 ns} 1} {{Cursor 4} {0 ns} 0} {{Cursor 3} {616640 ns} 1} {{Cursor 4} {3365 ns} 0}
+WaveRestoreCursors {{Cursor 4} {19105 ns} 1} {{Cursor 4} {49220 ns} 0} {{Cursor 3} {616640 ns} 1} {{Cursor 4} {38840 ns} 0}
 quietly wave cursor active 4
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -804,4 +810,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {3018 ns} {3528 ns}
+WaveRestoreZoom {4160 ns} {73520 ns}

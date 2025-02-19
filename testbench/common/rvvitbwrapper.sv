@@ -41,6 +41,8 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   input logic               phy_tx_rst // not present for mii
 );
 
+  localparam                LOSS_INTERVAL = 10;
+  
   logic        valid;
   logic [72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16)-1:0] rvvi;
 
@@ -88,7 +90,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   logic                                             phy_tx_en, phy_tx_er;
 
   logic                                             FrameCounterEn, FrameCounterReset;
-  logic [3:0]                                       FrameCounter;
+  logic [7:0]                                       FrameCounter;
   logic                                             DontSend;
     
   assign StallE         = dut.core.StallE;
@@ -309,10 +311,10 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   assign RvviAxiWlast = TransCounterThreshold & TransCurrState == STATE_TRANS & ~DontSend;
   assign RvviAxiWvalid = TransCurrState == STATE_TRANS & ~DontSend;
 
-  assign FrameCounterReset = reset;
+  assign FrameCounterReset = reset | (FrameCounter == (LOSS_INTERVAL + 1));
   assign FrameCounterEn = TransCurrState == STATE_FINISHED;
-  assign DontSend = FrameCounter == 4'd10;
-  counter #(4) framecounterreg(clk, FrameCounterReset, FrameCounterEn, FrameCounter);
+  assign DontSend = FrameCounter == LOSS_INTERVAL;
+  counter #(8) framecounterreg(clk, FrameCounterReset, FrameCounterEn, FrameCounter);
   
     
 endmodule  

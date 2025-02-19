@@ -33,7 +33,8 @@ module hwrvvitracer import cvw::*; #(parameter cvw_t P,
                              parameter integer RVVI_INIT_TIME_OUT = 32'd100000000,
                              parameter integer RVVI_PACKET_DELAY = 32'd2,
                              parameter integer ETH_WIDTH = 4, // speed, 4 is 10/100M/s, 8 is 1G/s
-                             parameter string  TARGET = "GENERIC"
+                             parameter string  TARGET = "GENERIC",
+                             parameter RVVI_ENCODING = 1
 )(
   input logic              clk, reset,
   input logic              StallE, StallM, StallW, FlushE, FlushM, FlushW,
@@ -138,7 +139,7 @@ module hwrvvitracer import cvw::*; #(parameter cvw_t P,
 
   flopenl #(32) hostinterpacketdelayreg(clk, reset, HostInstrValid, HostInterPacketDelay, RVVI_PACKET_DELAY, HostInterPacketDelayD);
 
-  packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, RVVI_WIDTH, ETH_HEADER_WIDTH, FRAME_COUNT_WIDTH, RVVI_PREFIX_PAD) 
+  packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, RVVI_WIDTH, ETH_HEADER_WIDTH, FRAME_COUNT_WIDTH, RVVI_PREFIX_PAD, RVVI_ENCODING) 
   packetizer(.rvvi(PacketizerRvvi), .valid(PacketizerRvviValid), .m_axi_aclk(clk),
      .m_axi_aresetn(~reset), .RVVIStall,
     .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready, .SrcMac, .DstMac, .EthType, .AckType,
