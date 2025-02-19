@@ -55,7 +55,7 @@ queue_t * InitQueue(int size){
   return queue;
 }
 
-void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue){
+void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue, int size){
   #if SAFE != 0
   if(IsFull(queue)) return;
   #endif
@@ -64,7 +64,7 @@ void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue){
   pthread_mutex_lock(&(queue->HeadLock));
   // deep copy
   // total 99 bytes 12.375 ld/sd
-  memcpy(&(queue->InstructionData[queue->head]), (void*) NewInstructionData, sizeof(RequiredRVVI_t));
+  memcpy(&(queue->InstructionData[queue->head]), (void*) NewInstructionData, size);
   //printf("Enqueue: head %d, tail %d\n", queue->head, queue->tail);
   if(queue->head == (queue->size - 1)) {
     //printf("End of queue wrapping around.\n");
@@ -84,7 +84,10 @@ void Dequeue(RequiredRVVI_t * InstructionData, queue_t *queue){
   
   pthread_mutex_lock(&(queue->TailLock));
   // deep copy
-  memcpy(InstructionData, &(queue->InstructionData[queue->tail]), sizeof(RequiredRVVI_t));
+  //memcpy(InstructionData, &(queue->InstructionData[queue->tail]), sizeof(RequiredRVVI_t));
+  RequiredRVVI_t *Src = &(queue->InstructionData[queue->tail]);
+  int size = ((Src->GPREn || Src->GPREn) << 3) + (Src->CSRCount ? 50 : 0) + 56;
+  memcpy(InstructionData, Src, size);
   if(queue->tail == (queue->size - 1)) queue->tail = 0;
   else (queue->tail)++;
   pthread_mutex_unlock(&(queue->TailLock));

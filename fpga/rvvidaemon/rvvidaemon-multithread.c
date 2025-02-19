@@ -55,7 +55,7 @@
 //#define PRINT_THRESHOLD 8192
 #define LOG_THRESHOLD 0x8000000 // ~128 Million instruction
 //#define E_TARGET_CLOCK 25000
-#define E_TARGET_CLOCK 97000
+#define E_TARGET_CLOCK 110000
 //#define E_TARGET_CLOCK 60000
 //#define E_TARGET_CLOCK 69000
 #define SYSTEM_CLOCK 50000000
@@ -441,7 +441,12 @@ void * ReceiveLoop(void * arg){
     RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes + 2);
     Sequence = InstructionDataPtr->Sequence;
     if(Sequence == (LastSequence + 1)){
-      Enqueue(InstructionDataPtr, InstructionQueue);
+      #if RVVI_ENCODING == 0
+      Enqueue(InstructionDataPtr, InstructionQueue, sizeof(RequiredRVVI_t));
+      #elif RVVI_ENCODING == 1
+      Enqueue(InstructionDataPtr, InstructionQueue, numbytes-headerbytes);
+      #endif
+    
       LastSequence = Sequence;
     }
 
@@ -473,10 +478,13 @@ void * ReceiveLoop(void * arg){
       RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes + 2);
       Sequence = InstructionDataPtr->Sequence;
       if(Sequence == (LastSequence + 1)){
-        Enqueue(InstructionDataPtr, InstructionQueue);
+        #if RVVI_ENCODING == 0
+        Enqueue(InstructionDataPtr, InstructionQueue, sizeof(RequiredRVVI_t));
+        #elif RVVI_ENCODING == 1
+        Enqueue(InstructionDataPtr, InstructionQueue, numbytes-headerbytes);
+        #endif
 	LastSequence = Sequence;
       }
-      //      Enqueue(InstructionDataPtr, InstructionQueue);
 
       ((uint16_t*) (AckBuf + AckLen))[0] = 0x6b61;
       ((uint64_t*) (AckBuf + AckLen + 2))[0] = InstructionDataPtr->Sequence;

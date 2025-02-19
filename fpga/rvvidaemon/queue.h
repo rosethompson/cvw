@@ -16,7 +16,7 @@ typedef struct {
 } queue_t;
 
 queue_t * InitQueue(int size);
-void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue);
+void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue, int size);
 void Dequeue(RequiredRVVI_t * InstructionData, queue_t *queue);
 bool IsFull(queue_t *queue);
 bool IsAlmostFull(queue_t *queue, int Threshold);
