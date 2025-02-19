@@ -481,10 +481,10 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     
    
   if(RVVI_SYNTH_SUPPORTED) begin : rvvi_synth
-    localparam MAX_CSRS = 3;
-    localparam TOTAL_CSRS = 36;
+    localparam MAX_CSRS = 5;
+    localparam TOTAL_CSRS = 36 + P.PMP_ENTRIES + P.PMP_ENTRIES/8; // 44 for 64-bit vcu108
     localparam [31:0] RVVI_INIT_TIME_OUT = 32'd100000000;
-    localparam [31:0] RVVI_PACKET_DELAY = 32'd2;
+    localparam [31:0] RVVI_PACKET_DELAY = 32'd10000;
     
     // pipeline controlls
     logic                                             StallE, StallM, StallW, FlushE, FlushM, FlushW;
@@ -572,6 +572,24 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     assign CSRArray[34] = fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FRM_REGW; // 12'h002
     assign CSRArray[35] = {fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FRM_REGW, fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FFLAGS_REGW}; // 12'h003
 
+    // pmp registers
+    genvar					      index;
+    for (index = 0; index < P.PMP_ENTRIES; index++) begin
+      // *** only works for 64-bit
+      assign CSRArray[36+index] = {{{P.XLEN-P.PA_BITS}{1'b0}}, fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPADDR_ARRAY_REGW[index]};
+    end
+    for (index = 0; index < P.PMP_ENTRIES/8; index++) begin
+      // *** only works for 64-bit
+      assign CSRArray[36+P.PMP_ENTRIES+index] = {fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+7],
+						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+6],
+						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+5],
+						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+4],
+						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+3],
+						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+2],
+						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+1],
+						 fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csrm.PMPCFG_ARRAY_REGW[index*8+0]};
+    end
+
     hwrvvitracer #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, 4, "XILINX") hwrvvitracer(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
@@ -588,70 +606,6 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
       .phy_tx_en(phy_tx_en),
       .phy_tx_er(),
       .ExternalStall, .IlaTrigger);
-    
-/* -----\/----- EXCLUDED -----\/-----
-
-    rvviprobes #(P, MAX_CSRS) rvviprobes(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
-      .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
-      .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
-      .valid, .rvvi);
-
-    // axi 4 write data channel
-(* mark_debug = "true" *)    logic [31:0]                                      RvviAxiWdata;
-    logic [3:0]                                       RvviAxiWstrb;
-(* mark_debug = "true" *)    logic                                             RvviAxiWlast;
-(* mark_debug = "true" *)    logic                                             RvviAxiWvalid;
-(* mark_debug = "true" *)    logic                                             RvviAxiWready;
-
-    logic [31:0] RvviAxiRdata;
-    logic [3:0]                                       RvviAxiRstrb;
-(* mark_debug = "true" *)    logic RvviAxiRlast;
-(* mark_debug = "true" *)    logic RvviAxiRvalid;
-
-    logic                                             tx_error_underflow, tx_fifo_overflow, tx_fifo_bad_frame, tx_fifo_good_frame, rx_error_bad_frame;
-    logic                                             rx_error_bad_fcs, rx_fifo_overflow, rx_fifo_bad_frame, rx_fifo_good_frame;
-
-    packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY) packetizer(.rvvi, .valid, .m_axi_aclk(CPUCLK), .m_axi_aresetn(~bus_struct_reset), .RVVIStall,
-      .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready);
-
-    eth_mac_mii_fifo #(.TARGET("XILINX"), .CLOCK_INPUT_STYLE("BUFG"), .AXIS_DATA_WIDTH(32), .TX_FIFO_DEPTH(1024)) ethernet(.rst(bus_struct_reset), .logic_clk(CPUCLK), .logic_rst(bus_struct_reset),
-      .tx_axis_tdata(RvviAxiWdata), .tx_axis_tkeep(RvviAxiWstrb), .tx_axis_tvalid(RvviAxiWvalid), .tx_axis_tready(RvviAxiWready),
-      .tx_axis_tlast(RvviAxiWlast), .tx_axis_tuser('0), .rx_axis_tdata(RvviAxiRdata),
-      .rx_axis_tkeep(RvviAxiRstrb), .rx_axis_tvalid(RvviAxiRvalid), .rx_axis_tready(1'b1),
-      .rx_axis_tlast(RvviAxiRlast), .rx_axis_tuser(),
-
-      .mii_rx_clk(phy_rx_clk),
-      .mii_rxd(phy_rxd),
-      .mii_rx_dv(phy_rx_dv),
-      .mii_rx_er(phy_rx_er),
-      .mii_tx_clk(phy_tx_clk),
-      .mii_txd(phy_txd),
-      .mii_tx_en(phy_tx_en),
-      .mii_tx_er(),
-
-      // status
-      .tx_error_underflow, .tx_fifo_overflow, .tx_fifo_bad_frame, .tx_fifo_good_frame, .rx_error_bad_frame,
-      .rx_error_bad_fcs, .rx_fifo_overflow, .rx_fifo_bad_frame, .rx_fifo_good_frame, 
-      .cfg_ifg(8'd12), .cfg_tx_enable(1'b1), .cfg_rx_enable(1'b1)
-      );
-
-    // "igin" (trigin)__"rt", ether type 005c__src mac [47:16]__src mac [15:0], dst mac [47:32]__dst mac [31:0]
-    assign TriggerString = 160'h6e69_6769__7274_005c__8f54_0000__1654_4502__1111_6843;
-    // "emwo" (slowme)__"ls", ether type 005c__src mac [47:16]__src mac [15:0], dst mac [47:32]__dst mac [31:0]
-    assign SlowString = 160'h656D_776F__6C73_005c__8f54_0000__1654_4502__1111_6843;
-			  
-    triggergen triggergen(.clk(CPUCLK), .reset(bus_struct_reset), .CompareString(TriggerString),
-.RvviAxiRdata,
-      .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger, .TriggerMessage());
-
-    triggergen slowdown(.clk(CPUCLK), .reset(bus_struct_reset), .CompareString(SlowString),
-.RvviAxiRdata,
-      .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid, .IlaTrigger(HostRequestSlowDown), .TriggerMessage(HostFiFoFillAmt));
-
-    genslowframe genslowframe(.clk(CPUCLK), .reset(bus_struct_reset), .HostRequestSlowDown, .RVVIStall, .HostFiFoFillAmt, .HostStall);
-    
-    assign ExternalStall = RVVIStall | HostStall;
- -----/\----- EXCLUDED -----/\----- */
     
   end else begin // if (P.RVVI_SYNTH_SUPPORTED)
     assign IlaTrigger = '0;
