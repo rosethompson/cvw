@@ -50,6 +50,7 @@ module testbench;
   parameter I_CACHE_ADDR_LOGGER=0;
   parameter D_CACHE_ADDR_LOGGER=0;
   parameter RVVI_SYNTH_SUPPORTED=1;
+  parameter RVVI_ENCODING = 3;
 
   `ifdef USE_IMPERAS_DV
     import idvPkg::*;
@@ -856,7 +857,7 @@ module testbench;
     localparam logic [31:0] RVVI_PACKET_DELAY = 32'd2;
     localparam              ETH_WIDTH = 8;
 
-    rvvitbwrapper #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, ETH_WIDTH) 
+    rvvitbwrapper #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, ETH_WIDTH, RVVI_ENCODING) 
     rvvitbwrapper(.clk, .reset, .ExternalStall, .phy_tx_clk(clk),
                   .phy_rx_clk(clk), .phy_rx_clk_en('1), .phy_tx_clk_en('1), .phy_rx_rst(reset), .phy_tx_rst(reset));
   end else begin

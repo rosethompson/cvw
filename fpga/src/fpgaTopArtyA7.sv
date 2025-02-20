@@ -80,6 +80,8 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
    output logic [0:0]    ddr3_odt
    );
 
+  localparam          RVVI_ENCODING = 3;
+
   // MMCM Signals
   logic 			   CPUCLK;
   logic 			   c0_ddr4_ui_clk_sync_rst;
@@ -572,7 +574,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 1)
     assign CSRArray[34] = fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FRM_REGW; // 12'h002
     assign CSRArray[35] = {fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FRM_REGW, fpgaTop.wallypipelinedsoc.core.priv.priv.csr.csru.csru.FFLAGS_REGW}; // 12'h003
 
-    hwrvvitracer #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, 4, "XILINX") hwrvvitracer(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+    hwrvvitracer #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, 4, "XILINX", RVVI_ENCODING) hwrvvitracer(.clk(CPUCLK), .reset(bus_struct_reset), .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
       .phy_rx_clk(phy_rx_clk),

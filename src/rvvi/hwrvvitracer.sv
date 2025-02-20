@@ -34,7 +34,7 @@ module hwrvvitracer import cvw::*; #(parameter cvw_t P,
                              parameter integer RVVI_PACKET_DELAY = 32'd2,
                              parameter integer ETH_WIDTH = 4, // speed, 4 is 10/100M/s, 8 is 1G/s
                              parameter string  TARGET = "GENERIC",
-                             parameter RVVI_ENCODING = 1
+                             parameter RVVI_ENCODING = 3
 )(
   input logic              clk, reset,
   input logic              StallE, StallM, StallW, FlushE, FlushM, FlushW,
@@ -124,7 +124,7 @@ module hwrvvitracer import cvw::*; #(parameter cvw_t P,
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
       .DutValid, .DutRvvi, .DutFrameCount);
   
-  rvviactivelist #(.Entries(4), .WIDTH(RVVI_WIDTH+FRAME_COUNT_WIDTH), .FRAME_COUNT_WIDTH(FRAME_COUNT_WIDTH)) 
+  rvviactivelist #(.Entries(7), .WIDTH(RVVI_WIDTH+FRAME_COUNT_WIDTH), .FRAME_COUNT_WIDTH(FRAME_COUNT_WIDTH)) 
   rvviactivelist (.clk, .reset, .DutValid, .DutData({DutRvvi, DutFrameCount}),
                   .HostInstrValid, .HostFrameCount,
                   .ActiveListData({ActiveListRvvi, ActiveListFrameCount}), .SelActiveList, .RVVIStall, 

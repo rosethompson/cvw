@@ -28,7 +28,8 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
                                       parameter              MAX_CSRS = 5,
                                       parameter logic [31:0] RVVI_INIT_TIME_OUT = 32'd4,
                                       parameter logic [31:0] RVVI_PACKET_DELAY = 32'd2,
-                                      parameter ETH_WIDTH = 4
+                                      parameter ETH_WIDTH = 4,
+                                      parameter RVVI_ENCODING = 3
 )(
   input  logic clk,
   input  logic reset,
@@ -152,7 +153,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   assign CSRArray[34] = dut.core.priv.priv.csr.csru.csru.FRM_REGW; // 12'h002
   assign CSRArray[35] = {dut.core.priv.priv.csr.csru.csru.FRM_REGW, dut.core.priv.priv.csr.csru.csru.FFLAGS_REGW}; // 12'h003
 
-    hwrvvitracer #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, ETH_WIDTH, "GENERIC") hwrvvitracer(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+    hwrvvitracer #(P, MAX_CSRS, TOTAL_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, ETH_WIDTH, "GENERIC", RVVI_ENCODING) hwrvvitracer(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
       .PCM, .InstrValidM, .InstrRawD, .Mcycle, .Minstret, .TrapM, 
       .PrivilegeModeW, .GPRWen, .FPRWen, .GPRAddr, .FPRAddr, .GPRValue, .FPRValue, .CSRArray,
       .phy_rx_clk,
@@ -231,11 +232,25 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   RecvStateType RecvCurrState, RecvNextState;
   
   logic        RecvCounterEn, RecvCounterReset;
-  logic [3:0]  RecvCounter;
-  logic [31:0] mem [11:0];
+  logic [9:0]  RecvCounter;
+  logic [9:0]  RecvCounterWrite;
+  logic [31:0] mem [40:0];
   logic        RecvDone;
+  logic [9:0]  ActuallyCaptured;
+  logic [9:0]  InitialOffset, InitialCSRCountOffset, InitialGPREnOffset;
+  logic [9:0]  Length;
+  logic [9:0]  InstrPtr, InstrPtrNext;
+  logic        InstrPtrLoad, InstrPtrEn;
+  logic [31:0] SequenceLow, SequenceHigh;
+  logic [15:0] CSRCount;
+  logic [15:0] GPRRead;
+  logic        FPREn, GPREn, xPREn;
+  logic        RecvCounterWriteEn;
+  logic        SaveCSRCount;
+  logic        SavexPREn;
   
-
+  
+    
   always_ff @(posedge clk)
     if (reset) RecvCurrState <= STATE_IDLE;
     else RecvCurrState <= RecvNextState;
@@ -244,10 +259,9 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
     case(RecvCurrState)
       STATE_IDLE: if(RvviAxiRvalid) RecvNextState = STATE_CAPTURE;
       else RecvNextState = STATE_IDLE;
-      STATE_CAPTURE: if(RecvDone) RecvNextState = STATE_CAPTURE_DONE;
+      STATE_CAPTURE: if(RvviAxiRlast) RecvNextState = STATE_CAPTURE_DONE;
       else RecvNextState = STATE_CAPTURE;
-      STATE_CAPTURE_DONE: if(RvviAxiRlast) RecvNextState = STATE_DONE;
-      else RecvNextState = STATE_CAPTURE_DONE;
+      STATE_CAPTURE_DONE: RecvNextState = STATE_DONE;
       STATE_DONE: if(RvviAxiRvalid) RecvNextState = STATE_CAPTURE;
       else RecvNextState = STATE_IDLE;
       default: RecvNextState = STATE_IDLE;
@@ -256,24 +270,61 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
 
   assign RecvCounterEn = RvviAxiRvalid & RecvCurrState != STATE_CAPTURE_DONE;
   assign RecvCounterReset = (RecvCurrState == STATE_IDLE | RecvCurrState == STATE_DONE) & ~RvviAxiRvalid;
-  counter #(4) recvcounterreg(clk, RecvCounterReset, RecvCounterEn, RecvCounter);
-  assign RecvDone = RecvCounter == 4'd11 & RvviAxiRvalid;
+  
+  counter #(10) recvcounterreg(clk, RecvCounterReset, RecvCounterEn, RecvCounter);
+  counter #(10) recvcounterwritereg(clk, RecvCounterReset, RecvCounterWriteEn, RecvCounterWrite);
   
   always_ff @(posedge clk) begin
-    if(RecvCounterEn) begin
-      mem[RecvCounter] <= RvviAxiRdata;
+    if(RecvCounterWriteEn) begin
+      mem[RecvCounterWrite] <= RvviAxiRdata;
+    end
+    if(RvviAxiRlast) begin
+      ActuallyCaptured <= RecvCounter;
     end
   end
 
+  // want to capture
+  // 0, 1, 2, 3
+  // InitialOffset, InitialOffset+1, (<0>, <0>, IPD)
+  // InitialOffset + length, InitialOffset + length+1, (<0>, <0>, IPD)
+  // ...
+
+  assign InitialOffset = 16 / 4;
+  assign InitialCSRCountOffset = InstrPtr + 36/4;
+  assign InitialGPREnOffset = InstrPtr + 40/4;
+
+  flopenl #(10) instrpointreg(clk, reset, InstrPtrEn, InstrPtrNext, InitialOffset, InstrPtr);
+  
+
+  assign SaveCSRCount = RecvCounter == InitialCSRCountOffset;
+  assign SavexPREn = RecvCounter == InitialGPREnOffset;
+  flopenr #(16) csrcountreg(clk, reset, SaveCSRCount, RvviAxiRdata[15:0], CSRCount);
+  flopenr #(2) xprenreg(clk, reset, SavexPREn, {RvviAxiRdata[0], RvviAxiRdata[8]}, {FPREn, GPREn});
+  assign xPREn = FPREn | GPREn;
+  flopenr #(1) instrptrenreg(clk, reset, 1'b1, SavexPREn, InstrPtrEn);
+    
+  assign Length = (10'd12 + (CSRCount != '0 ? 10'd13 : '0) +
+                   (xPREn ? 10'd2 : '0));
+  //assign InstrPtrNext = InstrPtr == 10'd4 ? Length : InstrPtr + Length;
+  assign InstrPtrNext = InstrPtr + Length;
+  assign RecvCounterWriteEn = RecvCounter == InstrPtr;
+
+
   // now that the frame is captured send it back with the random 32-bit system load estimation
 
+  // for encoding type 3 we have no idea how many instructions there are in the Frame. Software
+  // will know the length the link layer will provide it with recv_from().
+  
+
+  assign RecvDone = RecvCounter == 4'd11 & RvviAxiRvalid;
   typedef enum {STATE_RDY, STATE_TRANS, STATE_WAIT, STATE_FINISHED} TransStateType;
   TransStateType TransCurrState, TransNextState;
 
   logic        TransCounterEn, TransCounterReset;
-  logic [3:0]  TransCounter;
+  logic [9:0]  TransCounter;
   logic [31:0] TransMem [8:0];
   logic        TransCounterThreshold;
+  
 
   always_ff @(posedge clk)
     if (reset) TransCurrState <= STATE_RDY;
@@ -281,8 +332,8 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
 
   always_comb begin
     case(TransCurrState)
-      STATE_RDY: if(RecvDone & RvviAxiWready) TransNextState = STATE_TRANS;
-      else if(RecvDone & ~RvviAxiWready) TransNextState = STATE_WAIT;
+      STATE_RDY: if(RvviAxiRlast & RvviAxiWready) TransNextState = STATE_TRANS;
+      else if(RvviAxiRlast & ~RvviAxiWready) TransNextState = STATE_WAIT;
       else TransNextState = STATE_RDY;
       STATE_WAIT: if(RvviAxiWready) TransNextState = STATE_TRANS;
       else TransNextState = STATE_WAIT;
@@ -293,10 +344,28 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
     endcase
   end
 
+  //flopenl #(10) instrpointreg(clk, InstrPtrLoad, InstrPtrEn, InstrPtrNext, InitialOffset, InstrPtr);
+
+/* -----\/----- EXCLUDED -----\/-----
+  assign SequenceLow = mem[InstrPtr];
+  assign SequenceHigh = mem[InstrPtr+1];
+  assign CSRCount = mem[InitialCSRCountOffset][15:0];
+  assign GPRRead = mem[InitialGPREnOffset][15:0];
+  assign xPREn = GPRRead[0] | GPRRead[8];
+  assign InstrPtrNext = InstrPtr + Length;
+  assign InstrPtrLoad = TranCurrState == STATE_RDY & RvviAxiRlast
+ -----/\----- EXCLUDED -----/\----- */
+  
+
   assign TransCounterThreshold = TransCounter == 4'd8;
   assign TransCounterEn = RvviAxiWready & TransCurrState == STATE_TRANS;
   assign TransCounterReset = TransCurrState == STATE_RDY;
-  counter #(4) transcounterreg(clk, TransCounterReset, TransCounterEn, TransCounter);
+
+  counter #(10) transcounterreg(clk, TransCounterReset, TransCounterEn, TransCounter);
+  //flopenr #(10) trancounterreg(clk, TransCounterReset, TransCounterEn, TransCounterNext, TransCounter);
+
+  //assign TransCounterNext = TransCounter < 10'd3 ? TransCounter + 10'd1 : InstrPtr;
+  
   assign TransMem[0] = mem[0]; // dst mac 
   assign TransMem[1] = mem[1]; // dst mac & src mac 
   assign TransMem[2] = mem[2]; // src mac
