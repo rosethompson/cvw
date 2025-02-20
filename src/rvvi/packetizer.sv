@@ -40,7 +40,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
 )(
   input logic [RVVI_WIDTH-1:0]         rvvi,
   input logic                          valid,
-  input logic                          m_axi_aclk, m_axi_aresetn,
+  input logic                          clk, reset,
   output logic                         RVVIStall,
   // axi 4 write address channel
   // axi 4 write data channel
@@ -81,8 +81,8 @@ module packetizer import cvw::*; #(parameter cvw_t P,
 (* mark_debug = "true" *)  logic 		    RstCountRst, RstCountEn, CountFlag, DelayFlag;
    
 
-  always_ff @(posedge m_axi_aclk) begin
-    if(~m_axi_aresetn) CurrState <= STATE_RST;
+  always_ff @(posedge clk) begin
+    if(reset) CurrState <= STATE_RST;
     else               CurrState <= NextState;
   end
 
@@ -114,15 +114,15 @@ module packetizer import cvw::*; #(parameter cvw_t P,
 
   // have to count at least 250 ms after reset pulled to wait for the phy to actually be ready
   // at 20MHz 250 ms is 250e-3 / (1/20e6) = 5,000,000.
-  counter #(32) rstcounter(m_axi_aclk, RstCountRst, RstCountEn, RstCount);
+  counter #(32) rstcounter(clk, RstCountRst, RstCountEn, RstCount);
   assign CountFlag = RstCount == RVVI_INIT_TIME_OUT;
   //assign DelayFlag = RstCount == RVVI_PACKET_DELAY;
   assign DelayFlag = RstCount >= InnerPktDelay;
 
-  flopenr #(RVVI_WIDTH+FRAME_COUNT_WIDTH) rvvireg(m_axi_aclk, ~m_axi_aresetn, valid, {rvvi, FrameCount}, rvviDelay);
+  flopenr #(RVVI_WIDTH+FRAME_COUNT_WIDTH) rvvireg(clk, reset, valid, {rvvi, FrameCount}, rvviDelay);
 
 
-  counter #(10) WordCounter(m_axi_aclk, WordCountReset, WordCountEnable, WordCount);
+  counter #(10) WordCounter(clk, WordCountReset, WordCountEnable, WordCount);
 
   if (RVVI_ENCODING == 1) begin 
     logic [11:0] CSRCount;

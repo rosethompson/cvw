@@ -140,8 +140,8 @@ module hwrvvitracer import cvw::*; #(parameter cvw_t P,
   flopenl #(32) hostinterpacketdelayreg(clk, reset, HostInstrValid, HostInterPacketDelay, RVVI_PACKET_DELAY, HostInterPacketDelayD);
 
   packetizer #(P, MAX_CSRS, RVVI_INIT_TIME_OUT, RVVI_PACKET_DELAY, RVVI_WIDTH, ETH_HEADER_WIDTH, FRAME_COUNT_WIDTH, RVVI_PREFIX_PAD, RVVI_ENCODING) 
-  packetizer(.rvvi(PacketizerRvvi), .valid(PacketizerRvviValid), .m_axi_aclk(clk),
-     .m_axi_aresetn(~reset), .RVVIStall,
+  packetizer(.rvvi(PacketizerRvvi), .valid(PacketizerRvviValid), .clk,
+     .reset, .RVVIStall,
     .RvviAxiWdata, .RvviAxiWstrb, .RvviAxiWlast, .RvviAxiWvalid, .RvviAxiWready, .SrcMac, .DstMac, .EthType, .AckType,
     .InnerPktDelay(HostInterPacketDelayD), .FrameCount(PacketizerFrameCount));
 
