@@ -234,7 +234,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   logic        RecvCounterEn, RecvCounterReset;
   logic [9:0]  RecvCounter;
   logic [9:0]  RecvCounterWrite;
-  logic [31:0] mem [300:0];
+  logic [31:0] mem [120:0];
   logic        RecvDone;
   logic [9:0]  ActuallyCaptured;
   logic [9:0]  InitialOffset, InitialCSRCountOffset, InitialGPREnOffset;
@@ -283,7 +283,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
       else mem[RecvCounterWrite] <= RvviAxiRdata;
     end
     if(RvviAxiRlast) begin
-      ActuallyCaptured <= RecvCounter;
+      ActuallyCaptured <= RecvCounterWrite;
     end
   end
 
@@ -331,7 +331,6 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
 
   logic        TransCounterEn, TransCounterReset;
   logic [9:0]  TransCounter;
-  logic [31:0] TransMem [8:0];
   logic        TransCounterThreshold;
   
 
@@ -353,38 +352,15 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
     endcase
   end
 
-  //flopenl #(10) instrpointreg(clk, InstrPtrLoad, InstrPtrEn, InstrPtrNext, InitialOffset, InstrPtr);
-
-/* -----\/----- EXCLUDED -----\/-----
-  assign SequenceLow = mem[InstrPtr];
-  assign SequenceHigh = mem[InstrPtr+1];
-  assign CSRCount = mem[InitialCSRCountOffset][15:0];
-  assign GPRRead = mem[InitialGPREnOffset][15:0];
-  assign xPREn = GPRRead[0] | GPRRead[8];
-  assign InstrPtrNext = InstrPtr + Length;
-  assign InstrPtrLoad = TranCurrState == STATE_RDY & RvviAxiRlast
- -----/\----- EXCLUDED -----/\----- */
   
 
-  assign TransCounterThreshold = TransCounter == 4'd8;
+  assign TransCounterThreshold = TransCounter == ActuallyCaptured;
   assign TransCounterEn = RvviAxiWready & TransCurrState == STATE_TRANS;
   assign TransCounterReset = TransCurrState == STATE_RDY;
 
   counter #(10) transcounterreg(clk, TransCounterReset, TransCounterEn, TransCounter);
-  //flopenr #(10) trancounterreg(clk, TransCounterReset, TransCounterEn, TransCounterNext, TransCounter);
-
-  //assign TransCounterNext = TransCounter < 10'd3 ? TransCounter + 10'd1 : InstrPtr;
   
-  assign TransMem[0] = mem[0]; // dst mac 
-  assign TransMem[1] = mem[1]; // dst mac & src mac 
-  assign TransMem[2] = mem[2]; // src mac
-  assign TransMem[3] = mem[3]; // eth type & pad
-  assign TransMem[4] = mem[4];  // frame count
-  assign TransMem[5] = mem[5];  // frame count
-  assign TransMem[6] = mem[9];  // Minstret
-  assign TransMem[7] = mem[10];  // Minstret
-  assign TransMem[8] = 31'b1;
-  assign RvviAxiWdata = TransMem[TransCounter];
+  assign RvviAxiWdata = mem[TransCounter];
   assign RvviAxiWstrb = '1;
   assign RvviAxiWlast = TransCounterThreshold & TransCurrState == STATE_TRANS & ~DontSend;
   assign RvviAxiWvalid = TransCurrState == STATE_TRANS & ~DontSend;
