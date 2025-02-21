@@ -785,7 +785,7 @@ add wave -noupdate -expand -group rvvi-testbench /testbench/rvvi_synth/rvvitbwra
 add wave -noupdate -expand -group rvvi-testbench /testbench/rvvi_synth/rvvitbwrapper/InstrPtrEn
 add wave -noupdate -expand -group rvvi-testbench -radix unsigned /testbench/rvvi_synth/rvvitbwrapper/InstrPtr
 add wave -noupdate -expand -group rvvi-testbench /testbench/rvvi_synth/rvvitbwrapper/InitialOffset
-add wave -noupdate -expand -group rvvi-testbench -expand /testbench/rvvi_synth/rvvitbwrapper/mem
+add wave -noupdate -expand -group rvvi-testbench /testbench/rvvi_synth/rvvitbwrapper/mem
 add wave -noupdate -expand -group rvvi-testbench /testbench/rvvi_synth/rvvitbwrapper/SequenceHigh
 add wave -noupdate -expand -group rvvi-testbench /testbench/rvvi_synth/rvvitbwrapper/SequenceLow
 add wave -noupdate -expand -group rvvi-testbench /testbench/rvvi_synth/rvvitbwrapper/CSRCount
@@ -794,8 +794,10 @@ add wave -noupdate -expand -group rvvi-testbench -radix unsigned /testbench/rvvi
 add wave -noupdate -expand -group rvvi-testbench -radix unsigned /testbench/rvvi_synth/rvvitbwrapper/Length
 add wave -noupdate -expand -group transmitt /testbench/rvvi_synth/rvvitbwrapper/TransCounter
 add wave -noupdate -expand -group transmitt -color Gold /testbench/rvvi_synth/rvvitbwrapper/TransCurrState
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RecvCounter
+add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/RecvCounterWriteEn
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {19105 ns} 1} {{Cursor 4} {13035 ns} 1} {{Cursor 3} {616640 ns} 1} {{Cursor 4} {611 ns} 0}
+WaveRestoreCursors {{Cursor 4} {19105 ns} 1} {{Cursor 4} {13035 ns} 1} {{Cursor 3} {616640 ns} 1} {{Cursor 4} {13931 ns} 0}
 quietly wave cursor active 4
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -811,4 +813,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {420 ns} {846 ns}
+WaveRestoreZoom {12673 ns} {19585 ns}

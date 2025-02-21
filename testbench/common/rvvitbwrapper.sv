@@ -234,7 +234,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   logic        RecvCounterEn, RecvCounterReset;
   logic [9:0]  RecvCounter;
   logic [9:0]  RecvCounterWrite;
-  logic [31:0] mem [40:0];
+  logic [31:0] mem [300:0];
   logic        RecvDone;
   logic [9:0]  ActuallyCaptured;
   logic [9:0]  InitialOffset, InitialCSRCountOffset, InitialGPREnOffset;
@@ -248,8 +248,10 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   logic        RecvCounterWriteEn;
   logic        SaveCSRCount;
   logic        SavexPREn;
-  
-  
+  logic [31:0] InterPacketDelay;
+
+  assign InterPacketDelay = 32'd1;
+
     
   always_ff @(posedge clk)
     if (reset) RecvCurrState <= STATE_IDLE;
@@ -276,7 +278,9 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   
   always_ff @(posedge clk) begin
     if(RecvCounterWriteEn) begin
-      mem[RecvCounterWrite] <= RvviAxiRdata;
+      if(RecvCounter == (InstrPtr + 2) | (RecvCounter == InstrPtr + 3)) mem[RecvCounterWrite] <= '0;
+      else if(RecvCounter == (InstrPtr + 4)) mem[RecvCounterWrite] <= InterPacketDelay;
+      else mem[RecvCounterWrite] <= RvviAxiRdata;
     end
     if(RvviAxiRlast) begin
       ActuallyCaptured <= RecvCounter;
@@ -307,7 +311,12 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
                    (xPREn ? 10'd2 : '0));
   //assign InstrPtrNext = InstrPtr == 10'd4 ? Length : InstrPtr + Length;
   assign InstrPtrNext = InstrPtr + Length;
-  assign RecvCounterWriteEn = RecvCounter == InstrPtr;
+  assign RecvCounterWriteEn = (RecvCounter < 4) | 
+                              (RecvCounter == InstrPtr) |
+                              (RecvCounter == InstrPtr + 1) |
+                              (RecvCounter == InstrPtr + 2) |
+                              (RecvCounter == InstrPtr + 3) |
+                              (RecvCounter == InstrPtr + 4) ;
 
 
   // now that the frame is captured send it back with the random 32-bit system load estimation
