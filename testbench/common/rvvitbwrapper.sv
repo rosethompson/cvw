@@ -249,6 +249,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   logic        SaveCSRCount;
   logic        SavexPREn;
   logic [31:0] InterPacketDelay;
+  logic        InstrPtrReset;
 
   assign InterPacketDelay = 32'd1;
 
@@ -283,7 +284,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
       else mem[RecvCounterWrite] <= RvviAxiRdata;
     end
     if(RvviAxiRlast) begin
-      ActuallyCaptured <= RecvCounterWrite;
+      ActuallyCaptured <= RecvCounterWrite - 1'b1; // we are only interested in some of the beats and never the last one for the ACK so we don't want to include this one in the count.
     end
   end
 
@@ -297,7 +298,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   assign InitialCSRCountOffset = InstrPtr + 36/4;
   assign InitialGPREnOffset = InstrPtr + 40/4;
 
-  flopenl #(10) instrpointreg(clk, reset, InstrPtrEn, InstrPtrNext, InitialOffset, InstrPtr);
+  flopenl #(10) instrpointreg(clk, InstrPtrReset, InstrPtrEn, InstrPtrNext, InitialOffset, InstrPtr);
   
 
   assign SaveCSRCount = RecvCounter == InitialCSRCountOffset;
@@ -306,6 +307,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   flopenr #(2) xprenreg(clk, reset, SavexPREn, {RvviAxiRdata[0], RvviAxiRdata[8]}, {FPREn, GPREn});
   assign xPREn = FPREn | GPREn;
   flopenr #(1) instrptrenreg(clk, reset, 1'b1, SavexPREn, InstrPtrEn);
+  assign InstrPtrReset = RecvCurrState == STATE_IDLE & ~RvviAxiRvalid;
     
   assign Length = (10'd12 + (CSRCount != '0 ? 10'd13 : '0) +
                    (xPREn ? 10'd2 : '0));
