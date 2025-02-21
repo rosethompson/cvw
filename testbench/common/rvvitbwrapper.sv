@@ -42,7 +42,7 @@ module rvvitbwrapper import cvw::*; #(parameter cvw_t P,
   input logic               phy_tx_rst // not present for mii
 );
 
-  localparam                LOSS_INTERVAL = 10;
+  localparam                LOSS_INTERVAL = 100;
   
   logic        valid;
   logic [72+(5*P.XLEN) + MAX_CSRS*(P.XLEN+16)-1:0] rvvi;

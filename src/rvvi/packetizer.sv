@@ -106,7 +106,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
                   else            NextState = STATE_WAIT;
       STATE_TRANS: if(BurstDone & TransReady & ~DelayFlag) NextState = STATE_TRANS_INSERT_DELAY;
                    else if(BurstDone & TransReady & DelayFlag) NextState = STATE_BEGIN;
-                   else if(RVVI_ENCODING == 3 & InstrDone & TransReady) NextState = STATE_RDY;      // short cut to begin to avoid the global counter reset
+                   else if(RVVI_ENCODING == 3 & InstrDone) NextState = STATE_RDY;      // short cut to begin to avoid the global counter reset
                    else          NextState = STATE_TRANS;
       STATE_TRANS_INSERT_DELAY: if(DelayFlag) NextState = STATE_BEGIN;
                                 else          NextState = STATE_TRANS_INSERT_DELAY;

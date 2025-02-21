@@ -28,7 +28,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 module inversepacketizer import cvw::*; #(parameter cvw_t P, 
-                                          parameter FRAME_COUNT_WIDTH) (
+                                          parameter FRAME_COUNT_WIDTH,
+                                          parameter RVVI_ENCODING
+) (
   input logic               clk, reset,
   input logic [31:0]        RvviAxiRdata,
   input logic [3:0]         RvviAxiRstrb,
@@ -46,10 +48,10 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P,
   input logic [15:0]        TriggerType,
   input logic [32*5-1:0]    TriggerString);
 
-  typedef enum              {STATE_RST, STATE_ALL_CAPTURED, STATE_WAIT} statetype;
+  typedef enum              {STATE_RST, STATE_RUN, STATE_ALL_CAPTURED, STATE_WAIT} statetype;
 (* mark_debug = "true" *)  statetype CurrState, NextState;
 
-(* mark_debug = "true" *)  logic [3:0]               Counter;	
+(* mark_debug = "true" *)  logic [9:0]               Counter;	
   logic                     CounterEn, CounterRst;
 
   logic [31:0]		    ROM [3:0];
@@ -62,7 +64,6 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P,
   logic			    MatchAll;
   logic			    TriggerTypeSig, AckTypeSig;
   logic			    TriggerTypeSigDelay, AckTypeSigDelay;
-  logic [31:0]		    FrameCountLow, FrameCountHigh;
 
   logic [31:0]		    TriggerROM[8:0];
   logic			    CurrentTriggerMatch;
@@ -82,22 +83,23 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P,
   assign CurrentMatch = Rdata == ROMReadData;
   assign NewFrame = reset | RvviAxiRlast;
   
-  flopenr #(1) matchreg0 (clk, NewFrame, CurrentMatch & Counter == 4'd0, CurrentMatch, BeatMatch[0]);
-  flopenr #(1) matchreg1 (clk, NewFrame, CurrentMatch & Counter == 4'd1, CurrentMatch, BeatMatch[1]);
-  flopenr #(1) matchreg2 (clk, NewFrame, CurrentMatch & Counter == 4'd2, CurrentMatch, BeatMatch[2]);
-  flopenr #(1) matchreg3 (clk, NewFrame, CurrentMatch & Counter == 4'd3, CurrentMatch, BeatMatch[3]);
+  flopenr #(1) matchreg0 (clk, NewFrame, CurrentMatch & Counter == 10'd0, CurrentMatch, BeatMatch[0]);
+  flopenr #(1) matchreg1 (clk, NewFrame, CurrentMatch & Counter == 10'd1, CurrentMatch, BeatMatch[1]);
+  flopenr #(1) matchreg2 (clk, NewFrame, CurrentMatch & Counter == 10'd2, CurrentMatch, BeatMatch[2]);
+  flopenr #(1) matchreg3 (clk, NewFrame, CurrentMatch & Counter == 10'd3, CurrentMatch, BeatMatch[3]);
   assign MatchAll = &BeatMatch;  
 
-  counter #(4) counter(clk, CounterRst, CounterEn, Counter);
+//  counter #(10) counter(clk, CounterRst, CounterEn, Counter);
+  counterl #(10) counter(clk, CounterRst, CounterEn, CounterLoad, 10'd4, Counter);
 
-  flopenr #(32) framecountlowreg(clk, reset, Counter == 4'd4 & MatchAll & RvviAxiRvalid, RvviAxiRdata, FrameCount[31:0]);
-  flopenr #(32) framecounthighreg(clk, reset, Counter == 4'd5 & MatchAll & RvviAxiRvalid, RvviAxiRdata, FrameCount[63:32]);
-  flopenr #(32) interpacketdelayreg(clk, reset, Counter == 4'd8 & MatchAll & RvviAxiRvalid, RvviAxiRdata, InterPacketDelay);
+  flopenr #(32) framecountlowreg(clk, reset, Counter == 10'd4 & MatchAll & RvviAxiRvalid, RvviAxiRdata, FrameCount[31:0]);
+  flopenr #(32) framecounthighreg(clk, reset, Counter == 10'd5 & MatchAll & RvviAxiRvalid, RvviAxiRdata, FrameCount[63:32]);
+  flopenr #(32) interpacketdelayreg(clk, reset, Counter == 10'd8 & MatchAll & RvviAxiRvalid, RvviAxiRdata, InterPacketDelay);
 
   assign TriggerTypeSig = RvviAxiRdata[31:16] == TriggerType;
   assign AckTypeSig = RvviAxiRdata[31:16] == AckType;
 
-  flopenr #(1) acktypereg(clk, NewFrame, CurrentMatch & Counter == 4'd3, AckTypeSig, AckTypeSigDelay);
+  flopenr #(1) acktypereg(clk, NewFrame, CurrentMatch & Counter == 10'd3, AckTypeSig, AckTypeSigDelay);
   
     
   always_ff @(posedge clk) begin
@@ -107,10 +109,13 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P,
 
   always_comb begin
     case(CurrState)
-      STATE_RST: if(RvviAxiRvalid & Counter == 4'h8) NextState = STATE_ALL_CAPTURED;
+      STATE_RST: if(RvviAxiRvalid) NextState = STATE_RUN;
                  else NextState = STATE_RST;
-      STATE_ALL_CAPTURED: if(RvviAxiRlast) NextState = STATE_RST;
-                          else NextState = STATE_WAIT;
+      STATE_RUN: if(RvviAxiRvalid & Counter == 10'h7) NextState = STATE_ALL_CAPTURED;
+                 else NextState = STATE_RUN;
+      STATE_ALL_CAPTURED: if(RvviAxiRlast & RvviAxiRvalid) NextState = STATE_RST;
+                          else if(RvviAxiRlast & ~RvviAxiRvalid) NextState = STATE_ALL_CAPTURED;
+                          else NextState = STATE_RUN;
       STATE_WAIT: if(RvviAxiRlast) NextState = STATE_RST;
                   else NextState = STATE_WAIT;
       default: NextState = STATE_RST;
@@ -118,6 +123,7 @@ module inversepacketizer import cvw::*; #(parameter cvw_t P,
   end
 
   assign CounterRst = RvviAxiRlast | reset;
+  assign CounterLoad = CurrState == STATE_ALL_CAPTURED & RvviAxiRvalid;
   assign CounterEn = RvviAxiRvalid;
 
   assign Minstr = '0;

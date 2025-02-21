@@ -134,7 +134,7 @@ module hwrvvitracer import cvw::*; #(parameter cvw_t P,
   assign PacketizerRvviValid = SelActiveList ? SelActiveList : DutValid;
   
 
-  inversepacketizer #(P, FRAME_COUNT_WIDTH) inversepacketizer (.clk, .reset, .RvviAxiRdata, .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid,
+  inversepacketizer #(P, FRAME_COUNT_WIDTH, RVVI_ENCODING) inversepacketizer (.clk, .reset, .RvviAxiRdata, .RvviAxiRstrb, .RvviAxiRlast, .RvviAxiRvalid,
     .Valid(HostInstrValid), .IlaTrigger, .Minstr(HostMinstr), .InterPacketDelay(HostInterPacketDelay), .FrameCount(HostFrameCount), .DstMac(SrcMac), .SrcMac(DstMac), .EthType, .AckType, .TriggerType, .TriggerString);
 
   flopenl #(32) hostinterpacketdelayreg(clk, reset, HostInstrValid, HostInterPacketDelay, RVVI_PACKET_DELAY, HostInterPacketDelayD);
