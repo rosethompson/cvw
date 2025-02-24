@@ -162,7 +162,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
     assign InstrDone = WordCount == (ActualLength[9:2] - 1'b1);
     //assign InstrDone = WordCount == (ActualLength[9:2] - 8'd2); // what?
     //assign NearEnd = GlobalWordCount > 11'd347; // hmm? 270 causes issues with the mac. leave at 250 for now ***
-    assign NearEnd = GlobalWordCount > 11'd50; 
+    assign NearEnd = GlobalWordCount > 11'd200; 
     assign BurstDone = NearEnd & InstrDone;    
   end else begin
     assign InstrDone = '0;

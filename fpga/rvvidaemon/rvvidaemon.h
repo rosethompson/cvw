@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define RVVI_ENCODING 0
+#define RVVI_ENCODING 3
 #define MAXCSRS 5 // *** bad to have defined in multiple locations
 
 typedef struct {

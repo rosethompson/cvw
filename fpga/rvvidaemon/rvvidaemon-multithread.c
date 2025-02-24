@@ -55,7 +55,7 @@
 //#define PRINT_THRESHOLD 8192
 #define LOG_THRESHOLD 0x8000000 // ~128 Million instruction
 //#define E_TARGET_CLOCK 25000
-#define E_TARGET_CLOCK 110000
+#define E_TARGET_CLOCK 7000
 //#define E_TARGET_CLOCK 60000
 //#define E_TARGET_CLOCK 69000
 #define SYSTEM_CLOCK 50000000
@@ -153,6 +153,7 @@ int state_compare(int hart, uint64_t Minstret);
 void WriteInstructionData(RequiredRVVI_t *InstructionData, FILE *fptr);
 void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uint64_t EndAddress);
 double UpdateHistory(RequiredRVVI_t *InstructionDataPtr, History_t *History);
+int Encoding3ACK(uint8_t *buf, uint8_t *AckBuf, int size, uint32_t inner_pkt_delay);
 
 int main(int argc, char **argv){
 
@@ -438,6 +439,19 @@ void * ReceiveLoop(void * arg){
   DstMAC = *((uint64_t*)buf);
   DstMAC = DstMAC & 0xFFFFFFFFFFFF;
   if(DstMAC == DEST_MAC){
+    #if RVVI_ENCODING == 3
+    DecodeAndEnqueue(buf+headerbytes+2, InstructionQueue, numbytes-headerbytes-2);
+    ((uint16_t*) (AckBuf + AckLen))[0] = 0x6b61;
+    int count = Encoding3ACK(buf+headerbytes+2, AckBuf+headerbytes+2, numbytes-headerbytes-2, INNER_PKT_DELAY);
+    int TotalLength = AckLen + 2 + (count * 20);
+    /* printf("TotalLength = %d\n", TotalLength); */
+    /* int LocalIndex; */
+    /* for(LocalIndex = 0; LocalIndex < TotalLength/4; LocalIndex++){ */
+    /*   printf("AckBuf[%d] = %x\n", LocalIndex, ((uint32_t *)AckBuf)[LocalIndex]); */
+    /* } */
+    if (sendto(sockfd, AckBuf, TotalLength, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
+    printf("Ack Sent\n");
+    #else
     RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes + 2);
     Sequence = InstructionDataPtr->Sequence;
     if(Sequence == (LastSequence + 1)){
@@ -450,11 +464,13 @@ void * ReceiveLoop(void * arg){
       LastSequence = Sequence;
     }
 
+
     ((uint16_t*) (AckBuf + AckLen))[0] = 0x6b61;
     ((uint64_t*) (AckBuf + AckLen + 2))[0] = InstructionDataPtr->Sequence;
     ((uint64_t*) (AckBuf + AckLen + 10))[0] = 0;
     ((uint32_t*) (AckBuf + AckLen + 18))[0] = INNER_PKT_DELAY;
     if (sendto(sockfd, AckBuf, AckLen + 22, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
+    #endif
 
     pthread_cond_signal(&StartCond);  // send message to other thread to slow down
   }
@@ -475,6 +491,18 @@ void * ReceiveLoop(void * arg){
     DstMAC = *((uint64_t*)buf);
     DstMAC = DstMAC & 0xFFFFFFFFFFFF;
     if(DstMAC == DEST_MAC){
+      #if RVVI_ENCODING == 3
+      DecodeAndEnqueue(buf+headerbytes+2, InstructionQueue, numbytes-headerbytes-2);
+      ((uint16_t*) (AckBuf + AckLen))[0] = 0x6b61;
+      int count = Encoding3ACK(buf+headerbytes+2, AckBuf+headerbytes+2, numbytes-headerbytes-2, INNER_PKT_DELAY);
+      int TotalLength = AckLen + 2 + (count * 20);
+      /* int LocalIndex; */
+      /* for(LocalIndex = 0; LocalIndex < TotalLength/4; LocalIndex++){ */
+      /*   printf("AckBuf[%d] = %x\n", LocalIndex, ((uint32_t *)AckBuf)[LocalIndex]); */
+      /* } */
+      if (sendto(sockfd, AckBuf, TotalLength, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
+      
+      #else
       RequiredRVVI_t *InstructionDataPtr = (RequiredRVVI_t *) (buf + headerbytes + 2);
       Sequence = InstructionDataPtr->Sequence;
       if(Sequence == (LastSequence + 1)){
@@ -491,6 +519,7 @@ void * ReceiveLoop(void * arg){
       ((uint64_t*) (AckBuf + AckLen + 10))[0] = 0;
       ((uint32_t*) (AckBuf + AckLen + 18))[0] = INNER_PKT_DELAY + 8 * QueueDepth;
       if (sendto(sockfd, AckBuf, AckLen + 22, 0, (struct sockaddr*)&socket_address, sizeof(struct sockaddr_ll)) < 0) printf("Send failed\n");
+      #endif
 
     }
     if(count == RATE_SET_THREAHOLD){
@@ -904,4 +933,30 @@ double UpdateHistory(RequiredRVVI_t *InstructionDataPtr, History_t *History){
   History->Index = Index;
   double freq = MInstretDelta / (MCycleDelta * (1.0 / SYSTEM_CLOCK));
   return freq;
+}
+
+int Encoding3ACK(uint8_t *buf, uint8_t *AckBuf, int size, uint32_t inner_pkt_delay){
+  RequiredRVVI_t *CurrentDataPtr;
+  uint16_t CSRCount;
+  uint8_t GPREn;
+  uint8_t FPREn;
+  int next;
+  int count = 0;
+  do {
+    CurrentDataPtr = (RequiredRVVI_t *) buf;
+    CSRCount = CurrentDataPtr->CSRCount;
+    GPREn = CurrentDataPtr->GPREn;
+    FPREn = CurrentDataPtr->FPREn;
+    next = 48 + ((GPREn | FPREn) ? 8 : 0) + ((CSRCount) ? 52 : 0);
+    ((uint64_t*) (AckBuf))[0] = CurrentDataPtr->Sequence;
+    ((uint64_t*) (AckBuf + 8))[0] = 0;
+    ((uint32_t*) (AckBuf + 16))[0] = inner_pkt_delay;
+    //printf("Count = %d, size = %d, next = %d, Sequence = %ld\n", count, size, next, CurrentDataPtr->Sequence);
+    buf = buf + next;
+    AckBuf = AckBuf + 20;
+    size = size - next;
+    count++;
+  }while(size > 0);
+  //printf("count = %d\n", count);
+  return count;
 }

@@ -76,6 +76,28 @@ void Enqueue(RequiredRVVI_t * NewInstructionData, queue_t *queue, int size){
   
 }
 
+void DecodeAndEnqueue(uint8_t *buf, queue_t *queue, int size){
+  #if SAFE != 0
+  if(IsFull(queue)) return;
+  #endif
+  RequiredRVVI_t *CurrentDataPtr;
+  uint16_t CSRCount;
+  uint8_t GPREn;
+  uint8_t FPREn;
+  int next;
+  do {
+    CurrentDataPtr = (RequiredRVVI_t *) buf;
+    CSRCount = CurrentDataPtr->CSRCount;
+    GPREn = CurrentDataPtr->GPREn;
+    FPREn = CurrentDataPtr->FPREn;
+    next = 48 + ((GPREn | FPREn) ? 8 : 0) + ((CSRCount) ? 52 : 0);
+    //printf("DecodeAndEnqueue size = %d, next = %d, Sequence = %ld\n", size, next, CurrentDataPtr->Sequence);
+    Enqueue(CurrentDataPtr, queue, next);
+    buf = buf + next;
+    size = size - next;
+  }while(size > 0);
+}
+
 void Dequeue(RequiredRVVI_t * InstructionData, queue_t *queue){
   #if SAFE != 0
   if(IsEmpty(queue)) return;
