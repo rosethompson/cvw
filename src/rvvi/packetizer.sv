@@ -79,7 +79,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   logic [10:0]                             GlobalWordCount;
   logic                                    NearEnd;
     
-  typedef enum              {STATE_RST, STATE_COUNT, STATE_BEGIN, STATE_NEXT_INSTR, STATE_WAIT, STATE_TRANS, STATE_WAIT2, STATE_TRANS_INSERT_DELAY} statetype;
+  typedef enum              {STATE_RST, STATE_COUNT, STATE_BEGIN, STATE_NEXT_INSTR, STATE_WAIT, STATE_TRANS, STATE_DELAY} statetype;
 (* mark_debug = "true" *)  statetype CurrState, NextState;
 
 (* mark_debug = "true" *)   logic [31:0] 	    RstCount;
@@ -104,12 +104,12 @@ module packetizer import cvw::*; #(parameter cvw_t P,
       else                        NextState = STATE_NEXT_INSTR;
       STATE_WAIT: if(TransReady)  NextState = STATE_TRANS;
                   else            NextState = STATE_WAIT;
-      STATE_TRANS: if(BurstDone & TransReady & ~DelayFlag) NextState = STATE_TRANS_INSERT_DELAY;
+      STATE_TRANS: if(BurstDone & TransReady & ~DelayFlag) NextState = STATE_DELAY;
                    else if(BurstDone & TransReady & DelayFlag) NextState = STATE_BEGIN;
                    else if(RVVI_ENCODING == 3 & TransReady & InstrDone) NextState = STATE_NEXT_INSTR;      // short cut to begin to avoid the global counter reset
                    else          NextState = STATE_TRANS;
-      STATE_TRANS_INSERT_DELAY: if(DelayFlag) NextState = STATE_BEGIN;
-                                else          NextState = STATE_TRANS_INSERT_DELAY;
+      STATE_DELAY: if(DelayFlag) NextState = STATE_BEGIN;
+                                else          NextState = STATE_DELAY;
       default: NextState = STATE_BEGIN;
     endcase
   end
@@ -117,7 +117,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   assign RVVIStall = CurrState != STATE_NEXT_INSTR & CurrState != STATE_BEGIN;
   assign TransReady = RvviAxiWready;
   assign WordCountEnable = ((CurrState == STATE_NEXT_INSTR | CurrState == STATE_BEGIN) & valid) | (CurrState == STATE_TRANS & TransReady);
-  assign RstCountEn = CurrState == STATE_COUNT | CurrState == STATE_TRANS_INSERT_DELAY | CurrState == STATE_TRANS | STATE_WAIT;
+  assign RstCountEn = CurrState == STATE_COUNT | CurrState == STATE_DELAY | CurrState == STATE_TRANS | STATE_WAIT;
   assign RstCountRst = CurrState == STATE_RST | CurrState == STATE_NEXT_INSTR | CurrState == STATE_BEGIN;
 
   // have to count at least 250 ms after reset pulled to wait for the phy to actually be ready
