@@ -64,14 +64,12 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   
   logic [9:0]              WordCount;
 
-  logic                    TransReady;
   logic                    BurstDone;
   logic                    WordCountReset;
   logic                    WordCountEnable;
   logic [TotalFrameLengthBits-1:0] TotalFrame;
   logic [31:0] TotalFrameWords [TotalFrameLengthBytes/4-1:0];
   logic [WordPadLen-1:0]     WordPad;
-  logic [RVVI_PREFIX_PAD-1:0] HeaderPad;
 
   logic [RVVI_WIDTH+FRAME_COUNT_WIDTH-1:0] rvviDelay;
   logic                                    InstrDone;
@@ -79,7 +77,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   logic [10:0]                             GlobalWordCount;
   logic                                    NearEnd;
     
-  typedef enum              {STATE_RST, STATE_INIT, STATE_BEGIN, STATE_NEXT_INSTR, STATE_WAIT, STATE_TRANS, STATE_DELAY} statetype;
+  typedef enum              {STATE_INIT, STATE_BEGIN, STATE_NEXT_INSTR, STATE_WAIT, STATE_TRANS, STATE_DELAY} statetype;
 (* mark_debug = "true" *)  statetype CurrState, NextState;
 
 (* mark_debug = "true" *)   logic [31:0] 	    RstCount;
@@ -87,26 +85,25 @@ module packetizer import cvw::*; #(parameter cvw_t P,
    
 
   always_ff @(posedge clk) begin
-    if(reset) CurrState <= STATE_RST;
+    if(reset) CurrState <= STATE_INIT;
     else               CurrState <= NextState;
   end
 
   always_comb begin
     case(CurrState)
-      STATE_RST: NextState = STATE_INIT;
       STATE_INIT: if (CountFlag) NextState = STATE_BEGIN;
                    else           NextState = STATE_INIT;
-      STATE_BEGIN : if (TransReady & valid) NextState = STATE_TRANS;
-      else if(~TransReady & valid) NextState = STATE_WAIT;
+      STATE_BEGIN : if (RvviAxiWready & valid) NextState = STATE_TRANS;
+      else if(~RvviAxiWready & valid) NextState = STATE_WAIT;
       else                        NextState = STATE_BEGIN;
-      STATE_NEXT_INSTR: if (TransReady & valid) NextState = STATE_TRANS;
-      else if(~TransReady & valid) NextState = STATE_WAIT;
+      STATE_NEXT_INSTR: if (RvviAxiWready & valid) NextState = STATE_TRANS;
+      else if(~RvviAxiWready & valid) NextState = STATE_WAIT;
       else                        NextState = STATE_NEXT_INSTR;
-      STATE_WAIT: if(TransReady)  NextState = STATE_TRANS;
+      STATE_WAIT: if(RvviAxiWready)  NextState = STATE_TRANS;
                   else            NextState = STATE_WAIT;
-      STATE_TRANS: if(BurstDone & TransReady & ~DelayFlag) NextState = STATE_DELAY;
-                   else if(BurstDone & TransReady & DelayFlag) NextState = STATE_BEGIN;
-                   else if(RVVI_ENCODING == 3 & TransReady & InstrDone) NextState = STATE_NEXT_INSTR;      // short cut to begin to avoid the global counter reset
+      STATE_TRANS: if(BurstDone & RvviAxiWready & ~DelayFlag) NextState = STATE_DELAY;
+                   else if(BurstDone & RvviAxiWready & DelayFlag) NextState = STATE_BEGIN;
+                   else if(RVVI_ENCODING == 3 & RvviAxiWready & InstrDone) NextState = STATE_NEXT_INSTR;      // short cut to begin to avoid the global counter reset
                    else          NextState = STATE_TRANS;
       STATE_DELAY: if(DelayFlag) NextState = STATE_BEGIN;
                                 else          NextState = STATE_DELAY;
@@ -115,10 +112,9 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   end
 
   assign RVVIStall = CurrState != STATE_NEXT_INSTR & CurrState != STATE_BEGIN;
-  assign TransReady = RvviAxiWready;
-  assign WordCountEnable = ((CurrState == STATE_NEXT_INSTR | CurrState == STATE_BEGIN) & valid) | (CurrState == STATE_TRANS & TransReady);
+  assign WordCountEnable = ((CurrState == STATE_NEXT_INSTR | CurrState == STATE_BEGIN) & valid) | (CurrState == STATE_TRANS & RvviAxiWready);
   assign RstCountEn = CurrState == STATE_INIT | CurrState == STATE_DELAY | CurrState == STATE_TRANS | STATE_WAIT;
-  assign RstCountRst = CurrState == STATE_RST | CurrState == STATE_NEXT_INSTR | CurrState == STATE_BEGIN;
+  assign RstCountRst = reset | CurrState == STATE_NEXT_INSTR | CurrState == STATE_BEGIN;
 
   // have to count at least 250 ms after reset pulled to wait for the phy to actually be ready
   // at 20MHz 250 ms is 250e-3 / (1/20e6) = 5,000,000.
@@ -181,7 +177,6 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   end
 
   assign WordPad = '0;
-  assign HeaderPad = '0;
   assign TotalFrame = {WordPad, rvviDelay, AckType, EthType, DstMac, SrcMac};
 
   
