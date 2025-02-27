@@ -79,7 +79,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   logic [10:0]                             GlobalWordCount;
   logic                                    NearEnd;
     
-  typedef enum              {STATE_RST, STATE_COUNT, STATE_BEGIN, STATE_RDY, STATE_WAIT, STATE_TRANS, STATE_WAIT2, STATE_TRANS_INSERT_DELAY} statetype;
+  typedef enum              {STATE_RST, STATE_COUNT, STATE_BEGIN, STATE_NEXT_INSTR, STATE_WAIT, STATE_TRANS, STATE_WAIT2, STATE_TRANS_INSERT_DELAY} statetype;
 (* mark_debug = "true" *)  statetype CurrState, NextState;
 
 (* mark_debug = "true" *)   logic [31:0] 	    RstCount;
@@ -99,30 +99,26 @@ module packetizer import cvw::*; #(parameter cvw_t P,
       STATE_BEGIN : if (TransReady & valid) NextState = STATE_TRANS;
       else if(~TransReady & valid) NextState = STATE_WAIT;
       else                        NextState = STATE_BEGIN;
-      STATE_RDY: if (TransReady & valid) NextState = STATE_TRANS;
+      STATE_NEXT_INSTR: if (TransReady & valid) NextState = STATE_TRANS;
       else if(~TransReady & valid) NextState = STATE_WAIT;
-      else                        NextState = STATE_RDY;
+      else                        NextState = STATE_NEXT_INSTR;
       STATE_WAIT: if(TransReady)  NextState = STATE_TRANS;
                   else            NextState = STATE_WAIT;
-      STATE_TRANS: if(BurstDone & ~TransReady) NextState = STATE_WAIT2;
-                   else if(BurstDone & TransReady & ~DelayFlag) NextState = STATE_TRANS_INSERT_DELAY;
+      STATE_TRANS: if(BurstDone & TransReady & ~DelayFlag) NextState = STATE_TRANS_INSERT_DELAY;
                    else if(BurstDone & TransReady & DelayFlag) NextState = STATE_BEGIN;
-                   else if(RVVI_ENCODING == 3 & & TransReady & InstrDone) NextState = STATE_RDY;      // short cut to begin to avoid the global counter reset
+                   else if(RVVI_ENCODING == 3 & TransReady & InstrDone) NextState = STATE_NEXT_INSTR;      // short cut to begin to avoid the global counter reset
                    else          NextState = STATE_TRANS;
-      STATE_WAIT2: if(TransReady & ~DelayFlag) NextState = STATE_TRANS_INSERT_DELAY;
-                   else if(TransReady & DelayFlag) NextState = STATE_BEGIN;
-                   else NextState = STATE_WAIT2;
       STATE_TRANS_INSERT_DELAY: if(DelayFlag) NextState = STATE_BEGIN;
                                 else          NextState = STATE_TRANS_INSERT_DELAY;
       default: NextState = STATE_BEGIN;
     endcase
   end
 
-  assign RVVIStall = CurrState != STATE_RDY & CurrState != STATE_BEGIN;
+  assign RVVIStall = CurrState != STATE_NEXT_INSTR & CurrState != STATE_BEGIN;
   assign TransReady = RvviAxiWready;
-  assign WordCountEnable = ((CurrState == STATE_RDY | CurrState == STATE_BEGIN) & valid) | (CurrState == STATE_TRANS & TransReady);
+  assign WordCountEnable = ((CurrState == STATE_NEXT_INSTR | CurrState == STATE_BEGIN) & valid) | (CurrState == STATE_TRANS & TransReady);
   assign RstCountEn = CurrState == STATE_COUNT | CurrState == STATE_TRANS_INSERT_DELAY | CurrState == STATE_TRANS | STATE_WAIT;
-  assign RstCountRst = CurrState == STATE_RST | CurrState == STATE_RDY | CurrState == STATE_BEGIN;
+  assign RstCountRst = CurrState == STATE_RST | CurrState == STATE_NEXT_INSTR | CurrState == STATE_BEGIN;
 
   // have to count at least 250 ms after reset pulled to wait for the phy to actually be ready
   // at 20MHz 250 ms is 250e-3 / (1/20e6) = 5,000,000.
@@ -158,7 +154,7 @@ module packetizer import cvw::*; #(parameter cvw_t P,
 
   if(RVVI_ENCODING == 3) begin
     counter #(11) globalwordcounter(clk, GlobalWordCountReset, WordCountEnable, GlobalWordCount);
-    assign WordCountReset = CurrState == STATE_RDY | (CurrState == STATE_TRANS & InstrDone & RvviAxiWready) | (CurrState == STATE_WAIT2 & RvviAxiWready); 
+    assign WordCountReset = CurrState == STATE_NEXT_INSTR | (CurrState == STATE_TRANS & InstrDone & RvviAxiWready); 
     assign InstrDone = WordCount == (ActualLength[9:2] - 1'b1);
     //assign InstrDone = WordCount == (ActualLength[9:2] - 8'd2); // what?
     //assign NearEnd = GlobalWordCount > 11'd347; // hmm? 270 causes issues with the mac. leave at 250 for now ***
@@ -167,14 +163,14 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   end else begin
     assign InstrDone = '0;
     assign NearEnd = '0;
-    assign WordCountReset = CurrState == STATE_RDY;
+    assign WordCountReset = CurrState == STATE_NEXT_INSTR;
     assign BurstDone = WordCount == (ActualLength[9:2] - 1'b1);
   end
 
   end else begin  
     assign GlobalWordCountReset = CurrState == STATE_BEGIN;
     assign BurstDone = WordCount == (TotalFrameLengthBytes[11:2] - 1'b1);
-    assign WordCountReset = CurrState == STATE_RDY;
+    assign WordCountReset = CurrState == STATE_NEXT_INSTR;
     assign NearEnd = '0;
     assign InstrDone = '0;
   end
@@ -191,8 +187,8 @@ module packetizer import cvw::*; #(parameter cvw_t P,
   
   assign RvviAxiWdata = TotalFrameWords[WordCount];
   assign RvviAxiWstrb = '1;
-  assign RvviAxiWlast = (BurstDone & (CurrState == STATE_TRANS)) | (CurrState == STATE_WAIT2);
-  assign RvviAxiWvalid = (CurrState == STATE_TRANS) | (CurrState == STATE_WAIT2);
+  assign RvviAxiWlast = (BurstDone & (CurrState == STATE_TRANS));
+  assign RvviAxiWvalid = (CurrState == STATE_TRANS);
   
 endmodule
  
