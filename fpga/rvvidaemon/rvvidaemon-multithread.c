@@ -95,8 +95,12 @@
 #define QUEUE_SIZE       16384
 #define QUEUE_THREASHOLD 128
 
+// VCU108
+//uint64_t EXT_MEM_BASE =  0x80000000;
+//uint64_t EXT_MEM_RANGE = 0x7FFFFFFF;
+// Arty A7
 uint64_t EXT_MEM_BASE =  0x80000000;
-uint64_t EXT_MEM_RANGE = 0x7FFFFFFF;
+uint64_t EXT_MEM_RANGE = 0x0FFFFFFF;
 #define NUM_PMP_REGS 16
 
 //#define MAX_64 ((uint64_t) 1 << (uint64_t) 64)
@@ -149,9 +153,9 @@ int ProcessRvviAll(RequiredRVVI_t *InstructionData, History_t * History);
 void set_gpr(int hart, int reg, uint64_t value);
 void set_csr(int hart, int csrIndex, uint64_t value);
 void set_fpr(int hart, int reg, uint64_t value);
-int state_compare(int hart, uint64_t Minstret);
+int state_compare(int hart, uint64_t Minstret, RequiredRVVI_t * PrevInstruction);
 void WriteInstructionData(RequiredRVVI_t *InstructionData, FILE *fptr);
-void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uint64_t EndAddress);
+void DumpState(uint32_t hartId, const char *FileName, uint64_t StartAddress, uint64_t EndAddress, RequiredRVVI_t * PrevInstruction);
 double UpdateHistory(RequiredRVVI_t *InstructionDataPtr, History_t *History);
 
 int main(int argc, char **argv){
@@ -615,7 +619,7 @@ void * ProcessLoop(void * arg){
         char buf[40];
 	printf("count = %ld, LOG_THRESHOLD = %d\n", count, LOG_THRESHOLD);
         snprintf(buf, 40, "Log-%ldM-Instr-dump", ((RefModelLogCount * LOG_THRESHOLD) >> 20));
-        DumpState(0, buf, EXT_MEM_BASE, EXT_MEM_RANGE + EXT_MEM_BASE + 1);
+        DumpState(0, buf, EXT_MEM_BASE, EXT_MEM_RANGE + EXT_MEM_BASE + 1, NULL);
 	RefModelLogCount++;
       }
       result = ProcessRvviAll(&InstructionDataPtr, History);
@@ -658,7 +662,7 @@ int ProcessRvviAll(RequiredRVVI_t *InstructionData, History_t * History){
   uint8_t trap = InstructionData->Trap;
   int result;
   int CSRIndex;
-
+  RequiredRVVI_t PrevInstruction;
   result = 0;
   if(InstructionData->GPREn) rvviDutGprSet(0, InstructionData->GPRReg, InstructionData->GPRValue);
   if(InstructionData->FPREn) rvviDutFprSet(0, InstructionData->FPRReg, InstructionData->GPRValue);
@@ -681,15 +685,21 @@ int ProcessRvviAll(RequiredRVVI_t *InstructionData, History_t * History){
     rvviDutRetire(0, InstructionData->PC, InstructionData->insn, 0);
   }
 
-  if(!trap) result = state_compare(0, InstructionData->Minstret);
+  if(!trap) result = state_compare(0, InstructionData->Minstret, &PrevInstruction);
   // *** set is for nets like interrupts  come back to this.
   //found = rvviRefNetIndexGet("pc_rdata");
   //rvviRefNetSet(found, InstructionData->PC, time);
+  #if RVVI_ENCODING == 0
+  memcpy(&PrevInstruction, InstructionData, sizeof(RequiredRVVI_t));
+  #elif RVVI_ENCODING == 1
+  memcpy(&PrevInstruction, InstructionData, ((InstructionData->GPREn || InstructionData->GPREn) << 3) + (InstructionData->CSRCount ? 50 : 0) + 56);
+  #endif
+  
   return result;
   
 }
 
-int state_compare(int hart, uint64_t Minstret){
+int state_compare(int hart, uint64_t Minstret, RequiredRVVI_t * PrevInstruction){
   uint8_t result = 1;
   uint8_t stepOk = 0;
   char buf[80];
@@ -717,7 +727,7 @@ int state_compare(int hart, uint64_t Minstret){
     idvMsgError(buf);
 
     // copy all state out to a log file so we can rebuild in simulation
-    DumpState(hart, "mismatch", EXT_MEM_BASE, EXT_MEM_BASE + EXT_MEM_RANGE + 1);
+    DumpState(hart, "mismatch", EXT_MEM_BASE, EXT_MEM_BASE + EXT_MEM_RANGE + 1, PrevInstruction);
     return -1;
   }
   
@@ -779,7 +789,7 @@ void WriteInstructionData(RequiredRVVI_t *InstructionData, FILE *fptr){
   fprintf(fptr, "\n");
 }
 
-void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress, uint64_t EndAddress){
+void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress, uint64_t EndAddress, RequiredRVVI_t * PrevInstruction){
   /// **** these values are all in the wrong byte order.
   uint64_t Index1, Index2;
   uint64_t Address;
@@ -821,6 +831,7 @@ void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress,
   uint64_t FPR[32];
   uint64_t PC;
   uint64_t value;
+  uint64_t Priv;
 
   for(Index = 0; Index<32; Index++){
     GPR[Index] = htonll(rvviRefGprGet(hartId, Index));
@@ -828,8 +839,16 @@ void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress,
   }
   fwrite(GPR+1, 8, 31, GPRfp); // skip x0
   fwrite(FPR, 8, 32, FPRfp);
-  PC = htonll(rvviRefPcGet(hartId));
+
+  if(PrevInstruction) {
+    PC = PrevInstruction->PC;
+    Priv = PrevInstruction->PrivilegeMode;
+  }else{
+    PC = htonll(rvviRefPcGet(hartId));
+    Priv = 3;
+  }
   fwrite(&PC, 8, 1, PCfp);
+  fwrite(&Priv, 8, 1, PRIVfp);
 
   uint64_t CSR[4096];
   CSRCount = 0;
