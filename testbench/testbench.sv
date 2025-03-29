@@ -49,7 +49,7 @@ module testbench;
   parameter BPRED_LOGGER=0;
   parameter I_CACHE_ADDR_LOGGER=0;
   parameter D_CACHE_ADDR_LOGGER=0;
-  parameter RVVI_SYNTH_SUPPORTED=1;
+  parameter RVVI_SYNTH_SUPPORTED=0;
 
   `ifdef USE_IMPERAS_DV
     import idvPkg::*;
@@ -377,12 +377,18 @@ module testbench;
         ProgramAddrMapFile = {RISCV_DIR, "/buildroot/output/images/disassembly/vmlinux.objdump.addr"};
         ProgramLabelMapFile = {RISCV_DIR, "/buildroot/output/images/disassembly/vmlinux.objdump.lab"};
       end else if(TEST == "rvvicheckpoint") begin
-        memfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-memory.bin"};
-        GPRmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-GPR.bin"};
-        FPRmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-FPR.bin"};
-        PCmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-PC.bin"};
-        CSRmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-CSR.bin"};
-        Privmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-PrivilegeMode.bin"};
+        //memfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-memory.bin"};
+        //GPRmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-GPR.bin"};
+        //FPRmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-FPR.bin"};
+        //PCmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-PC.bin"};
+        //CSRmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-CSR.bin"};
+        //Privmemfilename = {WALLY_DIR, "/tests/custom/hwrvvitracer-dump/rvvicheckpoint-PrivilegeMode.bin"};
+        memfilename = {WALLY_DIR, "/fpga/rvvidaemon/mismatch-MEM.bin"};
+        GPRmemfilename = {WALLY_DIR, "/fpga/rvvidaemon/mismatch-GPR.bin"};
+        FPRmemfilename = {WALLY_DIR, "/fpga/rvvidaemon/mismatch-FPR.bin"};
+        PCmemfilename = {WALLY_DIR, "/fpga/rvvidaemon/mismatch-PC.bin"};
+        CSRmemfilename = {WALLY_DIR, "/fpga/rvvidaemon/mismatch-CSR.bin"};
+        Privmemfilename = {WALLY_DIR, "/fpga/rvvidaemon/mismatch-PRIV.bin"};
         elffilename = "buildroot";
         ProgramAddrMapFile = "None";
         ProgramLabelMapFile = "None";
