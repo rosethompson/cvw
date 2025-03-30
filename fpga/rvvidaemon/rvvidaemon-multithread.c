@@ -689,13 +689,14 @@ int ProcessRvviAll(RequiredRVVI_t *InstructionData, History_t * History, Require
   // *** set is for nets like interrupts  come back to this.
   //found = rvviRefNetIndexGet("pc_rdata");
   //rvviRefNetSet(found, InstructionData->PC, time);
+  //printf("Priv Instruction:::: ");
+  //PrintInstructionData(PrevInstruction, NULL);
   #if RVVI_ENCODING == 0
   memcpy(PrevInstruction, InstructionData, sizeof(RequiredRVVI_t));
   #elif RVVI_ENCODING == 1
   //int size = ((InstructionData->GPREn || InstructionData->GPREn) << 3) + (InstructionData->CSRCount ? 50 : 0) + 48;
   //memcpy(PrevInstruction, InstructionData, size);
   memcpy(PrevInstruction, InstructionData, sizeof(RequiredRVVI_t));
-  //PrintInstructionData(PrevInstruction, NULL);
   #endif
 
   return result;
@@ -795,7 +796,7 @@ void WriteInstructionData(RequiredRVVI_t *InstructionData, FILE *fptr){
 }
 
 void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress, uint64_t EndAddress, RequiredRVVI_t * PrevInstruction){
-  printf("Previous instruction\n");
+  printf("DUMP STATE: ");
   PrintInstructionData(PrevInstruction, NULL);
   /// **** these values are all in the wrong byte order.
   uint64_t Index1, Index2;
@@ -832,7 +833,6 @@ void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress,
   }
 
   int Index;
-  CSR_unpacked_t CSRs[4096];
   int CSRCount;
   uint64_t GPR[32];
   uint64_t FPR[32];
@@ -849,9 +849,7 @@ void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress,
 
   if(PrevInstruction) {
     PC = PrevInstruction->PC;
-    printf("What the heck!!!!! PC = %lx\n", PC);
     PC = htonll(PC);
-    printf("What the heck!!!!! PC = %lx\n", PC);
     Priv = PrevInstruction->PrivilegeMode;
   }else{
     PC = htonll(rvviRefPcGet(hartId));
@@ -861,6 +859,7 @@ void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress,
   fwrite(&Priv, 1, 1, PRIVfp);
 
   uint64_t CSR[4096];
+  uint64_t temp;
   CSRCount = 0;
   CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x001)); // 0 FFLAGS
   CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0x002)); // 1 FRM
@@ -910,7 +909,7 @@ void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress,
   CSR[CSRCount++] = htonll(rvviRefCsrGet(hartId, 0xF15)); // MCONFIGPTR  
 
 
-  fwrite(CSRs, 8, CSRCount, CSRfp);
+  fwrite(CSR, 8, CSRCount, CSRfp);
 
   fclose(GPRfp);
   fclose(FPRfp);
