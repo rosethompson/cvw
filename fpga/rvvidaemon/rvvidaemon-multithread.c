@@ -803,7 +803,7 @@ void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress,
   uint64_t Address;
   const uint32_t BufferSize = 4096;
   uint64_t Total8ByteAddress = (EndAddress - StartAddress) >> 3; // i.e. 2^31 = 2G / 2^3 = 2^28 = 256M
-  uint64_t InnterLoopLimit = BufferSize >> 3;                    // i.e. 2^9 =  512
+  uint64_t InnterLoopLimit = BufferSize >> 3;
   uint64_t OuterLoopLimit = Total8ByteAddress / InnterLoopLimit; // 2^28 / 2^9 = 2^19 = 512K
   uint64_t Buf[InnterLoopLimit]; // 4KiB buffer
   FILE * GPRfp, * FPRfp, * PCfp, * CSRfp, * MEMfp, * PRIVfp;
@@ -824,13 +824,62 @@ void DumpState(uint32_t hartId, const char *FileNameRoot, uint64_t StartAddress,
     printf("Filed to open one of %s, %s, %s, %s, %s, or %s for writting\n", GPRFileName, FPRFileName, PCFileName, CSRFileName, MEMFileName, PRIVFileName);
     exit(-1);
   }
+ 
   for(Index1 = 0; Index1 < OuterLoopLimit; Index1++) {
     for(Index2 = 0; Index2 < InnterLoopLimit; Index2++){
       Address = StartAddress + Index1 * BufferSize + (Index2 << 3);
-      Buf[Index2] = rvviRefMemoryRead(hartId, Address, 8);
-    }
+      Buf[Index2] = htonll(rvviRefMemoryRead(hartId, Address, 8));
+      }
     fwrite(Buf, 8, InnterLoopLimit, MEMfp);
   }
+  /* for(Index1 = 0; Index1 < OuterLoopLimit; Index1++) { */
+  /*   for(Index2 = 0; Index2 < InnterLoopLimit; Index2++){ */
+  /*     Address = StartAddress + Index1 * BufferSize + (Index2); */
+  /*     Buf[Index2] = rvviRefMemoryRead(hartId, Address, 1); */
+  /*   } */
+  /*   fwrite(Buf, 1, InnterLoopLimit, MEMfp); */
+  /* } */
+
+  /* uint8_t MemBuf4K[4096]; */
+  /* int BufSize = 4096; */
+  /* int BufPosition = 0; */
+  /* uint64_t TotalByteSize = EndAddress - StartAddress; */
+  /* int BufferIndex = 0; */
+  /* uint32_t TempReadData; */
+  /* uint16_t ShortTempReadData; */
+  /* uint64_t NextAddress; */
+  /* uint64_t BufIndex = 0; */
+  /* uint64_t NextBufIndex = 0; */
+  /* int size = 0; */
+  /* Address = StartAddress; */
+  /* do { */
+  /*   TempReadData = htonl(rvviRefMemoryRead(hartId, Address, 4)); */
+  /*   //check if 4 or 2-byte instruction */
+  /*   if(!((TempReadData >> 24) & 3)){ // 2-byte */
+  /*     TempReadData = htons(rvviRefMemoryRead(hartId, Address, 2)); */
+  /*     size = 2; */
+  /*   } else { */
+  /*     size = 4; */
+  /*   } */
+  /*   printf("TempReadData = %x, size = %d\n", TempReadData, size); */
+  /*   NextAddress = Address + size; */
+  /*   /\* NextBufIndex = BufIndex + size; *\/ */
+    
+  /*   /\* if((BufIndex == BufSize - 2) && (size == 4)){ *\/ */
+  /*   /\*   * (uint16_t *) (MemBuf4K + BufIndex) = (TempReadData >> 16); *\/ */
+  /*   /\* } else if(size == 4) { *\/ */
+  /*   /\*   * (uint32_t*) (MemBuf4K + BufIndex) = TempReadData; *\/ */
+  /*   /\* } else if(size == 2) { *\/ */
+  /*   /\*   * (uint16_t*) (MemBuf4K + BufIndex) = TempReadData; *\/ */
+  /*   /\* } *\/ */
+  /*   fwrite(&TempReadData, size, 1, MEMfp); */
+  /*   Address = NextAddress; */
+  /*   /\* BufIndex = NextBufIndex; *\/ */
+
+  /*   // if the buffer is full, write to disk */
+  /*   /\* if(BufIndex >= BufSize) *\/ */
+  /* } while(Address < EndAddress); */
+  
 
   int Index;
   int CSRCount;
