@@ -1,60 +1,49 @@
 onerror {resume}
 quietly virtual signal -install /testbench/dut/core/ifu/bpred/bpred { /testbench/dut/core/ifu/bpred/bpred/PostSpillInstrRawF[11:7]} rd
-quietly virtual function -install /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes -env /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes { &{/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[63], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[62], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[61], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[60], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[59], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[58], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[57], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[56], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[55], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[54], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[53], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[52], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[51], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[50], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[49], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[48], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[47], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[46], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[45], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[44], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[43], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[42], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[41], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[40], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[39], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[38], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[37], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[36], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[35], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[34], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[33], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[32], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[31], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[30], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[29], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[28], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[27], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[26], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[25], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[24], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[23], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[22], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[21], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[20], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[19], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[18], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[17], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[16], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[15], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[14], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[13], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[12], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[11], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[10], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[9], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[8], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[7], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[6], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[5], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[4], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[3], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[2], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[1], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[0] }} PCW_rvvi
-quietly virtual function -install /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes -env /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes { &{/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[127], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[126], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[125], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[124], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[123], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[122], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[121], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[120], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[119], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[118], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[117], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[116], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[115], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[114], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[113], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[112], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[111], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[110], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[109], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[108], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[107], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[106], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[105], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[104], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[103], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[102], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[101], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[100], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[99], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[98], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[97], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[96], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[95], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[94], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[93], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[92], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[91], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[90], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[89], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[88], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[87], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[86], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[85], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[84], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[83], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[82], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[81], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[80], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[79], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[78], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[77], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[76], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[75], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[74], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[73], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[72], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[71], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[70], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[69], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[68], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[67], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[66], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[65], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[64] }} Mcycle_rvvi
-quietly virtual function -install /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes -env /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes { &{/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[191], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[190], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[189], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[188], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[187], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[186], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[185], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[184], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[183], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[182], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[181], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[180], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[179], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[178], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[177], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[176], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[175], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[174], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[173], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[172], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[171], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[170], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[169], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[168], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[167], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[166], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[165], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[164], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[163], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[162], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[161], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[160], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[159], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[158], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[157], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[156], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[155], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[154], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[153], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[152], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[151], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[150], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[149], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[148], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[147], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[146], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[145], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[144], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[143], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[142], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[141], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[140], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[139], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[138], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[137], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[136], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[135], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[134], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[133], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[132], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[131], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[130], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[129], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[128] }} Minstret_rvvi
-quietly virtual function -install /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes -env /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes { &{/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[223], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[222], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[221], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[220], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[219], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[218], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[217], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[216], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[215], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[214], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[213], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[212], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[211], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[210], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[209], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[208], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[207], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[206], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[205], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[204], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[203], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[202], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[201], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[200], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[199], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[198], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[197], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[196], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[195], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[194], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[193], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[192] }} Instr_rvvi
-quietly virtual function -install /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes -env /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes { &{/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[239], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[238], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[237], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[236], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[235], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[234], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[233], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[232], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[231], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[230], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[229], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[228], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[227], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[226], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[225], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[224] }} CSRCount_rvvi
-quietly virtual signal -install /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[240]  } Trap_rvvi
-quietly virtual signal -install /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[251]  } PrivMode_rvvi
-quietly virtual signal -install /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[256]  } GPRWen_rvvi
-quietly virtual signal -install /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[264]  } FPRWen_rvvi
-quietly virtual function -install /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes -env /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes { &{/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[279], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[278], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[277], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[276], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[275], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[274], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[273], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[272] }} GPRAddr_rvvi
-quietly virtual function -install /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes -env /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes { &{/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[287], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[286], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[285], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[284], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[283], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[282], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[281], /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required[280] }} FPRAddr_rvvi
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /testbench/clk
 add wave -noupdate /testbench/reset
 add wave -noupdate /testbench/memfilename
 add wave -noupdate /testbench/dut/core/SATP_REGW
 add wave -noupdate /testbench/dut/core/InstrValidM
-add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/hzu/RetM
-add wave -noupdate -expand -group HDU -expand -group hazards -color Pink /testbench/dut/core/hzu/TrapM
-add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/ieu/c/LoadStallD
-add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/ifu/IFUStallF
-add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/hzu/BPWrongE
-add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/hzu/LSUStallM
-add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/ieu/c/MDUStallD
-add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/hzu/DivBusyE
-add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/hzu/FDivBusyE
-add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/ExternalStall
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/InstrMisalignedFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/InstrAccessFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/IllegalInstrFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/BreakpointFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/LoadMisalignedFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/StoreAmoMisalignedFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/LoadAccessFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/StoreAmoAccessFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/EcallFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/InstrPageFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/LoadPageFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/StoreAmoPageFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/InterruptM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/HPTWInstrAccessFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/pmd/WFITimeoutM
-add wave -noupdate -expand -group HDU -expand -group Flush -color Yellow /testbench/dut/core/FlushD
-add wave -noupdate -expand -group HDU -expand -group Flush -color Yellow /testbench/dut/core/FlushE
-add wave -noupdate -expand -group HDU -expand -group Flush -color Yellow /testbench/dut/core/FlushM
-add wave -noupdate -expand -group HDU -expand -group Flush -color Yellow /testbench/dut/core/FlushW
-add wave -noupdate -expand -group HDU -group Stall -color Orange /testbench/dut/core/StallF
-add wave -noupdate -expand -group HDU -group Stall -color Orange /testbench/dut/core/StallD
-add wave -noupdate -expand -group HDU -group Stall -color Orange /testbench/dut/core/StallE
-add wave -noupdate -expand -group HDU -group Stall -color Orange /testbench/dut/core/StallM
-add wave -noupdate -expand -group HDU -group Stall -color Orange /testbench/dut/core/StallW
-add wave -noupdate -expand -group HDU -group interrupts /testbench/dut/core/priv/priv/trap/PendingIntsM
-add wave -noupdate -expand -group HDU -group interrupts /testbench/dut/core/priv/priv/trap/InstrValidM
-add wave -noupdate -expand -group HDU -group interrupts /testbench/dut/core/priv/priv/trap/ValidIntsM
-add wave -noupdate -expand -group HDU -group interrupts /testbench/dut/core/hzu/WFIInterruptedM
+add wave -noupdate -group HDU -expand -group hazards /testbench/dut/core/hzu/RetM
+add wave -noupdate -group HDU -expand -group hazards -color Pink /testbench/dut/core/hzu/TrapM
+add wave -noupdate -group HDU -expand -group hazards /testbench/dut/core/ieu/c/LoadStallD
+add wave -noupdate -group HDU -expand -group hazards /testbench/dut/core/ifu/IFUStallF
+add wave -noupdate -group HDU -expand -group hazards /testbench/dut/core/hzu/BPWrongE
+add wave -noupdate -group HDU -expand -group hazards /testbench/dut/core/hzu/LSUStallM
+add wave -noupdate -group HDU -expand -group hazards /testbench/dut/core/ieu/c/MDUStallD
+add wave -noupdate -group HDU -expand -group hazards /testbench/dut/core/hzu/DivBusyE
+add wave -noupdate -group HDU -expand -group hazards /testbench/dut/core/hzu/FDivBusyE
+add wave -noupdate -group HDU -expand -group hazards /testbench/dut/ExternalStall
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/InstrMisalignedFaultM
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/InstrAccessFaultM
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/IllegalInstrFaultM
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/BreakpointFaultM
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/LoadMisalignedFaultM
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/StoreAmoMisalignedFaultM
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/LoadAccessFaultM
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/StoreAmoAccessFaultM
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/EcallFaultM
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/InstrPageFaultM
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/LoadPageFaultM
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/StoreAmoPageFaultM
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/InterruptM
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/HPTWInstrAccessFaultM
+add wave -noupdate -group HDU -expand -group traps /testbench/dut/core/priv/priv/pmd/WFITimeoutM
+add wave -noupdate -group HDU -expand -group Flush -color Yellow /testbench/dut/core/FlushD
+add wave -noupdate -group HDU -expand -group Flush -color Yellow /testbench/dut/core/FlushE
+add wave -noupdate -group HDU -expand -group Flush -color Yellow /testbench/dut/core/FlushM
+add wave -noupdate -group HDU -expand -group Flush -color Yellow /testbench/dut/core/FlushW
+add wave -noupdate -group HDU -group Stall -color Orange /testbench/dut/core/StallF
+add wave -noupdate -group HDU -group Stall -color Orange /testbench/dut/core/StallD
+add wave -noupdate -group HDU -group Stall -color Orange /testbench/dut/core/StallE
+add wave -noupdate -group HDU -group Stall -color Orange /testbench/dut/core/StallM
+add wave -noupdate -group HDU -group Stall -color Orange /testbench/dut/core/StallW
+add wave -noupdate -group HDU -group interrupts /testbench/dut/core/priv/priv/trap/PendingIntsM
+add wave -noupdate -group HDU -group interrupts /testbench/dut/core/priv/priv/trap/InstrValidM
+add wave -noupdate -group HDU -group interrupts /testbench/dut/core/priv/priv/trap/ValidIntsM
+add wave -noupdate -group HDU -group interrupts /testbench/dut/core/hzu/WFIInterruptedM
 add wave -noupdate -group {instruction pipeline} /testbench/InstrFName
 add wave -noupdate -group {instruction pipeline} /testbench/dut/core/ifu/PostSpillInstrRawF
 add wave -noupdate -group {instruction pipeline} /testbench/dut/core/ifu/InstrD
@@ -104,14 +93,14 @@ add wave -noupdate -group ifu -group Spill -expand -group takespill /testbench/d
 add wave -noupdate -group ifu -group Spill -expand -group takespill /testbench/dut/core/ifu/Spill/spill/IFUCacheBusStallF
 add wave -noupdate -group ifu -group Spill -expand -group takespill /testbench/dut/core/ifu/Spill/spill/ITLBMissOrUpdateAF
 add wave -noupdate -group ifu -group Spill -expand -group takespill /testbench/dut/core/ifu/Spill/spill/TakeSpillF
-add wave -noupdate -group ifu -group bus /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/HSIZE
-add wave -noupdate -group ifu -group bus /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/HBURST
-add wave -noupdate -group ifu -group bus /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/HTRANS
-add wave -noupdate -group ifu -group bus /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/HWRITE
-add wave -noupdate -group ifu -group bus /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/HADDR
-add wave -noupdate -group ifu -group bus /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/AHBBuscachefsm/Flush
-add wave -noupdate -group ifu -group bus -color Gold /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/AHBBuscachefsm/CurrState
-add wave -noupdate -group ifu -group bus /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/HRDATA
+add wave -noupdate -group ifu -expand -group bus /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/HSIZE
+add wave -noupdate -group ifu -expand -group bus /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/HBURST
+add wave -noupdate -group ifu -expand -group bus /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/HTRANS
+add wave -noupdate -group ifu -expand -group bus /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/HWRITE
+add wave -noupdate -group ifu -expand -group bus /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/HADDR
+add wave -noupdate -group ifu -expand -group bus /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/AHBBuscachefsm/Flush
+add wave -noupdate -group ifu -expand -group bus -color Gold /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/AHBBuscachefsm/CurrState
+add wave -noupdate -group ifu -expand -group bus /testbench/dut/core/ifu/bus/icache/ahbcacheinterface/HRDATA
 add wave -noupdate -group ifu -group icache /testbench/dut/core/ifu/bus/icache/icache/Stall
 add wave -noupdate -group ifu -group icache /testbench/dut/core/ifu/bus/icache/icache/FlushStage
 add wave -noupdate -group ifu -group icache -color Gold /testbench/dut/core/ifu/bus/icache/icache/cachefsm/CurrState
@@ -178,28 +167,28 @@ add wave -noupdate -group ifu -group icache -group way0 -group way0word2 {/testb
 add wave -noupdate -group ifu -group icache -group way0 -group way0word2 {/testbench/dut/core/ifu/bus/icache/icache/CacheWays[0]/word[2]/wordram/CacheDataMem/ram/RAM}
 add wave -noupdate -group ifu -group icache -group way0 -group way0word3 {/testbench/dut/core/ifu/bus/icache/icache/CacheWays[0]/word[3]/wordram/CacheDataMem/dout}
 add wave -noupdate -group ifu -group icache -group way0 -group way0word3 {/testbench/dut/core/ifu/bus/icache/icache/CacheWays[0]/word[3]/wordram/CacheDataMem/ram/RAM}
-add wave -noupdate -group ifu -group itlb /testbench/dut/core/ifu/immu/immu/TLBWrite
-add wave -noupdate -group ifu -group itlb /testbench/dut/core/ifu/ITLBMissF
-add wave -noupdate -group ifu -group itlb /testbench/dut/core/ifu/immu/immu/VAdr
-add wave -noupdate -group ifu -group itlb /testbench/dut/core/ifu/immu/immu/PhysicalAddress
-add wave -noupdate -group ifu -group itlb /testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/Matches
-add wave -noupdate -group ifu -group itlb /testbench/dut/core/ifu/immu/immu/InstrPageFaultF
-add wave -noupdate -group ifu -group itlb /testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/TLBFlush
-add wave -noupdate -group ifu -group itlb -group key21 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[21]/Valid}
-add wave -noupdate -group ifu -group itlb -group key21 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[21]/PageType}
-add wave -noupdate -group ifu -group itlb -group key21 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[21]/Key}
-add wave -noupdate -group ifu -group itlb -group key21 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[21]/Key0}
-add wave -noupdate -group ifu -group itlb -group key21 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[21]/Key1}
-add wave -noupdate -group ifu -group itlb -group key21 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[21]/Query0}
-add wave -noupdate -group ifu -group itlb -group key21 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[21]/Query1}
-add wave -noupdate -group ifu -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Valid}
-add wave -noupdate -group ifu -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/PageTypeWriteVal}
-add wave -noupdate -group ifu -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/PageType}
-add wave -noupdate -group ifu -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Key}
-add wave -noupdate -group ifu -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Key0}
-add wave -noupdate -group ifu -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Key1}
-add wave -noupdate -group ifu -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Query0}
-add wave -noupdate -group ifu -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Query1}
+add wave -noupdate -group ifu -expand -group itlb /testbench/dut/core/ifu/immu/immu/TLBWrite
+add wave -noupdate -group ifu -expand -group itlb /testbench/dut/core/ifu/ITLBMissF
+add wave -noupdate -group ifu -expand -group itlb /testbench/dut/core/ifu/immu/immu/VAdr
+add wave -noupdate -group ifu -expand -group itlb /testbench/dut/core/ifu/immu/immu/PhysicalAddress
+add wave -noupdate -group ifu -expand -group itlb /testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/Matches
+add wave -noupdate -group ifu -expand -group itlb /testbench/dut/core/ifu/immu/immu/InstrPageFaultF
+add wave -noupdate -group ifu -expand -group itlb /testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/TLBFlush
+add wave -noupdate -group ifu -expand -group itlb -group key21 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[21]/Valid}
+add wave -noupdate -group ifu -expand -group itlb -group key21 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[21]/PageType}
+add wave -noupdate -group ifu -expand -group itlb -group key21 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[21]/Key}
+add wave -noupdate -group ifu -expand -group itlb -group key21 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[21]/Key0}
+add wave -noupdate -group ifu -expand -group itlb -group key21 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[21]/Key1}
+add wave -noupdate -group ifu -expand -group itlb -group key21 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[21]/Query0}
+add wave -noupdate -group ifu -expand -group itlb -group key21 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[21]/Query1}
+add wave -noupdate -group ifu -expand -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Valid}
+add wave -noupdate -group ifu -expand -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/PageTypeWriteVal}
+add wave -noupdate -group ifu -expand -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/PageType}
+add wave -noupdate -group ifu -expand -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Key}
+add wave -noupdate -group ifu -expand -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Key0}
+add wave -noupdate -group ifu -expand -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Key1}
+add wave -noupdate -group ifu -expand -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Query0}
+add wave -noupdate -group ifu -expand -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Query1}
 add wave -noupdate -group {Decode Stage} /testbench/dut/core/ifu/PCD
 add wave -noupdate -group {Decode Stage} /testbench/dut/core/ifu/InstrD
 add wave -noupdate -group {Decode Stage} /testbench/InstrDName
@@ -436,9 +425,9 @@ add wave -noupdate -group lsu -group ptwalker -expand -group faults /testbench/d
 add wave -noupdate -group lsu -group ptwalker -expand -group faults /testbench/dut/core/lsu/hptw/hptw/StoreAmoAccessFaultM
 add wave -noupdate -group lsu -group ptwalker -expand -group faults /testbench/dut/core/lsu/hptw/hptw/HPTWInstrAccessFault
 add wave -noupdate -group lsu -group ptwalker -expand -group faults /testbench/dut/core/lsu/hptw/hptw/PBMTFaultM
-add wave -noupdate -expand -group {WriteBack stage} /testbench/InstrW
-add wave -noupdate -expand -group {WriteBack stage} /testbench/InstrWName
-add wave -noupdate -expand -group {WriteBack stage} /testbench/dut/core/priv/priv/pmd/wfiW
+add wave -noupdate -group {WriteBack stage} /testbench/InstrW
+add wave -noupdate -group {WriteBack stage} /testbench/InstrWName
+add wave -noupdate -group {WriteBack stage} /testbench/dut/core/priv/priv/pmd/wfiW
 add wave -noupdate -group AHB -group multicontroller /testbench/dut/core/ebu/ebu/IFUReq
 add wave -noupdate -group AHB -group multicontroller /testbench/dut/core/ebu/ebu/LSUReq
 add wave -noupdate -group AHB -group multicontroller /testbench/dut/core/ebu/ebu/IFUSave
@@ -567,7 +556,7 @@ add wave -noupdate -group uncore -group spi -expand -group interface /testbench/
 add wave -noupdate -group uncore -group spi -expand -group interface /testbench/dut/uncoregen/uncore/spi/spi/SPIIn
 add wave -noupdate -group uncore -group spi /testbench/dut/uncoregen/uncore/spi/spi/ChipSelectMode
 add wave -noupdate -group uncore -group spi /testbench/dut/uncoregen/uncore/spi/spi/SckMode
-add wave -noupdate -group RegFile -expand /testbench/dut/core/ieu/dp/regf/rf
+add wave -noupdate -group RegFile /testbench/dut/core/ieu/dp/regf/rf
 add wave -noupdate -group RegFile /testbench/dut/core/ieu/dp/regf/a1
 add wave -noupdate -group RegFile /testbench/dut/core/ieu/dp/regf/a2
 add wave -noupdate -group RegFile /testbench/dut/core/ieu/dp/regf/a3
@@ -630,6 +619,8 @@ add wave -noupdate -group CSRs -expand -group {Performance Counters} -group Priv
 add wave -noupdate -group CSRs -expand -group {Performance Counters} -group Privileged -label Exception {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[23]}
 add wave -noupdate -group CSRs -expand -group {Performance Counters} -label {FDiv or IDiv Cycles} {/testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW[24]}
 add wave -noupdate -group CSRs -expand -group {Performance Counters} /testbench/dut/core/priv/priv/csr/counters/counters/HPMCOUNTER_REGW
+add wave -noupdate -group CSRs /testbench/dut/core/priv/priv/PMPCFG_ARRAY_REGW
+add wave -noupdate -group CSRs /testbench/dut/core/priv/priv/PMPADDR_ARRAY_REGW
 add wave -noupdate -group alu /testbench/dut/core/ieu/dp/alu/A
 add wave -noupdate -group alu /testbench/dut/core/ieu/dp/alu/B
 add wave -noupdate -group alu /testbench/dut/core/ieu/dp/alu/ALUResult
@@ -672,8 +663,6 @@ add wave -noupdate -group wfi /testbench/dut/core/priv/priv/pmd/PrivilegeModeW
 add wave -noupdate -group wfi /testbench/dut/core/priv/priv/pmd/wfi/WFICount
 add wave -noupdate -group wfi /testbench/dut/core/priv/priv/pmd/WFITimeoutM
 add wave -noupdate -expand -group testbench /testbench/DCacheFlushStart
-add wave -noupdate -expand -group testbench /testbench/rvvi_synth/rvvitbwrapper/DontSend
-add wave -noupdate -expand -group testbench /testbench/rvvi_synth/rvvitbwrapper/FrameCounter
 add wave -noupdate /testbench/dut/core/fpu/fpu/fdivsqrt/WS
 add wave -noupdate /testbench/dut/core/fpu/fpu/fdivsqrt/WC
 add wave -noupdate /testbench/dut/core/fpu/fpu/fdivsqrt/X
@@ -681,120 +670,10 @@ add wave -noupdate /testbench/dut/core/fpu/fpu/fdivsqrt/D
 add wave -noupdate /testbench/dut/core/fpu/fpu/fdivsqrt/FIntDivResultM
 add wave -noupdate /testbench/dut/core/fpu/fpu/fdivsqrt/fdivsqrtfsm/state
 add wave -noupdate /testbench/dut/core/fpu/fpu/fdivsqrt/fdivsqrtfsm/FDivDoneE
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/RVVIStall
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/PCW_rvvi
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Mcycle_rvvi
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Minstret_rvvi
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Instr_rvvi
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/CSRCount_rvvi
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Trap_rvvi
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/PrivMode_rvvi
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/GPRWen_rvvi
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/FPRWen_rvvi
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/GPRAddr_rvvi
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/FPRAddr_rvvi
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Required
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/Registers
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/CSRs
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/DutRvvi
-add wave -noupdate -expand -group hwrvvitracer -group rvvi-ethernet /testbench/rvvi_synth/rvvitbwrapper/phy_tx_clk
-add wave -noupdate -expand -group hwrvvitracer -group rvvi-ethernet /testbench/rvvi_synth/rvvitbwrapper/phy_txd
-add wave -noupdate -expand -group hwrvvitracer -group rvvi-ethernet /testbench/rvvi_synth/rvvitbwrapper/phy_tx_en
-add wave -noupdate -expand -group hwrvvitracer -group rvvi-ethernet /testbench/rvvi_synth/rvvitbwrapper/phy_tx_er
-add wave -noupdate -expand -group hwrvvitracer -group rvvi-ethernet /testbench/rvvi_synth/rvvitbwrapper/phy_rx_clk
-add wave -noupdate -expand -group hwrvvitracer -group rvvi-ethernet /testbench/rvvi_synth/rvvitbwrapper/phy_rxd
-add wave -noupdate -expand -group hwrvvitracer -group rvvi-ethernet /testbench/rvvi_synth/rvvitbwrapper/phy_rx_dv
-add wave -noupdate -expand -group hwrvvitracer -group rvvi-ethernet /testbench/rvvi_synth/rvvitbwrapper/phy_rx_er
-add wave -noupdate -expand -group hwrvvitracer -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/valid
-add wave -noupdate -expand -group hwrvvitracer -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/DutFrameCount
-add wave -noupdate -expand -group hwrvvitracer -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/rvvi
-add wave -noupdate -expand -group hwrvvitracer -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/CSRCountShort
-add wave -noupdate -expand -group hwrvvitracer -expand -group rvvi /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviprobes/CSRAddr
-add wave -noupdate -expand -group hwrvvitracer -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/TotalFrame
-add wave -noupdate -expand -group hwrvvitracer -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/RvviAxiWdata
-add wave -noupdate -expand -group hwrvvitracer -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/RvviAxiWlast
-add wave -noupdate -expand -group hwrvvitracer -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/RvviAxiWvalid
-add wave -noupdate -expand -group hwrvvitracer -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/RvviAxiWready
-add wave -noupdate -expand -group hwrvvitracer -expand -group packetizer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/rvviDelay
-add wave -noupdate -expand -group hwrvvitracer /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/HostStall
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RvviAxiRdata
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/mem
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RecvDone
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RecvCurrState
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RecvCounter
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RecvCounter
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RecvCounterEn
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RecvCounterReset
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/TransCurrState
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWdata
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWstrb
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWlast
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWvalid
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/RvviAxiWready
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/TransCounter
-add wave -noupdate -group other /testbench/rvvi_synth/rvvitbwrapper/TransMem
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/clk
-add wave -noupdate -expand -group {invser packetizer} -color Gold /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/CurrState
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/FrameCount
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/ROM
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/RvviAxiRdata
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/ROMReadData
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/CurrentMatch
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/BeatMatch
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/MatchAll
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/Counter
-add wave -noupdate -expand -group {invser packetizer} -group input /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/RvviAxiRdata
-add wave -noupdate -expand -group {invser packetizer} -group input /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/RvviAxiRstrb
-add wave -noupdate -expand -group {invser packetizer} -group input /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/RvviAxiRlast
-add wave -noupdate -expand -group {invser packetizer} -group input /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/RvviAxiRvalid
-add wave -noupdate -expand -group {invser packetizer} -group input /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/DstMac
-add wave -noupdate -expand -group {invser packetizer} -group input /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/SrcMac
-add wave -noupdate -expand -group {invser packetizer} -group input /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/EthType
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/Valid
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/Minstr
-add wave -noupdate -expand -group {invser packetizer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/InterPacketDelay
-add wave -noupdate -expand -group {invser packetizer} -expand -group receive /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/RvviAxiRdata
-add wave -noupdate -expand -group {invser packetizer} -expand -group receive /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/RvviAxiRlast
-add wave -noupdate -expand -group {invser packetizer} -expand -group receive /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/inversepacketizer/RvviAxiRvalid
-add wave -noupdate -expand -group {active list} -color Orange -expand -subitemconfig {{/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[15]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[14]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[13]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[12]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[11]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[10]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[9]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[8]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[7]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[6]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[5]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[4]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[3]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[2]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[1]} {-color Orange -height 17} {/testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits[0]} {-color Orange -height 17}} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits
-add wave -noupdate -expand -group {active list} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/Full
-add wave -noupdate -expand -group {active list} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/Empty
-add wave -noupdate -expand -group {active list} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/mem
-add wave -noupdate -expand -group {active list} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/Lut
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/HostInterPacketDelay
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/HostMinstr
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/Full
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/HeadPtr
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/HeadPtr
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBits
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBitsRev
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBitsExtend
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBitsShift
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ActiveBitsInvert
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/TailPtrUncompensated
-add wave -noupdate -expand -group {tail pointer} /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/TailPtr
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ReplayPtr
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/TailPtr
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/ReplayStop
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/HostMatchingIndex
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/SelActiveList
-add wave -noupdate -color Gold /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/CurrState
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/Port3Active
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/SelActiveList
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/PacketizerRvviValid
-add wave -noupdate -radix unsigned /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/WordCount
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/TotalFrameWords
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/TotalFrame
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/TotalFrameLengthBytes
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/RVVI_WIDTH
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/ETH_HEAD_WIDTH
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/NearTotalFrameLengthBits
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/NearTotalFrameLengthBits
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/TotalFrame
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/packetizer/rvviDelay
-add wave -noupdate /testbench/rvvi_synth/rvvitbwrapper/hwrvvitracer/rvviactivelist/OutOfOrder
+add wave -noupdate /testbench/LoadMem
+add wave -noupdate /testbench/CSR
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {19105 ns} 1} {{Cursor 4} {49220 ns} 0} {{Cursor 3} {616640 ns} 1} {{Cursor 4} {38840 ns} 0}
+WaveRestoreCursors {{Cursor 4} {19105 ns} 1} {{Cursor 4} {49220 ns} 0} {{Cursor 3} {616640 ns} 1} {{Cursor 4} {453 ns} 0}
 quietly wave cursor active 4
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -810,4 +689,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {4160 ns} {73520 ns}
+WaveRestoreZoom {371 ns} {535 ns}
