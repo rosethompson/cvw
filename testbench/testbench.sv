@@ -720,8 +720,8 @@ module testbench;
 		   ((dut.core.lsu.IEUAdrM == ProgramAddrLabelArray["tohost"] & dut.core.lsu.IEUAdrM != 0) & InstrMName == "SW"); // |
     //   (functionName.PCM == 0 & dut.core.ifu.InstrM == 0 & dut.core.InstrValidM & PrevPCZero));
     if (reset) PrevPCZero <= 0;
-    else if (dut.core.InstrValidM) PrevPCZero <= (dut.core.PCM == 0 & dut.core.ifu.InstrM == 0);
-    if (dut.core.PCM == 0 & dut.core.ifu.InstrM == 0 & dut.core.InstrValidM & PrevPCZero) begin
+    else if (dut.core.InstrValidE) PrevPCZero <= (dut.core.PCE == 0 & dut.core.ifu.InstrE == 0);
+    if (dut.core.PCE == 0 & dut.core.ifu.InstrE == 0 & dut.core.InstrValidE & PrevPCZero) begin
       $error("Program fetched illegal instruction 0x00000000 from address 0x00000000 twice in a row.  Usually due to fault with no fault handler.");
       $fatal(1);
     end
