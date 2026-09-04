@@ -174,7 +174,7 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
   logic                          VectorD;
   logic                          VPUFrontEndBusyD;
   logic                          IllegalVectorInstructionD;
-  logic [P.XLEN-1:0]             VIEUFPResultW;
+  logic [P.XLEN-1:0]             VIEUFPResultFinalW;
   logic [P.VPU_LSU_BLEN-1:0]     VWriteDataM [P.VPU_LSU_EU-1:0];
   logic [P.XLEN-1:0]             VEUAdrM [P.VPU_LSU_EU-1:0];
   logic [P.VPU_LSU_BLEN-1:0]     VReadDataM [P.VPU_LSU_EU-1:0];
@@ -377,7 +377,7 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
     vpu #(P) vpu(.clk, .reset, .StallD, .StallE, .StallM, .StallW,
                  .FlushD, .FlushE, .FlushM, .FlushW, .VPUFrontEndBusyD,
                  .InstrD, .VectorD, .ForwardedSrcAE, .ForwardedSrcBE,
-                 .VWriteDataM, .VEUAdrM, .IllegalVectorInstructionD, .VReadDataM, .VIEUFPResultW);
+                 .VWriteDataM, .VEUAdrM, .IllegalVectorInstructionD, .VReadDataM, .VIEUFPResultFinalW);
   end else begin
     //assign {VPUFrontEndBusyD, IllegalVPUInstrD, VResultIntFPW} = '0;
   end

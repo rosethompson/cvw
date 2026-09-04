@@ -51,7 +51,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   input  logic [P.VPU_LSU_BLEN-1:0]    VReadDataM  [P.VPU_LSU_EU-1:0], // Read data (from LSU)
   output logic                 IllegalVectorInstructionD,                   // Is the instruction an illegal fpu instruction (to IFU)
   // Writeback stage
-  output logic [P.XLEN-1:0] VIEUFPResultW                            // Int or FP result for X or F regs.
+  output logic [P.XLEN-1:0] VIEUFPResultFinalW                            // Int or FP result for X or F regs.
 );
 
   logic [4:0] Vs1FinalD, Vs2FinalD;               // Vector Source 1 and 2
@@ -97,7 +97,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   vdatapath #(P) vdatapath(.clk, .reset, .StallD, .StallE, .StallM, .StallW, .FlushD, .FlushE, .FlushM, .FlushW,
                            .ControllerValidD, .ExecutionUnitReadyD, .Vs1FinalD, .Vs2FinalD, .VdFinalD, .VMD, .Funct6D, .Funct3D,
                            .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD, .VALUResultD, .IllegalVectorInstructionD,
-                           .ForwardedSrcAE, .ForwardedSrcBE, .VWriteDataM, .VEUAdrM, .VReadDataM, .VIEUFPResultW);
+                           .ForwardedSrcAE, .ForwardedSrcBE, .VWriteDataM, .VEUAdrM, .VReadDataM, .VIEUFPResultFinalW);
 
   // **** add EUs here. Remove this code
   assign ExecutionUnitReadyD = '1;

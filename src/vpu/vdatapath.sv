@@ -54,7 +54,7 @@ module vdatapath import cvw::*;  #(parameter cvw_t P) (
   output logic [P.VPU_LSU_BLEN-1:0]    VWriteDataM [P.VPU_LSU_EU-1:0],          // Data to be written to memory (to LSU)
   output logic [P.XLEN-1:0]            VEUAdrM     [P.VPU_LSU_EU-1:0],          // Data to be written to memory (to LSU)
   input  logic [P.VPU_LSU_BLEN-1:0]    VReadDataM [P.VPU_LSU_EU-1:0], // Read data (from LSU)
-  output logic [P.XLEN-1:0]            VIEUFPResultW                            // Int or FP result for X or F regs.
+  output logic [P.XLEN-1:0]            VIEUFPResultFinalW                            // Int or FP result for X or F regs.
   //
 );
 
@@ -69,6 +69,10 @@ module vdatapath import cvw::*;  #(parameter cvw_t P) (
   vregfile #(P.VLEN) vregfile(clk, reset, VdFinalweW, Vs1FinalD, Vs2FinalD, VdFinalD, VdFinalW,
                               VResultFinalW, SrcAD, SrcBD, SrcCD, v0D);
 
+  // for now we will set EU 0 as the int EU and 1 as the float EU.  *** change the config so total
+  // EU is a function of the int, fpu, and int mul EUs.
+
+
 
   // *** remove all of this when ready
   genvar i;
@@ -78,7 +82,7 @@ module vdatapath import cvw::*;  #(parameter cvw_t P) (
   end
 
   assign ExecutionUnitReadyD = '1;
-  assign VIEUFPResultW = '0;
+  assign VIEUFPResultFinalW = '0;
   assign VdFinalweW = '0;
   assign VdFinalW = '0;
   assign VResultFinalW = '0;
