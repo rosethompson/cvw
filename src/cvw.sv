@@ -311,10 +311,10 @@ typedef struct packed {
   int VPU_INT_LANES;
   int VPU_INT_MUL;
   int VPU_INT_MUL_LANES;
-  int VPU_FP_EU;
-  int VPU_FP_LANES;
   int VPU_LSU_EU;
   int VPU_LSU_LANES;
+  int VPU_FP_EU;
+  int VPU_FP_LANES;
   int VPU_LSU_BLEN;
   int VPU_INT_BLEN;
   int VPU_INT_MUL_BLEN;

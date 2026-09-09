@@ -175,9 +175,9 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
   logic                          VPUFrontEndBusyD;
   logic                          IllegalVectorInstructionD;
   logic [P.XLEN-1:0]             VIEUFPResultFinalW;
-  logic [P.VPU_LSU_BLEN-1:0]     VWriteDataM [P.VPU_LSU_EU-1:0];
-  logic [P.XLEN-1:0]             VEUAdrM [P.VPU_LSU_EU-1:0];
-  logic [P.VPU_LSU_BLEN-1:0]     VReadDataM [P.VPU_LSU_EU-1:0];
+  logic [P.VPU_LSU_BLEN-1:0]     VWriteDataM;
+  logic [P.XLEN-1:0]             VEUAdrM;
+  logic [P.VPU_LSU_BLEN-1:0]     VReadDataM;
 
 
   // instruction fetch unit: PC, branch prediction, instruction cache
@@ -369,10 +369,8 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
   end
 
   // *** fix me replace with driver from LSU
-  genvar i;
-  for(i = 0; i < P.VPU_LSU_LANES; i++) begin
-      assign VReadDataM[i] = '0;
-  end
+  assign VReadDataM = '0;
+
   if (P.V_SUPPORTED) begin : vpu
     vpu #(P) vpu(.clk, .reset, .StallD, .StallE, .StallM, .StallW,
                  .FlushD, .FlushE, .FlushM, .FlushW, .VPUFrontEndBusyD,

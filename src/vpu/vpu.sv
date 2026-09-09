@@ -46,9 +46,9 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   input  logic [P.XLEN-1:0]    ForwardedSrcAE, ForwardedSrcBE,     // Integer/FP input for convert, move (from IEU)
   // Memory stage
   // TODO *** Cannot use decoded control from IEU because the there are overlapping vector instructions?
-  output logic [P.VPU_LSU_BLEN-1:0]    VWriteDataM [P.VPU_LSU_EU-1:0],          // Data to be written to memory (to LSU)
-  output logic [P.XLEN-1:0]            VEUAdrM     [P.VPU_LSU_EU-1:0],          // Data to be written to memory (to LSU)
-  input  logic [P.VPU_LSU_BLEN-1:0]    VReadDataM  [P.VPU_LSU_EU-1:0], // Read data (from LSU)
+  output logic [P.VPU_LSU_BLEN-1:0]    VWriteDataM,          // Data to be written to memory (to LSU)
+  output logic [P.XLEN-1:0]            VEUAdrM    ,          // Data to be written to memory (to LSU)
+  input  logic [P.VPU_LSU_BLEN-1:0]    VReadDataM , // Read data (from LSU)
   output logic                 IllegalVectorInstructionD,                   // Is the instruction an illegal fpu instruction (to IFU)
   // Writeback stage
   output logic [P.XLEN-1:0] VIEUFPResultFinalW                            // Int or FP result for X or F regs.
@@ -98,10 +98,6 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
                            .ControllerValidD, .ExecutionUnitReadyD, .Vs1FinalD, .Vs2FinalD, .VdFinalD, .VMD, .Funct6D, .Funct3D,
                            .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD, .VALUResultD, .IllegalVectorInstructionD,
                            .ForwardedSrcAE, .ForwardedSrcBE, .VWriteDataM, .VEUAdrM, .VReadDataM, .VIEUFPResultFinalW);
-
-  // **** add EUs here. Remove this code
-  assign ExecutionUnitReadyD = '1;
-
 
 
 endmodule

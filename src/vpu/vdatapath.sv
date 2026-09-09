@@ -51,9 +51,9 @@ module vdatapath import cvw::*;  #(parameter cvw_t P) (
   input  logic IllegalVectorInstructionD,
   // from/to the scalar core
   input  logic [P.XLEN-1:0]    ForwardedSrcAE, ForwardedSrcBE,     // Integer/FP input for convert, move (from IEU)
-  output logic [P.VPU_LSU_BLEN-1:0]    VWriteDataM [P.VPU_LSU_EU-1:0],          // Data to be written to memory (to LSU)
-  output logic [P.XLEN-1:0]            VEUAdrM     [P.VPU_LSU_EU-1:0],          // Data to be written to memory (to LSU)
-  input  logic [P.VPU_LSU_BLEN-1:0]    VReadDataM [P.VPU_LSU_EU-1:0], // Read data (from LSU)
+  output logic [P.VPU_LSU_BLEN-1:0]    VWriteDataM,          // Data to be written to memory (to LSU)
+  output logic [P.XLEN-1:0]            VEUAdrM    ,          // Data to be written to memory (to LSU)
+  input  logic [P.VPU_LSU_BLEN-1:0]    VReadDataM , // Read data (from LSU)
   output logic [P.XLEN-1:0]            VIEUFPResultFinalW                            // Int or FP result for X or F regs.
   //
 );
@@ -65,23 +65,32 @@ module vdatapath import cvw::*;  #(parameter cvw_t P) (
 
   logic            VdFinalweW;
   logic [4:0]      VdFinalW;
+  genvar i;
 
   vregfile #(P.VLEN) vregfile(clk, reset, VdFinalweW, Vs1FinalD, Vs2FinalD, VdFinalD, VdFinalW,
                               VResultFinalW, SrcAD, SrcBD, SrcCD, v0D);
 
+  for(i = 0; i < P.VPU_INT_EU; i++) begin
+    // *** add interger EU when ready
+    assign ExecutionUnitReadyD[i] = '1;
+  end
+
+  for(i = 0; i < P.VPU_LSU_EU; i++) begin
+    // *** add LSU IF
+    assign ExecutionUnitReadyD[i+P.VPU_INT_EU] = '1;
+    assign VWriteDataM = '0;
+    assign VEUAdrM = '0;
+  end
+
+  for(i = 0; i < P.VPU_FP_EU; i++) begin
+    // *** add FPU
+    assign ExecutionUnitReadyD[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '1;
+  end
+
+
   // for now we will set EU 0 as the int EU and 1 as the float EU.  *** change the config so total
   // EU is a function of the int, fpu, and int mul EUs.
 
-
-
-  // *** remove all of this when ready
-  genvar i;
-  for(i = 0; i < P.VPU_LSU_LANES; i++) begin
-      assign VWriteDataM[i] = '0;
-      assign VEUAdrM[i] = '0;
-  end
-
-  assign ExecutionUnitReadyD = '1;
   assign VIEUFPResultFinalW = '0;
   assign VdFinalweW = '0;
   assign VdFinalW = '0;
