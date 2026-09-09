@@ -62,6 +62,9 @@ module vdatapath import cvw::*;  #(parameter cvw_t P) (
   logic [P.VLEN-1:0] v0D;
   logic [P.VLEN-1:0] VResultFinalW;
 
+  logic [P.VLEN-1:0] VIEUResultW [P.VPU_INT_EU-1:0];
+  logic [P.XLEN-1:0] VtoIEUFPResultW [P.VPU_INT_EU-1:0];
+
 
   logic            VdFinalweW;
   logic [4:0]      VdFinalW;
@@ -72,7 +75,12 @@ module vdatapath import cvw::*;  #(parameter cvw_t P) (
 
   for(i = 0; i < P.VPU_INT_EU; i++) begin
     // *** add interger EU when ready
-    assign ExecutionUnitReadyD[i] = '1;
+    vieu #(P) vieu(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+                   .ControllerValidD(ControllerValidD[i]), .ExecutionUnitReadyD(ExecutionUnitReadyD[i]), .VMD, .Funct3D, .Funct6D,
+                   .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD, .VALUResultD,
+                   .SrcAD, .SrcBD, .SrcCD, .v0D, .ForwardedSrcAE, .ForwardedSrcBE, .VtoIEUFPResultW(VtoIEUFPResultW[i]),
+                   .VIEUResultW(VIEUResultW[i]));
+
   end
 
   for(i = 0; i < P.VPU_LSU_EU; i++) begin

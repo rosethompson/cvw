@@ -53,10 +53,13 @@ module vieu import cvw::*;  #(parameter cvw_t P)
    //
   // from/to the scalar core
   input logic [P.XLEN-1:0]          ForwardedSrcAE, ForwardedSrcBE, // Integer/FP input for convert, move (from IEU)
-  output logic [P.VPU_LSU_BLEN-1:0] VWriteDataM ,                   // Data to be written to memory (to LSU)
-  output logic [P.XLEN-1:0]         VEUAdrM ,                       // Data to be written to memory (to LSU)
-  input logic [P.VPU_LSU_BLEN-1:0]  VReadDataM ,                    // Read data (from LSU)
-  output logic [P.XLEN-1:0]         VIEUFPResultW                  // Int or FP result for
+  output logic [P.XLEN-1:0]         VtoIEUFPResultW,                  // Int or FP result for
+  output logic [P.VLEN-1:0]         VIEUResultW
 );
+
+  assign ExecutionUnitReadyD = '1;
+  assign VIEUResultW = '0;
+
+  assign VtoIEUFPResultW = '0;
 
 endmodule
