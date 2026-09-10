@@ -47,7 +47,7 @@ module vdecoder import cvw::*;  #(parameter cvw_t P) (
   output logic VRegWriteD,
   output logic [1:0] VALUSrcAD,
   output logic VALUSrcBD,
-  output logic VALUResultD,
+  output logic VALUResultSrcD,
   output logic IllegalVectorInstructionD
 );
 
@@ -112,6 +112,6 @@ module vdecoder import cvw::*;  #(parameter cvw_t P) (
     endcase
   end
 
-  assign {RegWriteD, VRegWriteD, VALUSrcAD, VALUSrcBD, VALUResultD, IllegalVectorInstructionD} = ControlsD;
+  assign {RegWriteD, VRegWriteD, VALUSrcAD, VALUSrcBD, VALUResultSrcD, IllegalVectorInstructionD} = ControlsD;
 
 endmodule

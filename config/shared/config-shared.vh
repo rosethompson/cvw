@@ -130,7 +130,8 @@ localparam LOGNORMSHIFTSZ = ($clog2(NORMSHIFTSZ));                  // log_2(NOR
 
 // *** change 64 to the max vector element length
 localparam VPU_MAX_EU = VPU_INT_EU + VPU_FP_EU + VPU_LSU_EU;
-localparam VPU_LSU_BLEN = 64 * VPU_LSU_LANES;
-localparam VPU_INT_BLEN = 64 * VPU_INT_LANES;
-localparam VPU_INT_MUL_BLEN = 64 * VPU_INT_MUL_LANES;
-localparam VPU_FP_BLEN = 64 * VPU_FP_LANES;
+localparam VPU_LSU_BLEN = ELEN * VPU_LSU_LANES;
+localparam VPU_INT_BLEN = ELEN * VPU_INT_LANES;
+localparam VPU_INT_MUL_BLEN = ELEN * VPU_INT_MUL_LANES;
+localparam VPU_FP_BLEN = ELEN * VPU_FP_LANES;
+localparam VPU_INT_MAX_BEATS = VLEN/VPU_INT_BLEN;

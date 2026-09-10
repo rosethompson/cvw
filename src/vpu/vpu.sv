@@ -63,7 +63,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   logic       VRegWriteD;
   logic [1:0] VALUSrcAD;
   logic       VALUSrcBD;
-  logic       VALUResultD;
+  logic       VALUResultSrcD;
   logic [P.VLEN-1:0] VRD1D, VRD2D, VRD3D;
   logic [P.VLEN-1:0] v0D;
   logic [P.VLEN-1:0] VResultFinalW;
@@ -102,7 +102,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   vcontroller #(P) vcontroller(.clk, .reset, .StallD, .FlushD,
                                .InstrD, .VectorD, .Vs1FinalD, .Vs2FinalD, .VdFinalD,
                                .VMD, .Funct6D, .Funct3D, .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD,
-                               .VALUResultD, .IllegalVectorInstructionD, .ControllerValidD, .ExecutionUnitReadyD);
+                               .VALUResultSrcD, .IllegalVectorInstructionD, .ControllerValidD, .ExecutionUnitReadyD);
 
 
 
@@ -113,7 +113,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   for(i = 0; i < P.VPU_INT_EU; i++) begin
     vieu #(P) vieu(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
                    .ControllerValidD(ControllerValidD[i]), .ExecutionUnitReadyD(ExecutionUnitReadyD[i]), .VMD, .Funct3D, .Funct6D,
-                   .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD, .VALUResultD,
+                   .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD, .VALUResultSrcD,
                    .VRD1D, .VRD2D, .VRD3D, .v0D, .ForwardedSrcAE, .ForwardedSrcBE, .VtoIEUFPResultW(VtoIEUFPResultW[i]),
                    .VIEUResultW(VIEUResultW[i]));
   end

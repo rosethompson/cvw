@@ -87,6 +87,7 @@ localparam logic ZFA_SUPPORTED = 0;
 // Vector extensions
 localparam logic V_SUPPORTED = 0;
 localparam VLEN = 32'd256;
+localparam ELEN = 32'd64;
 localparam VPU_INT_EU = 32'd2;
 localparam VPU_INT_LANES = 32'd2;
 localparam VPU_INT_MUL = 32'd2;

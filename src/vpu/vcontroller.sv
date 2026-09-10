@@ -45,7 +45,7 @@ module vcontroller import cvw::*;  #(parameter cvw_t P) (
   output logic VRegWriteD,
   output logic [1:0] VALUSrcAD,
   output logic VALUSrcBD,
-  output logic VALUResultD,
+  output logic VALUResultSrcD,
   output logic IllegalVectorInstructionD,
   // hand shaking controls
   output logic [P.VPU_MAX_EU-1:0] ControllerValidD,
@@ -64,7 +64,7 @@ module vcontroller import cvw::*;  #(parameter cvw_t P) (
   vdecoder #(P) vdecoder(.clk, .reset, .StallD, .FlushD,
                          .InstrD, .Vs1D, .Vs2D, .VdD, .VMD,
                          .Funct6D, .Funct3D, .RegWriteD, .VRegWriteD,
-                         .VALUResultD, .VALUSrcAD, .VALUSrcBD, .IllegalVectorInstructionD);
+                         .VALUResultSrcD, .VALUSrcAD, .VALUSrcBD, .IllegalVectorInstructionD);
 
   vdispatcher #(P) vdispatcher(.clk, .reset, .StallD, .FlushD,
                                .VectorD, .Vs1D, .Vs2D, .VdD, .ControllerValidD, .ExecutionUnitReadyD,

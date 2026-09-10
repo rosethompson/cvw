@@ -306,6 +306,7 @@ typedef struct packed {
 
   // Vector extensions
   int VLEN;
+  int ELEN;
   int VPU_MAX_EU;
   int VPU_INT_EU;
   int VPU_INT_LANES;
@@ -319,6 +320,7 @@ typedef struct packed {
   int VPU_INT_BLEN;
   int VPU_INT_MUL_BLEN;
   int VPU_FP_BLEN;
+  int VPU_INT_MAX_BEATS;
 
 } cvw_t;
 

@@ -46,7 +46,7 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   input logic                       VRegWriteD,
   input logic [1:0]                 VALUSrcAD,
   input logic                       VALUSrcBD,
-  input logic                       VALUResultD,
+  input logic                       VALUResultSrcD,
    // datapath from vregfile
   input logic [P.VLEN-1:0]          VRD1D, VRD2D, VRD3D,
   input logic [P.VLEN-1:0]          v0D,
@@ -57,12 +57,9 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   output logic [P.VLEN-1:0]         VIEUResultW
 );
 
-  localparam SEWMAX = 64;
-  localparam BEATBITLEN = $clog2((P.VLEN/SEWMAX) + 1);
+  localparam BEATBITLEN = $clog2((P.VLEN/P.ELEN) + 1);
   //localparam VLBITLEN = $clog2(P.VLEN);
-  localparam INT_LANE_WIDTH = P.VPU_INT_LANES * SEWMAX;
-  localparam XLENTOINTLANES = INT_LANE_WIDTH / P.XLEN;
-  localparam INT_MAX_BEATS = P.VLEN/(INT_LANE_WIDTH);
+  localparam XLENTOINTLANES = P.VPU_INT_BLEN / P.XLEN;
 
   logic [5:0] Funct6E;
   logic [2:0] Funct3E;
@@ -70,23 +67,35 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   logic       VRegWriteE;
   logic [1:0] VALUSrcAE;
   logic       VALUSrcBE;
-  logic       VALUResultE;
+  logic       VALUResultSrcE;
+
+  logic       RegWriteM;
+  logic       VRegWriteM;
+  logic       VALUResultSrcM;
+
+  logic       RegWriteW;
+  logic       VRegWriteW;
+  logic       VALUResultSrcW;
 
   logic [BEATBITLEN-1:0]   vlE;
-  logic [BEATBITLEN-1:0] BeatE;
+  logic [BEATBITLEN-1:0] BeatE, BeatM;
   logic                  CaptureD;
   logic                  BeatDoneE;
 
-  logic [P.VLEN-1:0]   VRD1E, VRD2E, VRD3E, v0E;
-  logic [INT_LANE_WIDTH-1:0] VRD1BeatE [INT_MAX_BEATS-1:0];
-  logic [INT_LANE_WIDTH-1:0] VRD2BeatE [INT_MAX_BEATS-1:0];
-  logic [INT_LANE_WIDTH-1:0] VRD3BeatE [INT_MAX_BEATS-1:0];
-  logic [INT_LANE_WIDTH-1:0] v0BeatE [INT_MAX_BEATS-1:0];
+  logic [P.VLEN-1:0]     VRD1E, VRD2E, VRD3E, v0E;
+  logic [P.VPU_INT_BLEN-1:0] VRD1BeatE [P.VPU_INT_MAX_BEATS-1:0];
+  logic [P.VPU_INT_BLEN-1:0] VRD2BeatE [P.VPU_INT_MAX_BEATS-1:0];
+  logic [P.VPU_INT_BLEN-1:0] VRD3BeatE [P.VPU_INT_MAX_BEATS-1:0];
+  logic [P.VPU_INT_BLEN-1:0] v0BeatE [P.VPU_INT_MAX_BEATS-1:0];
 
-  logic [INT_LANE_WIDTH-1:0]   VRD1SelectedE, VRD2SelectedE, VRD3SelectedE, v0SelectedE;
-  logic [INT_LANE_WIDTH-1:0]   VImmE;
+  logic [P.VPU_INT_BLEN-1:0] VRD1SelectedE, VRD2SelectedE, VRD3SelectedE, v0SelectedE;
+  logic [P.VPU_INT_BLEN-1:0] VImmE;
 
-  logic [INT_LANE_WIDTH-1:0]   VSrcAE, VSrcBE, VSrcCE;
+  logic [P.VPU_INT_BLEN-1:0] VSrcAE, VSrcBE, VSrcCE;
+  logic [P.VPU_INT_BLEN-1:0] VALUResultE, VALUResultM;
+  logic [P.VLEN-1:0]         VALUResultW;
+
+
 
   // *** add vector length later
   assign vlE = 4;
@@ -103,11 +112,11 @@ module vieu import cvw::*;  #(parameter cvw_t P)
 
   // convert to index format
   genvar index;
-  for (index = 0; index < INT_MAX_BEATS; index++) begin : laneconvert
-    assign VRD1BeatE[index] = VRD1E[(index*INT_LANE_WIDTH)+INT_LANE_WIDTH-1 : (index*INT_LANE_WIDTH)];
-    assign VRD2BeatE[index] = VRD2E[(index*INT_LANE_WIDTH)+INT_LANE_WIDTH-1 : (index*INT_LANE_WIDTH)];
-    assign VRD3BeatE[index] = VRD3E[(index*INT_LANE_WIDTH)+INT_LANE_WIDTH-1 : (index*INT_LANE_WIDTH)];
-    assign v0BeatE[index]   = v0E[(index*INT_LANE_WIDTH)+INT_LANE_WIDTH-1   : (index*INT_LANE_WIDTH)];
+  for (index = 0; index < P.VPU_INT_MAX_BEATS; index++) begin : laneconvert
+    assign VRD1BeatE[index] = VRD1E[(index*P.VPU_INT_BLEN)+P.VPU_INT_BLEN-1 : (index*P.VPU_INT_BLEN)];
+    assign VRD2BeatE[index] = VRD2E[(index*P.VPU_INT_BLEN)+P.VPU_INT_BLEN-1 : (index*P.VPU_INT_BLEN)];
+    assign VRD3BeatE[index] = VRD3E[(index*P.VPU_INT_BLEN)+P.VPU_INT_BLEN-1 : (index*P.VPU_INT_BLEN)];
+    assign v0BeatE[index]   = v0E[(index*P.VPU_INT_BLEN)+P.VPU_INT_BLEN-1   : (index*P.VPU_INT_BLEN)];
   end
 
   // mux down to the current lane(s)
@@ -120,17 +129,31 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   // controll is routed to different EUs.
 
   flopenrc #(15) contrlregE(clk, reset, FlushE, ~StallE,
-                           {Funct6D, Funct3D, RegWriteD, VRegWriteD, VALUSrcAD, VALUSrcBD, VALUResultD},
-                           {Funct6E, Funct3E, RegWriteE, VRegWriteE, VALUSrcAE, VALUSrcBE, VALUResultE});
+                           {Funct6D, Funct3D, RegWriteD, VRegWriteD, VALUSrcAD, VALUSrcBD, VALUResultSrcD},
+                           {Funct6E, Funct3E, RegWriteE, VRegWriteE, VALUSrcAE, VALUSrcBE, VALUResultSrcE});
 
-  mux3 #(INT_LANE_WIDTH) vscramux(VRD1SelectedE, VImmE, {XLENTOINTLANES{ForwardedSrcAE}}, VALUSrcAE, VSrcAE);
+  mux3 #(P.VPU_INT_BLEN) vscramux(VRD1SelectedE, VImmE, {XLENTOINTLANES{ForwardedSrcAE}}, VALUSrcAE, VSrcAE);
 
-  mux2 #(INT_LANE_WIDTH) vscrbmux(VRD2SelectedE, {XLENTOINTLANES{ForwardedSrcBE}}, VALUSrcBE, VSrcBE);
+  mux2 #(P.VPU_INT_BLEN) vscrbmux(VRD2SelectedE, {XLENTOINTLANES{ForwardedSrcBE}}, VALUSrcBE, VSrcBE);
+
+  valu #(P) valu(VSrcAE, VSrcBE, VALUResultE);
+
+  flopenrc #(P.VPU_INT_BLEN) VALUResultMReg(clk, reset, FlushM, ~StallM, VALUResultE, VALUResultM); // *** may need an enable
+
+  flopenrc #(3+BEATBITLEN) contrlregM(clk, reset, FlushM, ~StallM,
+                           {RegWriteE, VRegWriteE, VALUResultSrcE, BeatE},
+                           {RegWriteM, VRegWriteM, VALUResultSrcM, BeatM});
+
+  // demux - the beat tells me which indices of output reg should be written
+
+  for (index = 0; index < P.VPU_INT_MAX_BEATS; index++) begin : lanedemuxreg
+    flopenrc #(P.VPU_INT_BLEN) VALUResultWReg(clk, reset, FlushW & BeatM == index, ~StallW, VALUResultM,
+                                              VALUResultW[(index*P.VPU_INT_BLEN)+P.VPU_INT_BLEN-1 : (index*P.VPU_INT_BLEN)]);
+  end
 
 
+  assign VIEUResultW = VALUResultW; // *** replace with mux?
 
-  assign VIEUResultW = '0;
-
-  assign VtoIEUFPResultW = '0;
+  assign VtoIEUFPResultW = '0;    // ***
 
 endmodule
