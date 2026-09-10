@@ -86,9 +86,9 @@ module vdecoder import cvw::*;  #(parameter cvw_t P) (
     case(OpD)
       // RegWrite_VRegWrite_ALUSrc(A_B)_ALUResult_Illegal
       7'b0000111: if(VLSFunctD)
-        ControlsD = `VCTRLW'b0_1_10_0_1_0; // unit-strip; vl // *** add the address modes later
+        ControlsD = `VCTRLW'b0_1_10_0_1_0; // unit-stride; vl // *** add the address modes later
       7'b0100111: if(VLSFunctD)
-        ControlsD = `VCTRLW'b0_0_10_1_0_0; // unit-strip; vs
+        ControlsD = `VCTRLW'b0_0_10_1_0_0; // unit-stride; vs
       7'b1010111: begin // vector data operation
         if(OPIVVD)
           ControlsD = `VCTRLW'b0_1_00_0_0_0;

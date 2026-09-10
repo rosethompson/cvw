@@ -61,7 +61,16 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   localparam BEATBITLEN = $clog2((P.VLEN/SEWMAX) + 1);
   //localparam VLBITLEN = $clog2(P.VLEN);
   localparam INT_LANE_WIDTH = P.VPU_INT_LANES * SEWMAX;
+  localparam XLENTOINTLANES = INT_LANE_WIDTH / P.XLEN;
   localparam INT_MAX_BEATS = P.VLEN/(INT_LANE_WIDTH);
+
+  logic [5:0] Funct6E;
+  logic [2:0] Funct3E;
+  logic       RegWriteE;
+  logic       VRegWriteE;
+  logic [1:0] VALUSrcAE;
+  logic       VALUSrcBE;
+  logic       VALUResultE;
 
   logic [BEATBITLEN-1:0]   vlE;
   logic [BEATBITLEN-1:0] BeatE;
@@ -75,9 +84,13 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   logic [INT_LANE_WIDTH-1:0] v0BeatE [INT_MAX_BEATS-1:0];
 
   logic [INT_LANE_WIDTH-1:0]   VRD1SelectedE, VRD2SelectedE, VRD3SelectedE, v0SelectedE;
+  logic [INT_LANE_WIDTH-1:0]   VImmE;
+
+  logic [INT_LANE_WIDTH-1:0]   VSrcAE, VSrcBE, VSrcCE;
 
   // *** add vector length later
   assign vlE = 4;
+  assign VImmE = '0; // *** fix me
 
   vieufsm #(P, BEATBITLEN) vieufsm(.clk, .reset, .FlushE, .StallE,
                        .ControllerValidD, .ExecutionUnitReadyD, .BeatE, .BeatDoneE, .vlE);
@@ -102,6 +115,18 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   assign VRD2SelectedE = VRD2BeatE[BeatE[BEATBITLEN-3:0]];
   assign VRD3SelectedE = VRD3BeatE[BeatE[BEATBITLEN-3:0]];
   assign v0SelectedE   = v0BeatE[BeatE[BEATBITLEN-3:0]];
+
+  // unlike the integer controller and datapath, the controller must be pipelined inside the vieu, because the
+  // controll is routed to different EUs.
+
+  flopenrc #(15) contrlregE(clk, reset, FlushE, ~StallE,
+                           {Funct6D, Funct3D, RegWriteD, VRegWriteD, VALUSrcAD, VALUSrcBD, VALUResultD},
+                           {Funct6E, Funct3E, RegWriteE, VRegWriteE, VALUSrcAE, VALUSrcBE, VALUResultE});
+
+  mux3 #(INT_LANE_WIDTH) vscramux(VRD1SelectedE, VImmE, {XLENTOINTLANES{ForwardedSrcAE}}, VALUSrcAE, VSrcAE);
+
+  mux2 #(INT_LANE_WIDTH) vscrbmux(VRD2SelectedE, {XLENTOINTLANES{ForwardedSrcBE}}, VALUSrcBE, VSrcBE);
+
 
 
   assign VIEUResultW = '0;
