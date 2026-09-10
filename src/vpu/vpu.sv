@@ -64,11 +64,21 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   logic [1:0] VALUSrcAD;
   logic       VALUSrcBD;
   logic       VALUResultD;
+  logic [P.VLEN-1:0] SrcAD, SrcBD, SrcCD;
+  logic [P.VLEN-1:0] v0D;
+  logic [P.VLEN-1:0] VResultFinalW;
+
+  logic [P.VLEN-1:0] VIEUResultW [P.VPU_INT_EU-1:0];
+  logic [P.XLEN-1:0] VtoIEUFPResultW [P.VPU_INT_EU-1:0];
+
   //logic       IllegalVectorInstructionD;
 
   logic [P.VPU_MAX_EU-1:0] ControllerValidD;
   logic [P.VPU_MAX_EU-1:0] ExecutionUnitReadyD;
 
+  logic            VdFinalweW;
+  logic [4:0]      VdFinalW;
+  genvar i;
 
 
   // divide into control and data path
@@ -94,10 +104,39 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
                                .VMD, .Funct6D, .Funct3D, .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD,
                                .VALUResultD, .IllegalVectorInstructionD, .ControllerValidD, .ExecutionUnitReadyD);
 
-  vdatapath #(P) vdatapath(.clk, .reset, .StallD, .StallE, .StallM, .StallW, .FlushD, .FlushE, .FlushM, .FlushW,
-                           .ControllerValidD, .ExecutionUnitReadyD, .Vs1FinalD, .Vs2FinalD, .VdFinalD, .VMD, .Funct6D, .Funct3D,
-                           .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD, .VALUResultD, .IllegalVectorInstructionD,
-                           .ForwardedSrcAE, .ForwardedSrcBE, .VWriteDataM, .VEUAdrM, .VReadDataM, .VIEUFPResultFinalW);
 
+
+  vregfile #(P.VLEN) vregfile(clk, reset, VdFinalweW, Vs1FinalD, Vs2FinalD, VdFinalD, VdFinalW,
+                              VResultFinalW, SrcAD, SrcBD, SrcCD, v0D);
+
+
+  for(i = 0; i < P.VPU_INT_EU; i++) begin
+    vieu #(P) vieu(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+                   .ControllerValidD(ControllerValidD[i]), .ExecutionUnitReadyD(ExecutionUnitReadyD[i]), .VMD, .Funct3D, .Funct6D,
+                   .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD, .VALUResultD,
+                   .SrcAD, .SrcBD, .SrcCD, .v0D, .ForwardedSrcAE, .ForwardedSrcBE, .VtoIEUFPResultW(VtoIEUFPResultW[i]),
+                   .VIEUResultW(VIEUResultW[i]));
+  end
+
+  for(i = 0; i < P.VPU_LSU_EU; i++) begin
+    // *** add LSU IF
+    assign ExecutionUnitReadyD[i+P.VPU_INT_EU] = '1;
+    assign VWriteDataM = '0;
+    assign VEUAdrM = '0;
+  end
+
+  for(i = 0; i < P.VPU_FP_EU; i++) begin
+    // *** add FPU
+    assign ExecutionUnitReadyD[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '1;
+  end
+
+
+  // for now we will set EU 0 as the int EU and 1 as the float EU.  *** change the config so total
+  // EU is a function of the int, fpu, and int mul EUs.
+
+  assign VIEUFPResultFinalW = '0;
+  assign VdFinalweW = '0;
+  assign VdFinalW = '0;
+  assign VResultFinalW = '0;
 
 endmodule
