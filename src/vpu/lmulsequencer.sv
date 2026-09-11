@@ -41,7 +41,6 @@ module lmulsequencer (
   output logic [4:0]  Vs1FinalD, Vs2FinalD, VdFinalD
 );
 
-  logic        IncrMicroOpD;            // Next micro vector instruction when lmul > 1
 
   logic        IncrD;
   logic [4:0]  Vs1P1D, Vs2P1D, VdP1D;
@@ -70,7 +69,7 @@ module lmulsequencer (
   mux2 #(5) VdMux (VdD, VdP1QD, lmulCntrFirstCaptureD, VdFinalD);
 
 
-  flopenl #(4) counter (clk, lmulCntrLoad, IncrD, lmulCntrP1, 4'b0001, lmulCntrD);
+  flopenrl #(4) counter (clk, reset, lmulCntrLoad, IncrD, lmulCntrP1, 4'b0001, lmulCntrD);
   assign lmulCntrDone = lmulCntrD == lmulIntD; // *** this is a bug for lmul less than 1
   assign lmulCntrP1 = lmulCntrD + 4'b0001;
 

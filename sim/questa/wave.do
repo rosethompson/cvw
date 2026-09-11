@@ -15,21 +15,21 @@ add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core
 add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/ieu/c/MDUStallD
 add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/hzu/DivBusyE
 add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/hzu/FDivBusyE
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/InstrMisalignedFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/InstrAccessFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/IllegalInstrFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/BreakpointFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/LoadMisalignedFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/StoreAmoMisalignedFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/LoadAccessFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/StoreAmoAccessFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/EcallFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/InstrPageFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/LoadPageFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/StoreAmoPageFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/InterruptM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/trap/HPTWInstrAccessFaultM
-add wave -noupdate -expand -group HDU -group traps /testbench/dut/core/priv/priv/pmd/WFITimeoutM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/InstrMisalignedFaultM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/InstrAccessFaultM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/IllegalInstrFaultM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/BreakpointFaultM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/LoadMisalignedFaultM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/StoreAmoMisalignedFaultM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/LoadAccessFaultM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/StoreAmoAccessFaultM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/EcallFaultM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/InstrPageFaultM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/LoadPageFaultM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/StoreAmoPageFaultM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/InterruptM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/HPTWInstrAccessFaultM
+add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/pmd/WFITimeoutM
 add wave -noupdate -expand -group HDU -group Flush -color Yellow /testbench/dut/core/FlushD
 add wave -noupdate -expand -group HDU -group Flush -color Yellow /testbench/dut/core/FlushE
 add wave -noupdate -expand -group HDU -group Flush -color Yellow /testbench/dut/core/FlushM
@@ -676,8 +676,18 @@ add wave -noupdate /testbench/dut/core/ifu/bus/icache/icache/cachefsm/CacheEn
 add wave -noupdate /testbench/dut/core/ifu/bus/icache/icache/cachefsm/FlushStage
 add wave -noupdate /testbench/dut/core/lsu/bus/dcache/dcache/vict/cacheLRU/LRUWriteEn
 add wave -noupdate -expand -group vpu /testbench/dut/core/vpu/vpu/VectorD
-add wave -noupdate -expand -group vpu /testbench/dut/core/vpu/vpu/IllegalVectorInstructionD
-add wave -noupdate -expand -group vpu /testbench/dut/core/ieu/c/IllegalIEUFPUInstrD
+add wave -noupdate -expand -group vpu /testbench/dut/core/vpu/vpu/VPUFrontEndBusyD
+add wave -noupdate -expand -group vpu -expand -group vdecoder /testbench/dut/core/vpu/vpu/vcontroller/Vs1FinalD
+add wave -noupdate -expand -group vpu -expand -group vdecoder /testbench/dut/core/vpu/vpu/vcontroller/Vs2FinalD
+add wave -noupdate -expand -group vpu -expand -group vdecoder /testbench/dut/core/vpu/vpu/vcontroller/VdFinalD
+add wave -noupdate -expand -group vpu -expand -group handshake /testbench/dut/core/vpu/vpu/ControllerValidD
+add wave -noupdate -expand -group vpu -expand -group handshake /testbench/dut/core/vpu/vpu/ExecutionUnitReadyD
+add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/IncrD
+add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/lmulDecodedD
+add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/lmulCntrD
+add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/lmulCntrP1
+add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/lmulCntrDone
+add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/lmulCntrFirstCaptureD
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 4} {89834 ns} 1} {{Cursor 4} {79055 ns} 1} {{Cursor 3} {843 ns} 0}
 quietly wave cursor active 3
@@ -695,4 +705,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {746 ns} {986 ns}
+WaveRestoreZoom {809 ns} {887 ns}

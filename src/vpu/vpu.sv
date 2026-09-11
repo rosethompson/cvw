@@ -49,7 +49,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   output logic [P.VPU_LSU_BLEN-1:0]    VWriteDataM,          // Data to be written to memory (to LSU)
   output logic [P.XLEN-1:0]            VEUAdrM    ,          // Data to be written to memory (to LSU)
   input  logic [P.VPU_LSU_BLEN-1:0]    VReadDataM , // Read data (from LSU)
-  output logic                 IllegalVectorInstructionD,                   // Is the instruction an illegal fpu instruction (to IFU)
+  output logic                 IllegalVPUInstrD,                   // Is the instruction an illegal fpu instruction (to IFU)
   // Writeback stage
   output logic [P.XLEN-1:0] VIEUFPResultFinalW                            // Int or FP result for X or F regs.
 );
@@ -71,7 +71,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   logic [P.VLEN-1:0] VIEUResultW [P.VPU_INT_EU-1:0];
   logic [P.XLEN-1:0] VtoIEUFPResultW [P.VPU_INT_EU-1:0];
 
-  //logic       IllegalVectorInstructionD;
+  //logic       IllegalVPUInstrD;
 
   logic [P.VPU_MAX_EU-1:0] ControllerValidD;
   logic [P.VPU_MAX_EU-1:0] ExecutionUnitReadyD;
@@ -105,7 +105,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   vcontroller #(P) vcontroller(.clk, .reset, .StallD, .FlushD,
                                .InstrD, .VectorD, .Vs1FinalD, .Vs2FinalD, .VdFinalD,
                                .VMD, .Funct6D, .Funct3D, .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD,
-                               .VALUResultSrcD, .IllegalVectorInstructionD, .ControllerValidD, .ExecutionUnitReadyD);
+                               .VALUResultSrcD, .IllegalVPUInstrD, .ControllerValidD, .ExecutionUnitReadyD);
 
 
 
