@@ -80,6 +80,9 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   logic [4:0]      VdFinalW;
   genvar i;
 
+  logic [P.VPU_MAX_EU-1:0] RegWriteW, VRegWriteW, EUDoneW;
+  logic [4:0]              EUVdFinalW [P.VPU_MAX_EU-1:0];
+
 
   // divide into control and data path
 
@@ -113,9 +116,10 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   for(i = 0; i < P.VPU_INT_EU; i++) begin
     vieu #(P) vieu(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
                    .ControllerValidD(ControllerValidD[i]), .ExecutionUnitReadyD(ExecutionUnitReadyD[i]), .VMD, .Funct3D, .Funct6D,
-                   .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD, .VALUResultSrcD,
+                   .VdFinalD, .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD, .VALUResultSrcD,
                    .VRD1D, .VRD2D, .VRD3D, .v0D, .ForwardedSrcAE, .ForwardedSrcBE, .VtoIEUFPResultW(VtoIEUFPResultW[i]),
-                   .VIEUResultW(VIEUResultW[i]));
+                   .VIEUResultW(VIEUResultW[i]), .RegWriteW(RegWriteW[i]), .VRegWriteW(VRegWriteW[i]),
+                   .EUDoneW(EUDoneW[i]), .VdFinalW(EUVdFinalW[i]));
   end
 
   for(i = 0; i < P.VPU_LSU_EU; i++) begin
@@ -135,9 +139,12 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   // for now we will set EU 0 as the int EU and 1 as the float EU.  *** change the config so total
   // EU is a function of the int, fpu, and int mul EUs.
 
-  assign VIEUFPResultFinalW = '0;
-  assign VdFinalweW = '0;
-  assign VdFinalW = '0;
-  assign VResultFinalW = '0;
+  // the controller must select the correct EU to write back into the VRF so that instructions commit inorder.
+  // *** for now let's just always pick the first EU.
+
+  assign VIEUFPResultFinalW = VtoIEUFPResultW[0];
+  assign VdFinalweW = VRegWriteW[0];
+  assign VdFinalW = EUVdFinalW[0];
+  assign VResultFinalW = VIEUResultW[0]; // *** these names are not clear enough. I keep confusing VIEU to mean goto the scalar IEU.
 
 endmodule
