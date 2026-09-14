@@ -38,7 +38,7 @@ module vieufsm import cvw::*;  #(parameter     cvw_t P,
    input logic                   ControllerValidD,
    output logic                  ExecutionUnitReadyD,
    output logic [BEATBITLEN-1:0] BeatE,
-   output logic                  EUDoneE,
+   output logic                  ExecutionUnitResultValidE,
    output logic                  BeatValidE,
    input logic [BEATBITLEN-1:0]  vlE
    );
@@ -58,7 +58,7 @@ module vieufsm import cvw::*;  #(parameter     cvw_t P,
     case (CurrState)
       STATE_RDY: if (ControllerValidD) NextState = STATE_BEAT;
                  else                                        NextState = STATE_RDY;
-      STATE_BEAT: if (EUDoneE & ~ControllerValidD) NextState = STATE_RDY;
+      STATE_BEAT: if (ExecutionUnitResultValidE & ~ControllerValidD) NextState = STATE_RDY;
                   else                  NextState = STATE_BEAT;
       default: NextState = STATE_RDY;
     endcase // case (CurrState)
@@ -67,8 +67,8 @@ module vieufsm import cvw::*;  #(parameter     cvw_t P,
   counterval #(BEATBITLEN) beatcounter(clk, BeatRst, BeatIncr, P.VPU_INT_LANES[BEATBITLEN-1:0], BeatE);
   assign BeatIncr = CurrState == STATE_BEAT & ~StallE;
   assign BeatRst = ExecutionUnitReadyD;
-  assign EUDoneE = BeatE >= vlE - 1; // *** plan to optimize this away.
-  assign ExecutionUnitReadyD = CurrState == STATE_RDY | (CurrState == STATE_BEAT & EUDoneE);
+  assign ExecutionUnitResultValidE = BeatE >= vlE - 1; // *** plan to optimize this away.
+  assign ExecutionUnitReadyD = CurrState == STATE_RDY | (CurrState == STATE_BEAT & ExecutionUnitResultValidE);
   assign BeatValidE = CurrState == STATE_BEAT;
 
 endmodule
