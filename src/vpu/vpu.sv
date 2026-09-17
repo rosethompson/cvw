@@ -77,6 +77,8 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   logic [P.VPU_MAX_EU-1:0] ExecutionUnitReadyD;
   logic [P.VPU_MAX_EU-1:0] ControllerWBReadyW;
   logic [P.VPU_MAX_EU-1:0] ExecutionUnitResultValidW;
+  logic [P.VPU_QUEUEDEPTH-1:0] ExecutionUnitOrderW [P.VPU_MAX_EU-1:0];
+  logic [P.VPU_QUEUEDEPTH-1:0] ExecutionUnitOrderD [P.VPU_MAX_EU-1:0];
 
   logic            VdFinalweW;
   logic [4:0]      VdFinalW;
@@ -107,7 +109,8 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   vcontroller #(P) vcontroller(.clk, .reset, .StallD, .FlushD,
                                .InstrD, .VectorD, .Vs1FinalD, .Vs2FinalD, .VdFinalD,
                                .VMD, .Funct6D, .Funct3D, .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD,
-                               .VALUResultSrcD, .IllegalVPUInstrD, .ControllerValidD, .ExecutionUnitReadyD, .ControllerWBReadyW);
+                               .VALUResultSrcD, .IllegalVPUInstrD, .ControllerValidD, .ExecutionUnitReadyD,
+                               .ExecutionUnitOrderD, .ExecutionUnitOrderW, .ControllerWBReadyW, .ExecutionUnitResultValidW);
 
 
 
@@ -118,6 +121,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   for(i = 0; i < P.VPU_INT_EU; i++) begin : vieu
     vieu #(P) vieu(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
                    .ControllerWBReadyW(ControllerWBReadyW[i]), .ExecutionUnitResultValidW(ExecutionUnitResultValidW[i]),
+                   .ExecutionUnitOrderD(ExecutionUnitOrderD[i]), .ExecutionUnitOrderW(ExecutionUnitOrderW[i]),
                    .ControllerValidD(ControllerValidD[i]), .ExecutionUnitReadyD(ExecutionUnitReadyD[i]), .VMD, .Funct3D, .Funct6D,
                    .VdFinalD, .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD, .VALUResultSrcD,
                    .VRD1D, .VRD2D, .VRD3D, .v0D, .ForwardedSrcAE, .ForwardedSrcBE, .VtoIEUFPResultW(VtoIEUFPResultW[i]),
@@ -130,12 +134,15 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
     assign ExecutionUnitReadyD[i+P.VPU_INT_EU] = '1;
     assign VWriteDataM = '0;
     assign VEUAdrM = '0;
+    assign ExecutionUnitResultValidW[i+P.VPU_INT_EU] = '0;
+
   end
 
   for(i = 0; i < P.VPU_FP_EU; i++) begin : vfpeu
     // *** add FPU
     //vfpeu #(P) vfpeu
     assign ExecutionUnitReadyD[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '1;
+    assign ExecutionUnitResultValidW[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '0;
   end
 
 

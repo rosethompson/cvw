@@ -688,8 +688,23 @@ add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulseque
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/lmulCntrP1
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/lmulCntrDone
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/lmulCntrFirstCaptureD
+add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/MicroVectorD
+add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/OrderD
+add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/ExecutionUnitReadyD
+add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/HeadOrderW
+add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/ExecutionUnitOrderW
+add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/ExecutionUnitResultValidW
+add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/ControllerWBReadyW
+add wave -noupdate {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ControllerWBReadyW}
+add wave -noupdate {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/EnableW}
+add wave -noupdate -expand -label {Contributors: sim:/testbench/dut/core/vpu/vpu/vieu[0]/vieu/EnableW} -group {Contributors: {sim:/testbench/dut/core/vpu/vpu/vieu[0]/vieu/EnableW}} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ControllerWBReadyW}
+add wave -noupdate -expand -label {Contributors: sim:/testbench/dut/core/vpu/vpu/vieu[0]/vieu/EnableW} -group {Contributors: {sim:/testbench/dut/core/vpu/vpu/vieu[0]/vieu/EnableW}} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ExecutionUnitResultValidM}
+add wave -noupdate -expand -label {Contributors: sim:/testbench/dut/core/vpu/vpu/vieu[0]/vieu/EnableW} -group {Contributors: {sim:/testbench/dut/core/vpu/vpu/vieu[0]/vieu/EnableW}} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ExecutionUnitResultValidW}
+add wave -noupdate {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/BeatE}
+add wave -noupdate {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/BeatM}
+add wave -noupdate {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/VIEUResultW}
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {89834 ns} 1} {{Cursor 4} {79055 ns} 1} {{Cursor 3} {843 ns} 0}
+WaveRestoreCursors {{Cursor 4} {89834 ns} 1} {{Cursor 4} {79055 ns} 1} {{Cursor 3} {895 ns} 0}
 quietly wave cursor active 3
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -705,4 +720,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {809 ns} {887 ns}
+WaveRestoreZoom {745 ns} {1053 ns}

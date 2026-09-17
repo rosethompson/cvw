@@ -40,6 +40,8 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   output logic              ExecutionUnitReadyD,
   input logic               ControllerWBReadyW,
   output logic              ExecutionUnitResultValidW,
+  output logic [P.VPU_QUEUEDEPTH-1:0] ExecutionUnitOrderW,
+  input  logic [P.VPU_QUEUEDEPTH-1:0] ExecutionUnitOrderD,
    // control from the controller
   input logic               VMD,                            // 0 = mask enabled, 1 mask disabled
   input logic [5:0]         Funct6D,
@@ -85,6 +87,7 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   logic [BEATBITLEN-1:0] BeatE, BeatM;
   logic                  CaptureD;
   logic                  ExecutionUnitResultValidE, ExecutionUnitResultValidM;
+  logic [P.VPU_QUEUEDEPTH-1:0] ExecutionUnitOrderE, ExecutionUnitOrderM;
 
   logic [P.VLEN-1:0]     VRD1E, VRD2E, VRD3E, v0E;
   logic [P.VPU_INT_BLEN-1:0] VRD1BeatE [P.VPU_INT_MAX_BEATS-1:0];
@@ -103,6 +106,7 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   logic [4:0]                VdFinalE, VdFinalM;
 
   logic                      EnableW, EnableBeatW;
+  logic                      ConsummedW;
 
   // *** add vector length later
   assign vlE = 4;
@@ -135,9 +139,10 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   // unlike the integer controller and datapath, the controller must be pipelined inside the vieu, because the
   // controll is routed to different EUs.
 
-  flopenrc #(20) contrlregE(clk, reset, FlushE, ~StallE & CaptureD,
-                           {VdFinalD, Funct6D, Funct3D, RegWriteD, VRegWriteD, VALUSrcAD, VALUSrcBD, VALUResultSrcD},
-                           {VdFinalE, Funct6E, Funct3E, RegWriteE, VRegWriteE, VALUSrcAE, VALUSrcBE, VALUResultSrcE});
+  flopenrc #(20+P.VPU_QUEUEDEPTH) contrlregE
+    (clk, reset, FlushE, ~StallE & CaptureD,
+     {VdFinalD, Funct6D, Funct3D, RegWriteD, VRegWriteD, VALUSrcAD, VALUSrcBD, VALUResultSrcD, ExecutionUnitOrderD},
+     {VdFinalE, Funct6E, Funct3E, RegWriteE, VRegWriteE, VALUSrcAE, VALUSrcBE, VALUResultSrcE, ExecutionUnitOrderE});
 
   mux3 #(P.VPU_INT_BLEN) vscramux(VRD1SelectedE, VImmE, {XLENTOINTLANES{ForwardedSrcAE}}, VALUSrcAE, VSrcAE);
 
@@ -147,9 +152,10 @@ module vieu import cvw::*;  #(parameter cvw_t P)
 
   flopenrc #(P.VPU_INT_BLEN) VALUResultMReg(clk, reset, FlushM, ~StallM, VALUResultE, VALUResultM); // *** may need an enable
 
-  flopenrc #(10+BEATBITLEN) contrlregM(clk, reset, FlushM, ~StallM,
-                           {VdFinalE, RegWriteE, VRegWriteE, VALUResultSrcE, BeatE, ExecutionUnitResultValidE, BeatValidE},
-                           {VdFinalM, RegWriteM, VRegWriteM, VALUResultSrcM, BeatM, ExecutionUnitResultValidM, BeatValidM});
+  flopenrc #(10+BEATBITLEN+P.VPU_QUEUEDEPTH) contrlregM
+    (clk, reset, FlushM, ~StallM,
+     {VdFinalE, RegWriteE, VRegWriteE, VALUResultSrcE, BeatE, ExecutionUnitResultValidE, BeatValidE, ExecutionUnitOrderE},
+     {VdFinalM, RegWriteM, VRegWriteM, VALUResultSrcM, BeatM, ExecutionUnitResultValidM, BeatValidM, ExecutionUnitOrderM});
 
   // demux - the beat tells me which indices of output reg should be written
 
@@ -165,12 +171,15 @@ module vieu import cvw::*;  #(parameter cvw_t P)
 
   // transfer from M to W stage if the instruction in the M stage is done and the next stage is currently empty
   // or if the next stage has an instruction and it will be consummed by WB.
-  assign EnableW = ExecutionUnitResultValidM & ((ExecutionUnitResultValidW & ControllerWBReadyW) | ~ExecutionUnitResultValidW);
-  assign EnableBeatW = BeatValidM & ((ExecutionUnitResultValidW & ControllerWBReadyW) | ~ExecutionUnitResultValidW);
+  assign ConsummedW = ExecutionUnitResultValidW & ControllerWBReadyW;
+
+  assign EnableW = ExecutionUnitResultValidM & (ConsummedW | ~ExecutionUnitResultValidW);
+  assign EnableBeatW = BeatValidM & (ConsummedW | ~ExecutionUnitResultValidW);
 
 
-  flopenrc #(9) contrlregW(clk, reset, FlushW, ~StallW & EnableW, // There needs to be a handshake going in the other direction to enable ControlRegW.  This is just like the input handshake.
-                           {VdFinalM, RegWriteM, VRegWriteM, VALUResultSrcM, ExecutionUnitResultValidM},
-                           {VdFinalW, RegWriteW, VRegWriteW, VALUResultSrcW, ExecutionUnitResultValidW});
+  flopenrc #(9+P.VPU_QUEUEDEPTH) contrlregW
+    (clk, reset, FlushW | (ConsummedW & ~StallW), ~StallW & (EnableW | ConsummedW), // There needs to be a handshake going in the other direction to enable ControlRegW.  This is just like the input handshake.
+     {VdFinalM, RegWriteM, VRegWriteM, VALUResultSrcM, ExecutionUnitResultValidM, ExecutionUnitOrderM},
+     {VdFinalW, RegWriteW, VRegWriteW, VALUResultSrcW, ExecutionUnitResultValidW, ExecutionUnitOrderW});
 
 endmodule

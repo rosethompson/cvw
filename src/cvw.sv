@@ -321,6 +321,8 @@ typedef struct packed {
   int VPU_INT_MUL_BLEN;
   int VPU_FP_BLEN;
   int VPU_INT_MAX_BEATS;
+  int VPU_QUEUESIZE;
+  int VPU_QUEUEDEPTH;
 
 } cvw_t;
 
