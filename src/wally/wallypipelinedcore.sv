@@ -50,6 +50,7 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
 
   logic                          StallF, StallD, StallE, StallM, StallW;
   logic                          FlushD, FlushE, FlushM, FlushW;
+  logic                          FlushVectorD;
   logic                          TrapM, RetM;
 
   //  signals that must connect through DP
@@ -181,14 +182,12 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
   logic                          wfiM, IntPendingM;
 
   logic                          VectorD;
-  logic                          VPUFrontEndBusyD;
   logic                          IllegalVPUInstrD;
   logic [P.XLEN-1:0]             VIEUFPResultFinalW;
   logic [P.VPU_LSU_BLEN-1:0]     VWriteDataM;
   logic [P.XLEN-1:0]             VEUAdrM;
   logic [P.VPU_LSU_BLEN-1:0]     VReadDataM;
-
-
+  logic                          VPUFrontEndBusyD;
 
   // instruction fetch unit: PC, branch prediction, instruction cache
   ifu #(P) ifu(.clk, .reset,
@@ -294,14 +293,14 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
   // global stall and flush control
   hazard hzu(
     .BPWrongE, .CSRWriteFenceM, .RetM, .TrapM,
-    .StructuralStallD,
+    .StructuralStallD, .VPUFrontEndBusyD,
     .LSUStallM, .IFUStallF,
     .FPUStallD, .ExternalStall,
     .DivBusyE, .FDivBusyE,
     .wfiM, .IntPendingM,
     // Stall & flush outputs
     .StallF, .StallD, .StallE, .StallM, .StallW,
-    .FlushD, .FlushE, .FlushM, .FlushW);
+    .FlushD, .FlushE, .FlushM, .FlushW, .FlushVectorD);
 
   // privileged unit
   if (P.ZICSR_SUPPORTED) begin : priv
@@ -386,9 +385,10 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
 
   if (P.V_SUPPORTED) begin : vpu
     vpu #(P) vpu(.clk, .reset, .StallD, .StallE, .StallM, .StallW,
-                 .FlushD, .FlushE, .FlushM, .FlushW, .VPUFrontEndBusyD,
+                 .FlushVectorD, .FlushE, .FlushM, .FlushW, .VPUFrontEndBusyD,
                  .InstrD, .VectorD, .ForwardedSrcAE, .ForwardedSrcBE,
                  .VWriteDataM, .VEUAdrM, .IllegalVPUInstrD, .VReadDataM, .VIEUFPResultFinalW);
+
   end else begin
     assign {VPUFrontEndBusyD, IllegalVPUInstrD} = '0;
   end

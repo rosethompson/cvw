@@ -31,17 +31,21 @@ module hazard (
   input  logic  BPWrongE, CSRWriteFenceM, RetM, TrapM,
   input  logic  StructuralStallD,
   input  logic  LSUStallM, IFUStallF,
-  input  logic  FPUStallD, ExternalStall,
+  input  logic  FPUStallD, ExternalStall, VPUFrontEndBusyD,
   input  logic  DivBusyE, FDivBusyE,
   input  logic  wfiM, IntPendingM,
   // Stall & flush outputs
   output logic StallF, StallD, StallE, StallM, StallW,
-  output logic FlushD, FlushE, FlushM, FlushW
+  output logic FlushD, FlushE, FlushM, FlushW,
+  output logic FlushVectorD
 );
 
   logic                                       StallFCause, StallDCause, StallECause, StallMCause, StallWCause;
   logic                                       LatestUnstalledD, LatestUnstalledE, LatestUnstalledM, LatestUnstalledW;
   logic                                       FlushDCause, FlushECause, FlushMCause, FlushWCause;
+
+  // for vpu
+  logic                                       StallFCauseVector, StallVectorF, LatestUnstalledVectorD;
 
   logic WFIStallM, WFIInterruptedM;
 
@@ -82,10 +86,12 @@ module hazard (
   //  The IFU and LSU stall the entire pipeline on a cache miss, bus access, or other long operation.
   //    The IFU stalls the entire pipeline rather than just Fetch to avoid complications with instructions later in the pipeline causing Exceptions
   //    A trap could be asserted at the start of a IFU/LSU stall, and should flush the memory operation
-  assign StallFCause = 1'b0;
+  assign StallFCause = VPUFrontEndBusyD;
   assign StallDCause = (StructuralStallD | FPUStallD) & ~FlushDCause;
   assign StallECause = (DivBusyE | FDivBusyE) & ~FlushECause;
   assign StallMCause = WFIStallM & ~FlushMCause;
+
+  assign StallFCauseVector = '0;
   // Need to gate IFUStallF when the equivalent FlushFCause = FlushDCause = 1.
   // assign StallWCause = ((IFUStallF & ~FlushDCause) | LSUStallM) & ~FlushWCause;
   // Because FlushWCause is a strict subset of FlushDCause, FlushWCause is factored out.
@@ -100,6 +106,8 @@ module hazard (
   assign StallM = StallMCause | StallW;
   assign StallW = StallWCause;
 
+  assign StallVectorF = StallFCauseVector | StallD;
+
   // detect the first stage that is not stalled
 
   assign LatestUnstalledD = ~StallD & StallF; // coverage tag: StallD always equals StallF
@@ -107,9 +115,14 @@ module hazard (
   assign LatestUnstalledM = ~StallM & StallE;
   assign LatestUnstalledW = ~StallW & StallM;
 
+  assign LatestUnstalledVectorD = ~StallD & StallVectorF;
+
   // Each stage flushes if the previous stage is the last one stalled (for cause) or the system has reason to flush
   assign FlushD = LatestUnstalledD | FlushDCause; // coverage tag: LatestUnstalledD always 0
   assign FlushE = LatestUnstalledE | FlushECause;
   assign FlushM = LatestUnstalledM | FlushMCause;
   assign FlushW = LatestUnstalledW | FlushWCause;
+
+  assign FlushVectorD = LatestUnstalledVectorD | FlushDCause; // coverage tag: LatestUnstalledD always 0
+
 endmodule

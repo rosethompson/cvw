@@ -32,7 +32,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   input  logic                 reset,
   // Hazards
   input  logic                 StallD, StallE, StallM, StallW,      // stall signals (from HZU)
-  input  logic                 FlushD, FlushE, FlushM, FlushW,      // flush signals (from HZU)
+  input  logic                 FlushVectorD, FlushE, FlushM, FlushW,      // flush signals (from HZU)
   output logic                 VPUFrontEndBusyD,                    // Stall the decode stage (To HZU)
 
 
@@ -104,13 +104,12 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   // vector instruction progress under this condiction.
 
 
-  assign VPUFrontEndBusyD = '0; // *** vcontroller needs to drive VPUFrontEndBusyD when all the EUs are busy
-
-  vcontroller #(P) vcontroller(.clk, .reset, .StallD, .FlushD,
+  vcontroller #(P) vcontroller(.clk, .reset, .StallD, .FlushVectorD,
                                .InstrD, .VectorD, .Vs1FinalD, .Vs2FinalD, .VdFinalD,
                                .VMD, .Funct6D, .Funct3D, .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD,
                                .VALUResultSrcD, .IllegalVPUInstrD, .ControllerValidD, .ExecutionUnitReadyD,
-                               .ExecutionUnitOrderD, .ExecutionUnitOrderW, .ControllerWBReadyW, .ExecutionUnitResultValidW);
+                               .ExecutionUnitOrderD, .ExecutionUnitOrderW, .ControllerWBReadyW, .ExecutionUnitResultValidW,
+                               .VPUFrontEndBusyD);
 
 
 
@@ -135,7 +134,8 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
     assign VWriteDataM = '0;
     assign VEUAdrM = '0;
     assign ExecutionUnitResultValidW[i+P.VPU_INT_EU] = '0;
-
+    assign VRegWriteW[i+P.VPU_INT_EU] = '0;
+    assign EUVdFinalW[i+P.VPU_INT_EU] = '0;
   end
 
   for(i = 0; i < P.VPU_FP_EU; i++) begin : vfpeu
@@ -143,6 +143,8 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
     //vfpeu #(P) vfpeu
     assign ExecutionUnitReadyD[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '1;
     assign ExecutionUnitResultValidW[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '0;
+    assign VRegWriteW[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '0;
+    assign EUVdFinalW[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '0;
   end
 
 

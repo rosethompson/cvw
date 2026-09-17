@@ -31,7 +31,7 @@
 module vcontroller import cvw::*;  #(parameter cvw_t P) (
   input logic                         clk, reset,
   // Decode stage control signals
-  input logic                         StallD, FlushD,       // Stall, flush Decode stage
+  input logic                         StallD, FlushVectorD,       // Stall, flush Decode stage
   input logic [31:0]                  InstrD,               // Instruction in Decode stage
   input logic                         VectorD,              // This instruction is a vector
 
@@ -53,26 +53,30 @@ module vcontroller import cvw::*;  #(parameter cvw_t P) (
   output logic [P.VPU_QUEUEDEPTH-1:0] ExecutionUnitOrderD [P.VPU_MAX_EU-1:0],
   input logic [P.VPU_QUEUEDEPTH-1:0]  ExecutionUnitOrderW [P.VPU_MAX_EU-1:0],
   input logic [P.VPU_MAX_EU-1:0]      ExecutionUnitResultValidW,
-  output logic [P.VPU_MAX_EU-1:0]     ControllerWBReadyW
+  output logic [P.VPU_MAX_EU-1:0]     ControllerWBReadyW,
+  output logic                        VPUFrontEndBusyD
 );
 
   logic        MicroVectorD;
   logic [4:0]  Vs1D, Vs2D;               // Vector Source 1 and 2
   logic [4:0]  VdD;                      // Vector Destination read (overwrite)
   logic [6:0]  lmulDecodedD;
+  logic        LMULExpansionD;
+
   //logic [2:0]  lmulD;                  // *** should be set by vset* instruction
 
-  assign lmulDecodedD = 7'b0001_000; // m1
+  assign lmulDecodedD = 7'b0100_000; // m4
 
 
-  vdecoder #(P) vdecoder(.clk, .reset, .StallD, .FlushD,
+  vdecoder #(P) vdecoder(.clk, .reset, .StallD, .FlushVectorD,
                          .InstrD, .Vs1D, .Vs2D, .VdD, .VMD,
                          .Funct6D, .Funct3D, .RegWriteD, .VRegWriteD,
                          .VALUResultSrcD, .VALUSrcAD, .VALUSrcBD, .IllegalVPUInstrD);
 
-  vdispatcher #(P) vdispatcher(.clk, .reset, .StallD, .FlushD,
+  vdispatcher #(P) vdispatcher(.clk, .reset, .StallD, .FlushVectorD,
                                .VectorD, .Vs1D, .Vs2D, .VdD, .ControllerValidD, .ExecutionUnitReadyD,
-                               .MicroVectorD, .Vs1FinalD, .Vs2FinalD, .VdFinalD, .lmulDecodedD);
+                               .MicroVectorD, .Vs1FinalD, .Vs2FinalD, .VdFinalD, .lmulDecodedD,
+                               .LMULExpansionD);
 
   // The controller must track the program order of vector instruction because they may finish out-of-order.
   // A queue records the issue order.  The queue is peaked to check for the next instruction to remove from the
@@ -94,8 +98,6 @@ module vcontroller import cvw::*;  #(parameter cvw_t P) (
   queue #(P.VPU_QUEUEDEPTH, P.VPU_QUEUEDEPTH) InstrOrderQueue(.clk, .reset, .enqueue(MicroVectorD), .dequeue(AnyMatchW),
                                                   .wdata(OrderD), .rdata(HeadOrderW), .full(InstrOrderQueueFullD), .empty());
 
-  // *** use InstrOrderQueueFullD to stall scalar core from sending over more vector instructions. The queue never be full by construction
-
   counter #(P.VPU_QUEUEDEPTH) ordercounter(clk, reset, MicroVectorD, OrderD);
 
   genvar i;
@@ -106,5 +108,8 @@ module vcontroller import cvw::*;  #(parameter cvw_t P) (
   end
 
   assign AnyMatchW = | MatchW;
+
+  assign VPUFrontEndBusyD = InstrOrderQueueFullD | LMULExpansionD; // *** add other terms here, ie if the dispatcher cannot an issue instruction and it stalls decoder stage
+
 
 endmodule

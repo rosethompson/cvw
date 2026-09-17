@@ -47,7 +47,15 @@ module vieufsm import cvw::*;  #(parameter     cvw_t P,
   typedef enum logic {STATE_RDY, STATE_BEAT} statetype;
   statetype CurrState, NextState;
   logic BeatIncr, BeatRst;
+  logic [BEATBITLEN-1:0] BeatLength;
+  logic                  Remainder;
 
+  localparam             SPLIT = $clog2(P.VPU_INT_EU);
+
+  // computes vl / how many ELEN elements are consummed each beat.
+  // vl / # Lanes. If there is a remainder, there is one extra beat.
+  assign BeatLength = vlE[BEATBITLEN-1:SPLIT] + Remainder;
+  assign Remainder = |(vlE[SPLIT-1:0]);
 
   always_ff @(posedge clk)
     if (reset | FlushE)    CurrState <= STATE_RDY;
@@ -67,7 +75,7 @@ module vieufsm import cvw::*;  #(parameter     cvw_t P,
   counterval #(BEATBITLEN) beatcounter(clk, BeatRst, BeatIncr, P.VPU_INT_LANES[BEATBITLEN-1:0], BeatE);
   assign BeatIncr = CurrState == STATE_BEAT & ~StallE;
   assign BeatRst = ExecutionUnitReadyD;
-  assign ExecutionUnitResultValidE = BeatE >= vlE - 1; // *** plan to optimize this away.
+  assign ExecutionUnitResultValidE = BeatE >= BeatLength - 1; // *** plan to optimize this away.
   assign ExecutionUnitReadyD = CurrState == STATE_RDY | (CurrState == STATE_BEAT & ExecutionUnitResultValidE);
   assign BeatValidE = CurrState == STATE_BEAT;
 
