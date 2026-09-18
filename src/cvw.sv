@@ -70,8 +70,11 @@ typedef struct packed {
   logic         ZICBOP_SUPPORTED;
   logic         ZICCLSM_SUPPORTED;
   logic         ZICOND_SUPPORTED;
+  logic         ZIMOP_SUPPORTED;
+  logic         ZCMOP_SUPPORTED;
   logic         ZAAMO_SUPPORTED;
   logic         ZALRSC_SUPPORTED;
+  logic         ZABHA_SUPPORTED;
 
   // Microarchitectural Features
   logic         BUS_SUPPORTED;
@@ -145,6 +148,10 @@ typedef struct packed {
   logic         SPI_SUPPORTED;
   logic [63:0]  SPI_BASE;
   logic [63:0]  SPI_RANGE;
+  logic         PWM_SUPPORTED;
+  logic [63:0]  PWM_BASE;
+  logic [63:0]  PWM_RANGE;
+
 
 // Test modes
 
@@ -153,7 +160,8 @@ typedef struct packed {
   logic         SPI_LOOPBACK_TEST;
 
 // Hardware configuration
-  int           UART_PRESCALE ;
+  int           UART_PRESCALE;
+  int           PWM_WIDTH;
 
 // Interrupt configuration
   int           PLIC_NUM_SRC;
@@ -162,6 +170,7 @@ typedef struct packed {
   int           PLIC_UART_ID;
   int           PLIC_SPI_ID;
   int           PLIC_SDC_ID;
+  int           PLIC_PWM_ID;
 
   logic                BPRED_SUPPORTED;
   logic [31:0]         BPRED_TYPE;

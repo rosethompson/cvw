@@ -42,6 +42,8 @@ localparam logic ZIFENCEI_SUPPORTED = 0; // Instruction-Fetch fence
 localparam logic ZICSR_SUPPORTED    = 0; // CSR Instructions
 localparam logic ZICCLSM_SUPPORTED  = 0; // Misaligned loads/stores
 localparam logic ZICOND_SUPPORTED   = 0; // Integer conditional operations
+localparam logic ZIMOP_SUPPORTED    = 0; // May-be-operations
+localparam logic ZCMOP_SUPPORTED    = 0; // Compressed may-be-operations
 
 // Multiplication & division extensions
 // M implies (and in the configuration file requires) Zmmul
@@ -52,6 +54,7 @@ localparam logic ZMMUL_SUPPORTED = 0;
 // A extension is Zaamo + Zalrsc
 localparam logic ZAAMO_SUPPORTED  = 0;
 localparam logic ZALRSC_SUPPORTED = 0;
+localparam logic ZABHA_SUPPORTED  = 0; // Byte and halfword AMOs
 
 // Bit manipulation extensions
 // B extension is Zba + Zbb + Zbs
@@ -185,6 +188,9 @@ localparam logic [63:0] SDC_RANGE        = 64'h00000FFF;
 localparam logic SPI_SUPPORTED = 0;
 localparam logic [63:0] SPI_BASE         = 64'h10040000;
 localparam logic [63:0] SPI_RANGE        = 64'h00000FFF;
+localparam logic PWM_SUPPORTED = 0;
+localparam logic [63:0] PWM_BASE         = 64'h10020000;
+localparam logic [63:0] PWM_RANGE        = 64'h000000FF;
 
 // Bus Interface width
 localparam AHBW = (XLEN);
@@ -201,15 +207,17 @@ localparam logic SPI_LOOPBACK_TEST  = 1;
 
 // Hardware configuration
 localparam UART_PRESCALE = 32'd1;
+localparam PWM_WIDTH = 32'd16;
 
 // Interrupt configuration
-localparam PLIC_NUM_SRC = 32'd10;
+localparam PLIC_NUM_SRC = 32'd14;
 // comment out the following if >=32 sources
 localparam PLIC_NUM_SRC_LT_32 = (PLIC_NUM_SRC < 32);
 localparam PLIC_GPIO_ID = 32'd3;
 localparam PLIC_UART_ID = 32'd10;
 localparam PLIC_SPI_ID = 32'd6;
 localparam PLIC_SDC_ID = 32'd9;
+localparam PLIC_PWM_ID = 32'd11; // base of a contiguous block of 4, one per PWM comparator
 
 // Branch prediction
 localparam logic BPRED_SUPPORTED = 0;
