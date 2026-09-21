@@ -54,7 +54,9 @@ module vieufsm import cvw::*;  #(parameter     cvw_t P,
 
   // computes vl / how many ELEN elements are consummed each beat.
   // vl / # Lanes. If there is a remainder, there is one extra beat.
+  /* verilator lint_off WIDTHEXPAND */ // *** fix this later
   assign BeatLength = vlE[BEATBITLEN-1:SPLIT] + Remainder;
+  /* verilator lint_on WIDTHEXPAND */
   assign Remainder = |(vlE[SPLIT-1:0]);
 
   always_ff @(posedge clk)

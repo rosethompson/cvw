@@ -704,10 +704,18 @@ add wave -noupdate -expand -group vpu -expand -group {vieu[1]} {/testbench/dut/c
 add wave -noupdate -expand -group vpu -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/ExecutionUnitResultValidE}
 add wave -noupdate -expand -group vpu -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/vlE}
 add wave -noupdate -expand -group vpu -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/BeatLength}
+add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/InstrOrderQueue/enqueue
+add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/InstrOrderQueue/dequeue
+add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/InstrOrderQueue/wdata
+add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/InstrOrderQueue/rdata
+add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/InstrOrderQueue/mem
+add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/InstrOrderQueue/rptr
+add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/InstrOrderQueue/wptr
+add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/InstrOrderQueue/empty
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/SelectedD
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/MicroVectorD
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/OrderD
-add wave -noupdate -expand /testbench/dut/core/vpu/vpu/vcontroller/ExecutionUnitReadyD
+add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/ExecutionUnitReadyD
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/HeadOrderW
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/ExecutionUnitOrderW
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/ExecutionUnitResultValidW
@@ -725,7 +733,7 @@ add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu
 add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu/VRegWriteW
 add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu/ControllerWBReadyW
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {89834 ns} 1} {{Cursor 4} {79055 ns} 1} {{Cursor 3} {885 ns} 0}
+WaveRestoreCursors {{Cursor 4} {89834 ns} 1} {{Cursor 4} {79055 ns} 1} {{Cursor 3} {847 ns} 0}
 quietly wave cursor active 3
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -741,4 +749,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {725 ns} {1019 ns}
+WaveRestoreZoom {737 ns} {1031 ns}
