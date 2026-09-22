@@ -46,62 +46,32 @@ module vieufsm import cvw::*;  #(parameter     cvw_t P,
 
   typedef enum logic {STATE_RDY, STATE_BEAT} statetype;
   statetype CurrState, NextState;
-  logic BeatIncr, BeatRst;
+  logic BeatResetD, BeatIncrD;
   logic [BEATBITLEN-1:0] BeatLength;
-  logic                  Remainder;
 
   localparam             SPLIT = $clog2(P.VPU_INT_EU);
 
-  logic                  NotExecutionUnitResultValidE;
-  logic                  ReadyOrReset;
+  logic                  BeatNotValidE;
   logic                  DoneE, ReadyE;
   logic                  CaptureInstrD;
 
   // computes vl / how many ELEN elements are consummed each beat.
   // vl / # Lanes. If there is a remainder, there is one extra beat.
-  /* verilator lint_off WIDTHEXPAND */ // *** fix this later
-  assign BeatLength = vlE[BEATBITLEN-1:SPLIT] + Remainder;
-  /* verilator lint_on WIDTHEXPAND */
-  assign Remainder = |(vlE[SPLIT-1:0]);
+  assign BeatLength = vlE[BEATBITLEN-1:SPLIT] + (BEATBITLEN-SPLIT)'(|(vlE[SPLIT-1:0]));
 
-/* -----\/----- EXCLUDED -----\/-----
-  always_ff @(posedge clk)
-    if (reset | FlushVectorE)    CurrState <= STATE_RDY;
-    else CurrState <= NextState;
 
-  always_comb begin
-    NextState = STATE_RDY;
-    case (CurrState)
-      STATE_RDY: if (ControllerValidD) NextState = STATE_BEAT;
-                 else                                        NextState = STATE_RDY;
-      STATE_BEAT: if (ExecutionUnitResultValidE & ~ControllerValidD) NextState = STATE_RDY;
-                  else                  NextState = STATE_BEAT;
-      default: NextState = STATE_RDY;
-    endcase // case (CurrState)
-  end
 
-  counterval #(BEATBITLEN) beatcounter(clk, BeatRst, BeatIncr, P.VPU_INT_LANES[BEATBITLEN-1:0], BeatE);
-  assign BeatIncr = CurrState == STATE_BEAT & ~StallE;
-  assign BeatRst = ExecutionUnitReadyD;
-  assign ExecutionUnitResultValidE = BeatE >= BeatLength - 1; // *** plan to optimize this away.
-  assign ExecutionUnitReadyD = CurrState == STATE_RDY | (CurrState == STATE_BEAT & ExecutionUnitResultValidE);
-  assign BeatValidE = CurrState == STATE_BEAT;
- -----/\----- EXCLUDED -----/\----- */
-
-  flopenr #(1) validreg(clk, CaptureInstrD, ReadyOrReset, '1, NotExecutionUnitResultValidE);
-  assign BeatValidE = ~NotExecutionUnitResultValidE;
-  flopenr #(1) readyreg(clk, CaptureInstrD, ReadyOrReset, '1, ReadyE);
+  flopenr #(1) validreg(clk, CaptureInstrD, BeatResetD, '1, BeatNotValidE); // SR flop with set priority
+  assign BeatValidE = ~BeatNotValidE;
+  flopenr #(1) readyreg(clk, CaptureInstrD, BeatResetD, '1, ReadyE); // SR flop with reset priority
   assign CaptureInstrD = ControllerValidD & ExecutionUnitReadyD;
 
-  assign ReadyOrReset = ExecutionUnitReadyD | reset;
+  assign BeatResetD = ExecutionUnitReadyD | reset;
 
-  counterval #(BEATBITLEN) beatcounter(clk, BeatRst, BeatIncr, P.VPU_INT_LANES[BEATBITLEN-1:0], BeatE);
-  //assign BeatRst = reset | (ControllerValidD & ExecutionUnitReadyD);
-  //assign BeatIncr = ControllerValidE & ~StallE;
-  //assign ExecutionUnitResultValidE = ~ControllerValidE | (BeatE >= BeatLength - 1);
-  assign BeatRst = ReadyOrReset;
-  assign BeatIncr = BeatValidE & ~StallE;
-  assign DoneE = BeatE >= BeatLength - 1;
+  counterval #(BEATBITLEN) beatcounter(clk, BeatResetD, BeatIncrD, P.VPU_INT_LANES[BEATBITLEN-1:0], BeatE);
+
+  assign BeatIncrD = BeatValidE & ~StallE;
+  assign DoneE = BeatE >= BeatLength - 1; // *** optimize
   assign ExecutionUnitReadyD = (DoneE & ExecutionUnitResultValidE) | ReadyE;
   assign ExecutionUnitResultValidE = DoneE & BeatValidE;
 
