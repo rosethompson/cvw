@@ -15,6 +15,7 @@ add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core
 add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/ieu/c/MDUStallD
 add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/hzu/DivBusyE
 add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/hzu/FDivBusyE
+add wave -noupdate -expand -group HDU -expand -group hazards /testbench/dut/core/hzu/VPUFrontEndBusyD
 add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/InstrMisalignedFaultM
 add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/InstrAccessFaultM
 add wave -noupdate -expand -group HDU -expand -group traps /testbench/dut/core/priv/priv/trap/IllegalInstrFaultM
@@ -34,6 +35,8 @@ add wave -noupdate -expand -group HDU -expand -group Flush -color Yellow /testbe
 add wave -noupdate -expand -group HDU -expand -group Flush -color Yellow /testbench/dut/core/FlushE
 add wave -noupdate -expand -group HDU -expand -group Flush -color Yellow /testbench/dut/core/FlushM
 add wave -noupdate -expand -group HDU -expand -group Flush -color Yellow /testbench/dut/core/FlushW
+add wave -noupdate -expand -group HDU -expand -group Flush -color Wheat /testbench/dut/core/hzu/FlushVectorD
+add wave -noupdate -expand -group HDU -expand -group Flush -color Wheat /testbench/dut/core/hzu/FlushVectorE
 add wave -noupdate -expand -group HDU -expand -group Stall -color Orange /testbench/dut/core/StallF
 add wave -noupdate -expand -group HDU -expand -group Stall -color Orange /testbench/dut/core/StallD
 add wave -noupdate -expand -group HDU -expand -group Stall -color Orange /testbench/dut/core/StallE
@@ -194,22 +197,22 @@ add wave -noupdate -group ifu -group itlb -group key19 {/testbench/dut/core/ifu/
 add wave -noupdate -group ifu -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Key1}
 add wave -noupdate -group ifu -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Query0}
 add wave -noupdate -group ifu -group itlb -group key19 {/testbench/dut/core/ifu/immu/immu/tlb/tlb/tlbcam/camlines[19]/Query1}
-add wave -noupdate -group {Decode Stage} /testbench/dut/core/ifu/PCD
-add wave -noupdate -group {Decode Stage} /testbench/dut/core/ifu/InstrD
-add wave -noupdate -group {Decode Stage} /testbench/InstrDName
-add wave -noupdate -group {Decode Stage} /testbench/dut/core/ieu/c/InstrValidD
-add wave -noupdate -group {Decode Stage} /testbench/dut/core/ieu/c/RegWriteD
-add wave -noupdate -group {Decode Stage} /testbench/dut/core/ieu/c/RdD
-add wave -noupdate -group {Decode Stage} /testbench/dut/core/ieu/c/Rs1D
-add wave -noupdate -group {Decode Stage} /testbench/dut/core/ieu/c/Rs2D
-add wave -noupdate -group {Execution Stage} /testbench/dut/core/ifu/PCE
-add wave -noupdate -group {Execution Stage} /testbench/dut/core/ifu/InstrE
-add wave -noupdate -group {Execution Stage} /testbench/InstrEName
-add wave -noupdate -group {Execution Stage} /testbench/dut/core/ieu/c/InstrValidE
-add wave -noupdate -group {Execution Stage} /testbench/dut/core/ieu/dp/SrcAE
-add wave -noupdate -group {Execution Stage} /testbench/dut/core/ieu/dp/SrcBE
-add wave -noupdate -group {Execution Stage} /testbench/dut/core/ieu/dp/ALUResultE
-add wave -noupdate -group {Execution Stage} /testbench/dut/core/ieu/dp/ResultW
+add wave -noupdate -expand -group {Decode Stage} /testbench/dut/core/ifu/PCD
+add wave -noupdate -expand -group {Decode Stage} /testbench/dut/core/ifu/InstrD
+add wave -noupdate -expand -group {Decode Stage} /testbench/InstrDName
+add wave -noupdate -expand -group {Decode Stage} /testbench/dut/core/ieu/c/InstrValidD
+add wave -noupdate -expand -group {Decode Stage} /testbench/dut/core/ieu/c/RegWriteD
+add wave -noupdate -expand -group {Decode Stage} /testbench/dut/core/ieu/c/RdD
+add wave -noupdate -expand -group {Decode Stage} /testbench/dut/core/ieu/c/Rs1D
+add wave -noupdate -expand -group {Decode Stage} /testbench/dut/core/ieu/c/Rs2D
+add wave -noupdate -expand -group {Execution Stage} /testbench/dut/core/ifu/PCE
+add wave -noupdate -expand -group {Execution Stage} /testbench/dut/core/ifu/InstrE
+add wave -noupdate -expand -group {Execution Stage} /testbench/InstrEName
+add wave -noupdate -expand -group {Execution Stage} /testbench/dut/core/ieu/c/InstrValidE
+add wave -noupdate -expand -group {Execution Stage} /testbench/dut/core/ieu/dp/SrcAE
+add wave -noupdate -expand -group {Execution Stage} /testbench/dut/core/ieu/dp/SrcBE
+add wave -noupdate -expand -group {Execution Stage} /testbench/dut/core/ieu/dp/ALUResultE
+add wave -noupdate -expand -group {Execution Stage} /testbench/dut/core/ieu/dp/ResultW
 add wave -noupdate -expand -group {Memory Stage} /testbench/dut/core/InstrValidM
 add wave -noupdate -expand -group {Memory Stage} /testbench/dut/core/PCM
 add wave -noupdate -expand -group {Memory Stage} /testbench/dut/core/InstrM
@@ -432,9 +435,9 @@ add wave -noupdate -group lsu -group ptwalker -expand -group faults /testbench/d
 add wave -noupdate -group lsu -group ptwalker -expand -group faults /testbench/dut/core/lsu/hptw/hptw/StoreAmoAccessFaultM
 add wave -noupdate -group lsu -group ptwalker -expand -group faults /testbench/dut/core/lsu/hptw/hptw/HPTWInstrAccessFault
 add wave -noupdate -group lsu -group ptwalker -expand -group faults /testbench/dut/core/lsu/hptw/hptw/PBMTFaultM
-add wave -noupdate -group {WriteBack stage} /testbench/InstrW
-add wave -noupdate -group {WriteBack stage} /testbench/InstrWName
-add wave -noupdate -group {WriteBack stage} /testbench/dut/core/priv/priv/pmd/wfiW
+add wave -noupdate -expand -group {WriteBack stage} /testbench/InstrW
+add wave -noupdate -expand -group {WriteBack stage} /testbench/InstrWName
+add wave -noupdate -expand -group {WriteBack stage} /testbench/dut/core/priv/priv/pmd/wfiW
 add wave -noupdate -group AHB -group multicontroller /testbench/dut/core/ebu/ebu/IFUReq
 add wave -noupdate -group AHB -group multicontroller /testbench/dut/core/ebu/ebu/LSUReq
 add wave -noupdate -group AHB -group multicontroller /testbench/dut/core/ebu/ebu/IFUSave
@@ -690,20 +693,32 @@ add wave -noupdate -expand -group vpu -expand -group Vdispatcher -expand -group 
 add wave -noupdate -expand -group vpu -expand -group Vdispatcher -expand -group lmulsequence /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/lmulIntD
 add wave -noupdate -expand -group vpu -expand -group Vdispatcher -expand -group lmulsequence /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/lmulCntrDone
 add wave -noupdate -expand -group vpu -expand -group Vdispatcher -expand -group lmulsequence -color Gold /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/CurrState
-add wave -noupdate -expand -group vpu -expand -group {vieu[0]} -color Gold {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/CurrState}
-add wave -noupdate -expand -group vpu -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/ControllerValidD}
-add wave -noupdate -expand -group vpu -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/ExecutionUnitReadyD}
-add wave -noupdate -expand -group vpu -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/BeatE}
-add wave -noupdate -expand -group vpu -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/ExecutionUnitResultValidE}
-add wave -noupdate -expand -group vpu -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/vlE}
-add wave -noupdate -expand -group vpu -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/BeatLength}
-add wave -noupdate -expand -group vpu -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/CurrState}
-add wave -noupdate -expand -group vpu -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/ControllerValidD}
-add wave -noupdate -expand -group vpu -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/ExecutionUnitReadyD}
-add wave -noupdate -expand -group vpu -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/BeatE}
-add wave -noupdate -expand -group vpu -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/ExecutionUnitResultValidE}
-add wave -noupdate -expand -group vpu -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/vlE}
-add wave -noupdate -expand -group vpu -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/BeatLength}
+add wave -noupdate -expand -group vpu -expand -group Vdispatcher -expand -group lmulsequence /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/LMULExpansionD
+add wave -noupdate -expand -group vpu -expand -group Vdispatcher -expand -group lmulsequence /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/lmulCntrFirstCaptureD
+add wave -noupdate -expand -group vpu -expand -group Vdispatcher -expand -group lmulsequence /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/VdD
+add wave -noupdate -expand -group vpu -expand -group Vdispatcher -expand -group lmulsequence /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/VdP1D
+add wave -noupdate -expand -group vpu -expand -group Vdispatcher -expand -group lmulsequence /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/VdP1QD
+add wave -noupdate -expand -group vpu -expand -group Vdispatcher -expand -group lmulsequence /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/VdFinalD
+add wave -noupdate -expand -group vpu -expand -group EUs /testbench/InstrEName
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/CaptureInstrD}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/ReadyE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/NotExecutionUnitResultValidE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/BeatValidE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/ExecutionUnitResultValidE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} -color Gold {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/CurrState}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/ControllerValidD}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/ExecutionUnitReadyD}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/BeatE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/ExecutionUnitResultValidE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/vlE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/BeatLength}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/CurrState}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/ControllerValidD}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/ExecutionUnitReadyD}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/BeatE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/ExecutionUnitResultValidE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/vlE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/BeatLength}
 add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/InstrOrderQueue/enqueue
 add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/InstrOrderQueue/dequeue
 add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/InstrOrderQueue/wdata
@@ -733,7 +748,7 @@ add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu
 add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu/VRegWriteW
 add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu/ControllerWBReadyW
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {89834 ns} 1} {{Cursor 4} {79055 ns} 1} {{Cursor 3} {847 ns} 0}
+WaveRestoreCursors {{Cursor 4} {89834 ns} 1} {{Cursor 4} {79055 ns} 1} {{Cursor 3} {863 ns} 0}
 quietly wave cursor active 3
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -749,4 +764,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {737 ns} {1031 ns}
+WaveRestoreZoom {774 ns} {932 ns}

@@ -51,6 +51,7 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
   logic                          StallF, StallD, StallE, StallM, StallW;
   logic                          FlushD, FlushE, FlushM, FlushW;
   logic                          FlushVectorD;
+  logic                          FlushVectorE;
   logic                          TrapM, RetM;
 
   //  signals that must connect through DP
@@ -300,7 +301,7 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
     .wfiM, .IntPendingM,
     // Stall & flush outputs
     .StallF, .StallD, .StallE, .StallM, .StallW,
-    .FlushD, .FlushE, .FlushM, .FlushW, .FlushVectorD);
+    .FlushD, .FlushE, .FlushM, .FlushW, .FlushVectorD, .FlushVectorE);
 
   // privileged unit
   if (P.ZICSR_SUPPORTED) begin : priv
@@ -385,7 +386,7 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
 
   if (P.V_SUPPORTED) begin : vpu
     vpu #(P) vpu(.clk, .reset, .StallD, .StallE, .StallM, .StallW,
-                 .FlushVectorD, .FlushE, .FlushM, .FlushW, .VPUFrontEndBusyD,
+                 .FlushVectorD, .FlushVectorE, .FlushM, .FlushW, .VPUFrontEndBusyD,
                  .InstrD, .VectorD, .ForwardedSrcAE, .ForwardedSrcBE,
                  .VWriteDataM, .VEUAdrM, .IllegalVPUInstrD, .VReadDataM, .VIEUFPResultFinalW);
 

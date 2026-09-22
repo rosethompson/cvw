@@ -34,7 +34,7 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   input logic               reset,
   // Hazards
   input logic               StallE, StallM, StallW,         // stall signals (from HZU)
-  input logic               FlushE, FlushM, FlushW,         // flush signals (from HZU)
+  input logic               FlushVectorE, FlushM, FlushW,         // flush signals (from HZU)
    // flow control
   input logic               ControllerValidD,
   output logic              ExecutionUnitReadyD,
@@ -112,14 +112,14 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   assign vlE = 4;
   assign VImmE = '0; // *** fix me
 
-  vieufsm #(P, BEATBITLEN) vieufsm(.clk, .reset, .FlushE, .StallE,
+  vieufsm #(P, BEATBITLEN) vieufsm(.clk, .reset, .FlushVectorE, .StallE,
                        .ControllerValidD, .ExecutionUnitReadyD, .BeatE, .ExecutionUnitResultValidE, .BeatValidE, .vlE);
   assign CaptureD = ControllerValidD & ExecutionUnitReadyD;
 
-  flopenrc #(P.VLEN) VRD1EReg(clk, reset, FlushE, ~StallE & CaptureD, VRD1D, VRD1E);
-  flopenrc #(P.VLEN) VRD2EReg(clk, reset, FlushE, ~StallE & CaptureD, VRD2D, VRD2E);
-  flopenrc #(P.VLEN) VRD3EReg(clk, reset, FlushE, ~StallE & CaptureD, VRD3D, VRD3E);
-  flopenrc #(P.VLEN) v0EReg  (clk, reset, FlushE, ~StallE & CaptureD, v0D,   v0E);
+  flopenrc #(P.VLEN) VRD1EReg(clk, reset, FlushVectorE, ~StallE & CaptureD, VRD1D, VRD1E);
+  flopenrc #(P.VLEN) VRD2EReg(clk, reset, FlushVectorE, ~StallE & CaptureD, VRD2D, VRD2E);
+  flopenrc #(P.VLEN) VRD3EReg(clk, reset, FlushVectorE, ~StallE & CaptureD, VRD3D, VRD3E);
+  flopenrc #(P.VLEN) v0EReg  (clk, reset, FlushVectorE, ~StallE & CaptureD, v0D,   v0E);
 
   // convert to index format
   genvar index;
@@ -140,7 +140,7 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   // controll is routed to different EUs.
 
   flopenrc #(20+P.VPU_QUEUEDEPTH) contrlregE
-    (clk, reset, FlushE, ~StallE & CaptureD,
+    (clk, reset, FlushVectorE, ~StallE & CaptureD,
      {VdFinalD, Funct6D, Funct3D, RegWriteD, VRegWriteD, VALUSrcAD, VALUSrcBD, VALUResultSrcD, ExecutionUnitOrderD},
      {VdFinalE, Funct6E, Funct3E, RegWriteE, VRegWriteE, VALUSrcAE, VALUSrcBE, VALUResultSrcE, ExecutionUnitOrderE});
 

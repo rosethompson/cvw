@@ -51,7 +51,7 @@ module csrv import cvw::*;  #(parameter cvw_t P) (
   localparam VCSR   = 12'h00F;
   localparam VL     = 12'hC20;
   localparam VTYPE  = 12'hC21;
-  localparam VLENB  = 12'hC22;
+  //localparam VLENB  = 12'hC22;
 
   // Storage widths
   localparam VSTART_WIDTH = $clog2(P.VLEN);    // have only enough writable bits to hold index of one less than maximum VLMAX
@@ -91,7 +91,7 @@ module csrv import cvw::*;  #(parameter cvw_t P) (
   assign VTYPE_REGW = {VILL_REG, {(P.XLEN-9){1'b0}}, VTYPE_CFG_REG};
 
   // CSR Reads
-  localparam [P.XLEN-1:0] VLENB_CONST = P.VLEN / 8;
+  //localparam [P.XLEN-1:0] VLENB_CONST = (P.VLEN / 8);
   always_comb begin
     CSRVReadValM       = '0;
     IllegalCSRVAccessM = 1'b0;
@@ -104,7 +104,7 @@ module csrv import cvw::*;  #(parameter cvw_t P) (
         VCSR:    CSRVReadValM = {{(P.XLEN-3){1'b0}}, VXRM_REGW, VXSAT_REGW};
         VL:      if (~CSRWriteM) CSRVReadValM = VL_REGW;     else IllegalCSRVAccessM = 1'b1; // read-only
         VTYPE:   if (~CSRWriteM) CSRVReadValM = VTYPE_REGW;  else IllegalCSRVAccessM = 1'b1; // read-only
-        VLENB:   if (~CSRWriteM) CSRVReadValM = VLENB_CONST; else IllegalCSRVAccessM = 1'b1; // read-only
+        //VLENB:   if (~CSRWriteM) CSRVReadValM = VLENB_CONST; else IllegalCSRVAccessM = 1'b1; // read-only
         default: IllegalCSRVAccessM = 1'b1;
       endcase
     end

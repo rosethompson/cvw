@@ -92,7 +92,8 @@ module lmulsequencer
   end
 
   assign lmulCntrLoad = CurrState == STATE_BEGIN & VectorD;
-  assign LMULExpansionD = AnyExecutionUnitReadyD & (CurrState == STATE_INCR);
+  //assign LMULExpansionD = AnyExecutionUnitReadyD & (CurrState == STATE_INCR);
+  assign LMULExpansionD = (CurrState == STATE_INCR & ~lmulCntrDone) | (CurrState == STATE_BEGIN & lmulIntD > 4'd1 & VectorD);
   assign IncrD = (AnyExecutionUnitReadyD & VectorD) | LMULExpansionD;
 
   assign MicroVectorD = IncrD | VectorD;

@@ -34,7 +34,7 @@ module vieufsm import cvw::*;  #(parameter     cvw_t P,
    input logic                   clk,
    input logic                   reset,
    input logic                   StallE,
-   input logic                   FlushE,
+   input logic                   FlushVectorE,
    input logic                   ControllerValidD,
    output logic                  ExecutionUnitReadyD,
    output logic [BEATBITLEN-1:0] BeatE,
@@ -52,6 +52,11 @@ module vieufsm import cvw::*;  #(parameter     cvw_t P,
 
   localparam             SPLIT = $clog2(P.VPU_INT_EU);
 
+  logic                  NotExecutionUnitResultValidE;
+  logic                  ReadyOrReset;
+  logic                  DoneE, ReadyE;
+  logic                  CaptureInstrD;
+
   // computes vl / how many ELEN elements are consummed each beat.
   // vl / # Lanes. If there is a remainder, there is one extra beat.
   /* verilator lint_off WIDTHEXPAND */ // *** fix this later
@@ -59,8 +64,9 @@ module vieufsm import cvw::*;  #(parameter     cvw_t P,
   /* verilator lint_on WIDTHEXPAND */
   assign Remainder = |(vlE[SPLIT-1:0]);
 
+/* -----\/----- EXCLUDED -----\/-----
   always_ff @(posedge clk)
-    if (reset | FlushE)    CurrState <= STATE_RDY;
+    if (reset | FlushVectorE)    CurrState <= STATE_RDY;
     else CurrState <= NextState;
 
   always_comb begin
@@ -80,5 +86,23 @@ module vieufsm import cvw::*;  #(parameter     cvw_t P,
   assign ExecutionUnitResultValidE = BeatE >= BeatLength - 1; // *** plan to optimize this away.
   assign ExecutionUnitReadyD = CurrState == STATE_RDY | (CurrState == STATE_BEAT & ExecutionUnitResultValidE);
   assign BeatValidE = CurrState == STATE_BEAT;
+ -----/\----- EXCLUDED -----/\----- */
+
+  flopenr #(1) validreg(clk, CaptureInstrD, ReadyOrReset, '1, NotExecutionUnitResultValidE);
+  assign BeatValidE = ~NotExecutionUnitResultValidE;
+  flopenr #(1) readyreg(clk, CaptureInstrD, ReadyOrReset, '1, ReadyE);
+  assign CaptureInstrD = ControllerValidD & ExecutionUnitReadyD;
+
+  assign ReadyOrReset = ExecutionUnitReadyD | reset;
+
+  counterval #(BEATBITLEN) beatcounter(clk, BeatRst, BeatIncr, P.VPU_INT_LANES[BEATBITLEN-1:0], BeatE);
+  //assign BeatRst = reset | (ControllerValidD & ExecutionUnitReadyD);
+  //assign BeatIncr = ControllerValidE & ~StallE;
+  //assign ExecutionUnitResultValidE = ~ControllerValidE | (BeatE >= BeatLength - 1);
+  assign BeatRst = ReadyOrReset;
+  assign BeatIncr = BeatValidE & ~StallE;
+  assign DoneE = BeatE >= BeatLength - 1;
+  assign ExecutionUnitReadyD = (DoneE & ExecutionUnitResultValidE) | ReadyE;
+  assign ExecutionUnitResultValidE = DoneE & BeatValidE;
 
 endmodule

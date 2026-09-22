@@ -32,7 +32,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   input  logic                 reset,
   // Hazards
   input  logic                 StallD, StallE, StallM, StallW,      // stall signals (from HZU)
-  input  logic                 FlushVectorD, FlushE, FlushM, FlushW,      // flush signals (from HZU)
+  input  logic                 FlushVectorD, FlushVectorE, FlushM, FlushW,      // flush signals (from HZU)
   output logic                 VPUFrontEndBusyD,                    // Stall the decode stage (To HZU)
 
 
@@ -118,7 +118,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
 
 
   for(i = 0; i < P.VPU_INT_EU; i++) begin : vieu
-    vieu #(P) vieu(.clk, .reset, .StallE, .StallM, .StallW, .FlushE, .FlushM, .FlushW,
+    vieu #(P) vieu(.clk, .reset, .StallE, .StallM, .StallW, .FlushVectorE, .FlushM, .FlushW,
                    .ControllerWBReadyW(ControllerWBReadyW[i]), .ExecutionUnitResultValidW(ExecutionUnitResultValidW[i]),
                    .ExecutionUnitOrderD(ExecutionUnitOrderD[i]), .ExecutionUnitOrderW(ExecutionUnitOrderW[i]),
                    .ControllerValidD(ControllerValidD[i]), .ExecutionUnitReadyD(ExecutionUnitReadyD[i]), .VMD, .Funct3D, .Funct6D,
