@@ -28,30 +28,32 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 module vpu import cvw::*;  #(parameter cvw_t P) (
-  input  logic                 clk,
-  input  logic                 reset,
+  input logic                       clk,
+  input logic                       reset,
   // Hazards
-  input  logic                 StallD, StallE, StallM, StallW,      // stall signals (from HZU)
-  input  logic                 FlushVectorD, FlushVectorE, FlushM, FlushW,      // flush signals (from HZU)
-  output logic                 VPUFrontEndBusyD,                    // Stall the decode stage (To HZU)
+  input logic                       StallD, StallE, StallM, StallW,             // stall signals (from HZU)
+  input logic                       FlushVectorD, FlushVectorE, FlushM, FlushW, // flush signals (from HZU)
+  output logic                      VPUFrontEndBusyD,                           // Stall the decode stage (To HZU)
 
 
   // TODO ***
   // Add CSRs between priv and VPU
 
   // Decode stage
-  input  logic [31:0]          InstrD,                             // instruction (from IFU)
-  input  logic VectorD,                                            // This instruction is a vector
+  input logic [31:0]                InstrD,                                     // instruction (from IFU)
+  input logic [P.XLEN-1:0]          PCD,                                        // Decode stage instruction address
+
+  input logic                       VectorD,                                    // This instruction is a vector
   // Execute state
-  input  logic [P.XLEN-1:0]    ForwardedSrcAE, ForwardedSrcBE,     // Integer/FP input for convert, move (from IEU)
+  input logic [P.XLEN-1:0]          ForwardedSrcAE, ForwardedSrcBE,             // Integer/FP input for convert, move (from IEU)
   // Memory stage
   // TODO *** Cannot use decoded control from IEU because the there are overlapping vector instructions?
-  output logic [P.VPU_LSU_BLEN-1:0]    VWriteDataM,          // Data to be written to memory (to LSU)
-  output logic [P.XLEN-1:0]            VEUAdrM    ,          // Data to be written to memory (to LSU)
-  input  logic [P.VPU_LSU_BLEN-1:0]    VReadDataM , // Read data (from LSU)
-  output logic                 IllegalVPUInstrD,                   // Is the instruction an illegal fpu instruction (to IFU)
+  output logic [P.VPU_LSU_BLEN-1:0] VWriteDataM,                                // Data to be written to memory (to LSU)
+  output logic [P.XLEN-1:0]         VEUAdrM ,                                   // Data to be written to memory (to LSU)
+  input logic [P.VPU_LSU_BLEN-1:0]  VReadDataM ,                                // Read data (from LSU)
+  output logic                      IllegalVPUInstrD,                           // Is the instruction an illegal fpu instruction (to IFU)
   // Writeback stage
-  output logic [P.XLEN-1:0] VIEUFPResultFinalW                            // Int or FP result for X or F regs.
+  output logic [P.XLEN-1:0]         VIEUFPResultFinalW                          // Int or FP result for X or F regs.
 );
 
   logic [4:0] Vs1FinalD, Vs2FinalD;               // Vector Source 1 and 2
@@ -120,7 +122,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   for(i = 0; i < P.VPU_INT_EU; i++) begin : vieu
     vieu #(P) vieu(.clk, .reset, .StallE, .StallM, .StallW, .FlushVectorE, .FlushM, .FlushW,
                    .ControllerWBReadyW(ControllerWBReadyW[i]), .ExecutionUnitResultValidW(ExecutionUnitResultValidW[i]),
-                   .ExecutionUnitOrderD(ExecutionUnitOrderD[i]), .ExecutionUnitOrderW(ExecutionUnitOrderW[i]),
+                   .InstrD, .PCD, .ExecutionUnitOrderD(ExecutionUnitOrderD[i]), .ExecutionUnitOrderW(ExecutionUnitOrderW[i]),
                    .ControllerValidD(ControllerValidD[i]), .ExecutionUnitReadyD(ExecutionUnitReadyD[i]), .VMD, .Funct3D, .Funct6D,
                    .VdFinalD, .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD, .VALUResultSrcD,
                    .VRD1D, .VRD2D, .VRD3D, .v0D, .ForwardedSrcAE, .ForwardedSrcBE, .VtoIEUFPResultW(VtoIEUFPResultW[i]),

@@ -30,39 +30,43 @@
 
 module vieu import cvw::*;  #(parameter cvw_t P)
   (
-  input logic               clk,
-  input logic               reset,
+  input logic                         clk,
+  input logic                         reset,
   // Hazards
-  input logic               StallE, StallM, StallW,         // stall signals (from HZU)
-  input logic               FlushVectorE, FlushM, FlushW,         // flush signals (from HZU)
-   // flow control
-  input logic               ControllerValidD,
-  output logic              ExecutionUnitReadyD,
-  input logic               ControllerWBReadyW,
-  output logic              ExecutionUnitResultValidW,
+  input logic                         StallE, StallM, StallW,         // stall signals (from HZU)
+  input logic                         FlushVectorE, FlushM, FlushW,   // flush signals (from HZU)
+  // pass PC and the instruction through the specific execution unit. The VPU executes multiple
+  // instructions currently so it cannot use the scalar pipeline to track the instruction progress.
+  input logic [31:0]                  InstrD,
+  input logic [P.XLEN-1:0]            PCD,                            // Decode stage instruction address
+  // flow control
+  input logic                         ControllerValidD,
+  output logic                        ExecutionUnitReadyD,
+  input logic                         ControllerWBReadyW,
+  output logic                        ExecutionUnitResultValidW,
   output logic [P.VPU_QUEUEDEPTH-1:0] ExecutionUnitOrderW,
-  input  logic [P.VPU_QUEUEDEPTH-1:0] ExecutionUnitOrderD,
+  input logic [P.VPU_QUEUEDEPTH-1:0]  ExecutionUnitOrderD,
    // control from the controller
-  input logic               VMD,                            // 0 = mask enabled, 1 mask disabled
-  input logic [5:0]         Funct6D,
-  input logic [2:0]         Funct3D,
-  input logic [4:0]         VdFinalD,
-  input logic               RegWriteD,
-  input logic               VRegWriteD,
-  input logic [1:0]         VALUSrcAD,
-  input logic               VALUSrcBD,
-  input logic               VALUResultSrcD,
+  input logic                         VMD,                            // 0 = mask enabled, 1 mask disabled
+  input logic [5:0]                   Funct6D,
+  input logic [2:0]                   Funct3D,
+  input logic [4:0]                   VdFinalD,
+  input logic                         RegWriteD,
+  input logic                         VRegWriteD,
+  input logic [1:0]                   VALUSrcAD,
+  input logic                         VALUSrcBD,
+  input logic                         VALUResultSrcD,
    // datapath from vregfile
-  input logic [P.VLEN-1:0]  VRD1D, VRD2D, VRD3D,
-  input logic [P.VLEN-1:0]  v0D,
+  input logic [P.VLEN-1:0]            VRD1D, VRD2D, VRD3D,
+  input logic [P.VLEN-1:0]            v0D,
    //
   // from/to the scalar core
-  input logic [P.XLEN-1:0]  ForwardedSrcAE, ForwardedSrcBE, // Integer/FP input for convert, move (from IEU)
-  output logic [P.XLEN-1:0] VtoIEUFPResultW,                // Int or FP result for
-  output logic [P.VLEN-1:0] VIEUResultW,
+  input logic [P.XLEN-1:0]            ForwardedSrcAE, ForwardedSrcBE, // Integer/FP input for convert, move (from IEU)
+  output logic [P.XLEN-1:0]           VtoIEUFPResultW,                // Int or FP result for
+  output logic [P.VLEN-1:0]           VIEUResultW,
   // control output
-  output logic              RegWriteW, VRegWriteW,
-  output logic [4:0]        VdFinalW
+  output logic                        RegWriteW, VRegWriteW,
+  output logic [4:0]                  VdFinalW
 );
 
   localparam BEATBITLEN = $clog2((P.VLEN/P.ELEN) + 1);
@@ -108,13 +112,16 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   logic                      EnableW, EnableBeatW;
   logic                      ConsummedW;
 
+  logic [31:0]               InstrE, InstrM, InstrW;
+  logic [P.XLEN-1:0]         PCE, PCM, PCW;
+
   // *** add vector length later
   assign vlE = 4;
   assign VImmE = '0; // *** fix me
 
   vieufsm #(P, BEATBITLEN) vieufsm(.clk, .reset, .FlushVectorE, .StallE,
                        .ControllerValidD, .ExecutionUnitReadyD, .BeatE, .ExecutionUnitResultValidE, .BeatValidE, .vlE);
-  assign CaptureD = ControllerValidD & ExecutionUnitReadyD;
+  assign CaptureD = ControllerValidD & ExecutionUnitReadyD; // *** duplicated in vieufsm
 
   flopenrc #(P.VLEN) VRD1EReg(clk, reset, FlushVectorE, ~StallE & CaptureD, VRD1D, VRD1E);
   flopenrc #(P.VLEN) VRD2EReg(clk, reset, FlushVectorE, ~StallE & CaptureD, VRD2D, VRD2E);
@@ -144,6 +151,9 @@ module vieu import cvw::*;  #(parameter cvw_t P)
      {VdFinalD, Funct6D, Funct3D, RegWriteD, VRegWriteD, VALUSrcAD, VALUSrcBD, VALUResultSrcD, ExecutionUnitOrderD},
      {VdFinalE, Funct6E, Funct3E, RegWriteE, VRegWriteE, VALUSrcAE, VALUSrcBE, VALUResultSrcE, ExecutionUnitOrderE});
 
+  flopenrc #(P.XLEN) pcereg(clk, reset, FlushVectorE, ~StallE & CaptureD, PCD, PCE);
+  flopenrc #(32) instrereg(clk, reset, FlushVectorE, ~StallE & CaptureD, InstrD, InstrE);
+
   mux3 #(P.VPU_INT_BLEN) vscramux(VRD1SelectedE, VImmE, {XLENTOINTLANES{ForwardedSrcAE}}, VALUSrcAE, VSrcAE);
 
   mux2 #(P.VPU_INT_BLEN) vscrbmux(VRD2SelectedE, {XLENTOINTLANES{ForwardedSrcBE}}, VALUSrcBE, VSrcBE);
@@ -157,6 +167,9 @@ module vieu import cvw::*;  #(parameter cvw_t P)
      {VdFinalE, RegWriteE, VRegWriteE, VALUResultSrcE, BeatE, ExecutionUnitResultValidE, BeatValidE, ExecutionUnitOrderE},
      {VdFinalM, RegWriteM, VRegWriteM, VALUResultSrcM, BeatM, ExecutionUnitResultValidM, BeatValidM, ExecutionUnitOrderM});
 
+  flopenrc #(P.XLEN) pcmreg(clk, reset, FlushM, ~StallM, PCE, PCM);
+  flopenrc #(32) instrmreg(clk, reset, FlushM, ~StallM, InstrE, InstrM);
+
   // demux - the beat tells me which indices of output reg should be written
 
   for (index = 0; index < P.VPU_INT_MAX_BEATS; index++) begin : lanedemuxreg
@@ -164,6 +177,8 @@ module vieu import cvw::*;  #(parameter cvw_t P)
                                               VALUResultW[(index*P.VPU_INT_BLEN)+P.VPU_INT_BLEN-1 : (index*P.VPU_INT_BLEN)]);
   end
 
+  flopenrc #(P.XLEN) pcwreg(clk, reset, FlushW, ~StallW, PCM, PCW);
+  flopenrc #(32) instrwreg(clk, reset, FlushW, ~StallW, InstrM, InstrW);
 
   assign VIEUResultW = VALUResultW; // *** replace with mux?
 
