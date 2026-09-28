@@ -32,7 +32,7 @@ module lmulsequencer
   (
    input logic       clk, reset,
    // Decode stage control signals
-   input logic       StallD, FlushVectorD, // Stall, flush Decode stage
+   input logic       StallVectorD, FlushVectorD, // Stall, flush Decode stage
    input logic       VectorD,        // This instruction is a vector
    input logic [4:0] Vs1D, Vs2D, VdD,
    input logic [6:0] lmulDecodedD,
@@ -72,8 +72,8 @@ module lmulsequencer
   mux2 #(5) VdMux (VdD, VdP1QD, lmulCntrFirstCaptureD, VdFinalD);
 
 
-  flopenrl #(4) counter (clk, reset, lmulCntrLoad, IncrD, lmulCntrP1, 4'b0001, lmulCntrD);
-  assign lmulCntrDone = lmulCntrD == lmulIntD - 4'd1; // *** this is a bug for lmul less than 1
+  flopenl #(4) counter (clk, lmulCntrLoad | reset, IncrD, lmulCntrP1, 4'b0001, lmulCntrD);
+  assign lmulCntrDone = lmulCntrD == lmulIntD; // *** this is a bug for lmul less than 1
   assign lmulCntrP1 = lmulCntrD + 4'b0001;
 
   always_ff @(posedge clk)
@@ -91,7 +91,8 @@ module lmulsequencer
     endcase
   end
 
-  assign lmulCntrLoad = CurrState == STATE_BEGIN & VectorD;
+  //assign lmulCntrLoad = CurrState == STATE_BEGIN & VectorD;
+  assign lmulCntrLoad = CurrState == STATE_INCR & lmulCntrDone;
   //assign LMULExpansionD = AnyExecutionUnitReadyD & (CurrState == STATE_INCR);
   assign LMULExpansionD = (CurrState == STATE_INCR & ~lmulCntrDone) | (CurrState == STATE_BEGIN & lmulIntD > 4'd1 & VectorD);
   assign IncrD = (AnyExecutionUnitReadyD & VectorD) | LMULExpansionD;

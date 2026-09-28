@@ -50,8 +50,8 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
 
   logic                          StallF, StallD, StallE, StallM, StallW;
   logic                          FlushD, FlushE, FlushM, FlushW;
-  logic                          FlushVectorD;
-  logic                          FlushVectorE;
+  logic                          StallVectorF, StallVectorD, StallVectorE;
+  logic                          FlushVectorD, FlushVectorE, FlushVectorM;
   logic                          TrapM, RetM;
 
   //  signals that must connect through DP
@@ -191,6 +191,7 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
   logic [P.XLEN-1:0]             VEUAdrM;
   logic [P.VPU_LSU_BLEN-1:0]     VReadDataM;
   logic                          VPUFrontEndBusyD;
+  logic                          VPUBackEndBusyE;
 
   // instruction fetch unit: PC, branch prediction, instruction cache
   ifu #(P) ifu(.clk, .reset,
@@ -296,14 +297,15 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
   // global stall and flush control
   hazard hzu(
     .BPWrongE, .CSRWriteFenceM, .RetM, .TrapM,
-    .StructuralStallD, .VPUFrontEndBusyD,
+    .StructuralStallD, .VPUFrontEndBusyD, .VPUBackEndBusyE,
     .LSUStallM, .IFUStallF,
     .FPUStallD, .ExternalStall,
     .DivBusyE, .FDivBusyE,
-    .wfiM, .IntPendingM,
+    .wfiM, .IntPendingM, .VectorD,
     // Stall & flush outputs
     .StallF, .StallD, .StallE, .StallM, .StallW,
-    .FlushD, .FlushE, .FlushM, .FlushW, .FlushVectorD, .FlushVectorE);
+    .FlushD, .FlushE, .FlushM, .FlushW,
+     .StallVectorF, .StallVectorD, .StallVectorE, .FlushVectorD, .FlushVectorE, .FlushVectorM);
 
   // privileged unit
   if (P.ZICSR_SUPPORTED) begin : priv
@@ -387,13 +389,13 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
   assign VReadDataM = '0;
 
   if (P.V_SUPPORTED) begin : vpu
-    vpu #(P) vpu(.clk, .reset, .StallD, .StallE, .StallM, .StallW,
-                 .FlushVectorD, .FlushVectorE, .FlushM, .FlushW, .VPUFrontEndBusyD,
+    vpu #(P) vpu(.clk, .reset, .StallVectorD, .StallVectorE, .StallM, .StallW,
+                 .FlushVectorD, .FlushVectorE, .FlushVectorM, .FlushW, .VPUFrontEndBusyD, .VPUBackEndBusyE,
                  .PCD, .InstrD, .VectorD, .ForwardedSrcAE, .ForwardedSrcBE,
                  .VWriteDataM, .VEUAdrM, .IllegalVPUInstrD, .VReadDataM, .VIEUFPResultFinalW);
 
   end else begin
-    assign {VPUFrontEndBusyD, IllegalVPUInstrD} = '0;
+    assign {VPUFrontEndBusyD, VPUBackEndBusyE, IllegalVPUInstrD} = '0;
   end
 
 endmodule

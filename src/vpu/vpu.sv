@@ -31,9 +31,10 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   input logic                       clk,
   input logic                       reset,
   // Hazards
-  input logic                       StallD, StallE, StallM, StallW,             // stall signals (from HZU)
-  input logic                       FlushVectorD, FlushVectorE, FlushM, FlushW, // flush signals (from HZU)
+  input logic                       StallVectorD, StallVectorE, StallM, StallW,             // stall signals (from HZU)
+  input logic                       FlushVectorD, FlushVectorE, FlushVectorM, FlushW, // flush signals (from HZU)
   output logic                      VPUFrontEndBusyD,                           // Stall the decode stage (To HZU)
+  output logic                      VPUBackEndBusyE,
 
 
   // TODO ***
@@ -102,11 +103,11 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   // the controller waits by asserting VPUFrontEndBusyD.
   // VPUFrontEndBusyD is used by the hazard unit to stall the front end.
   // When transitioning from scalar to vector instructions, if the scalar takes a long time such as div or load miss,
-  // the VPU must be delayed to ensure inorder commit.  StallE, StallM, and StallW need to post pone the progress of
+  // the VPU must be delayed to ensure inorder commit.  StallVectorE, StallM, and StallW need to post pone the progress of
   // vector instruction progress under this condiction.
 
 
-  vcontroller #(P) vcontroller(.clk, .reset, .StallD, .FlushVectorD,
+  vcontroller #(P) vcontroller(.clk, .reset, .StallVectorD, .FlushVectorD,
                                .InstrD, .VectorD, .Vs1FinalD, .Vs2FinalD, .VdFinalD,
                                .VMD, .Funct6D, .Funct3D, .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD,
                                .VALUResultSrcD, .IllegalVPUInstrD, .ControllerValidD, .ExecutionUnitReadyD,
@@ -120,7 +121,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
 
 
   for(i = 0; i < P.VPU_INT_EU; i++) begin : vieu
-    vieu #(P) vieu(.clk, .reset, .StallE, .StallM, .StallW, .FlushVectorE, .FlushM, .FlushW,
+    vieu #(P) vieu(.clk, .reset, .StallVectorE, .StallM, .StallW, .FlushVectorE, .FlushVectorM, .FlushW,
                    .ControllerWBReadyW(ControllerWBReadyW[i]), .ExecutionUnitResultValidW(ExecutionUnitResultValidW[i]),
                    .InstrD, .PCD, .ExecutionUnitOrderD(ExecutionUnitOrderD[i]), .ExecutionUnitOrderW(ExecutionUnitOrderW[i]),
                    .ControllerValidD(ControllerValidD[i]), .ExecutionUnitReadyD(ExecutionUnitReadyD[i]), .VMD, .Funct3D, .Funct6D,
@@ -158,5 +159,6 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   assign VdFinalweW = VRegWriteW[0];
   assign VdFinalW = EUVdFinalW[0];
   assign VResultFinalW = VIEUResultW[0]; // *** these names are not clear enough. I keep confusing VIEU to mean goto the scalar IEU.
+  assign VPUBackEndBusyE = (~&ExecutionUnitReadyD) & ~VPUFrontEndBusyD;
 
 endmodule

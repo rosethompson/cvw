@@ -33,8 +33,8 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   input logic                         clk,
   input logic                         reset,
   // Hazards
-  input logic                         StallE, StallM, StallW,         // stall signals (from HZU)
-  input logic                         FlushVectorE, FlushM, FlushW,   // flush signals (from HZU)
+  input logic                         StallVectorE, StallM, StallW,         // stall signals (from HZU)
+  input logic                         FlushVectorE, FlushVectorM, FlushW,   // flush signals (from HZU)
   // pass PC and the instruction through the specific execution unit. The VPU executes multiple
   // instructions currently so it cannot use the scalar pipeline to track the instruction progress.
   input logic [31:0]                  InstrD,
@@ -119,14 +119,14 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   assign vlE = 4;
   assign VImmE = '0; // *** fix me
 
-  vieufsm #(P, BEATBITLEN) vieufsm(.clk, .reset, .FlushVectorE, .StallE,
+  vieufsm #(P, BEATBITLEN) vieufsm(.clk, .reset, .FlushVectorE, .StallVectorE,
                        .ControllerValidD, .ExecutionUnitReadyD, .BeatE, .ExecutionUnitResultValidE, .BeatValidE, .vlE);
   assign CaptureD = ControllerValidD & ExecutionUnitReadyD; // *** duplicated in vieufsm
 
-  flopenrc #(P.VLEN) VRD1EReg(clk, reset, FlushVectorE, ~StallE & CaptureD, VRD1D, VRD1E);
-  flopenrc #(P.VLEN) VRD2EReg(clk, reset, FlushVectorE, ~StallE & CaptureD, VRD2D, VRD2E);
-  flopenrc #(P.VLEN) VRD3EReg(clk, reset, FlushVectorE, ~StallE & CaptureD, VRD3D, VRD3E);
-  flopenrc #(P.VLEN) v0EReg  (clk, reset, FlushVectorE, ~StallE & CaptureD, v0D,   v0E);
+  flopenrc #(P.VLEN) VRD1EReg(clk, reset, FlushVectorE, ~StallVectorE & CaptureD, VRD1D, VRD1E);
+  flopenrc #(P.VLEN) VRD2EReg(clk, reset, FlushVectorE, ~StallVectorE & CaptureD, VRD2D, VRD2E);
+  flopenrc #(P.VLEN) VRD3EReg(clk, reset, FlushVectorE, ~StallVectorE & CaptureD, VRD3D, VRD3E);
+  flopenrc #(P.VLEN) v0EReg  (clk, reset, FlushVectorE, ~StallVectorE & CaptureD, v0D,   v0E);
 
   // convert to index format
   genvar index;
@@ -147,12 +147,12 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   // controll is routed to different EUs.
 
   flopenrc #(20+P.VPU_QUEUEDEPTH) contrlregE
-    (clk, reset, FlushVectorE, ~StallE & CaptureD,
+    (clk, reset, FlushVectorE, ~StallVectorE & CaptureD,
      {VdFinalD, Funct6D, Funct3D, RegWriteD, VRegWriteD, VALUSrcAD, VALUSrcBD, VALUResultSrcD, ExecutionUnitOrderD},
      {VdFinalE, Funct6E, Funct3E, RegWriteE, VRegWriteE, VALUSrcAE, VALUSrcBE, VALUResultSrcE, ExecutionUnitOrderE});
 
-  flopenrc #(P.XLEN) pcereg(clk, reset, FlushVectorE, ~StallE & CaptureD, PCD, PCE);
-  flopenrc #(32) instrereg(clk, reset, FlushVectorE, ~StallE & CaptureD, InstrD, InstrE);
+  flopenrc #(P.XLEN) pcereg(clk, reset, FlushVectorE, ~StallVectorE & CaptureD, PCD, PCE);
+  flopenrc #(32) instrereg(clk, reset, FlushVectorE, ~StallVectorE & CaptureD, InstrD, InstrE);
 
   mux3 #(P.VPU_INT_BLEN) vscramux(VRD1SelectedE, VImmE, {XLENTOINTLANES{ForwardedSrcAE}}, VALUSrcAE, VSrcAE);
 
@@ -160,15 +160,15 @@ module vieu import cvw::*;  #(parameter cvw_t P)
 
   valu #(P) valu(VSrcAE, VSrcBE, VALUResultE);
 
-  flopenrc #(P.VPU_INT_BLEN) VALUResultMReg(clk, reset, FlushM, ~StallM, VALUResultE, VALUResultM); // *** may need an enable
+  flopenrc #(P.VPU_INT_BLEN) VALUResultMReg(clk, reset, FlushVectorM, ~StallM, VALUResultE, VALUResultM); // *** may need an enable
 
   flopenrc #(10+BEATBITLEN+P.VPU_QUEUEDEPTH) contrlregM
-    (clk, reset, FlushM, ~StallM,
+    (clk, reset, FlushVectorM, ~StallM,
      {VdFinalE, RegWriteE, VRegWriteE, VALUResultSrcE, BeatE, ExecutionUnitResultValidE, BeatValidE, ExecutionUnitOrderE},
      {VdFinalM, RegWriteM, VRegWriteM, VALUResultSrcM, BeatM, ExecutionUnitResultValidM, BeatValidM, ExecutionUnitOrderM});
 
-  flopenrc #(P.XLEN) pcmreg(clk, reset, FlushM, ~StallM, PCE, PCM);
-  flopenrc #(32) instrmreg(clk, reset, FlushM, ~StallM, InstrE, InstrM);
+  flopenrc #(P.XLEN) pcmreg(clk, reset, FlushVectorM, ~StallM, PCE, PCM);
+  flopenrc #(32) instrmreg(clk, reset, FlushVectorM, ~StallM, InstrE, InstrM);
 
   // demux - the beat tells me which indices of output reg should be written
 

@@ -31,7 +31,7 @@
 module vcontroller import cvw::*;  #(parameter cvw_t P) (
   input logic                         clk, reset,
   // Decode stage control signals
-  input logic                         StallD, FlushVectorD,       // Stall, flush Decode stage
+  input logic                         StallVectorD, FlushVectorD,       // Stall, flush Decode stage
   input logic [31:0]                  InstrD,               // Instruction in Decode stage
   input logic                         VectorD,              // This instruction is a vector
 
@@ -68,12 +68,12 @@ module vcontroller import cvw::*;  #(parameter cvw_t P) (
   assign lmulDecodedD = 7'b0100_000; // m4
 
 
-  vdecoder #(P) vdecoder(.clk, .reset, .StallD, .FlushVectorD,
+  vdecoder #(P) vdecoder(.clk, .reset, .StallVectorD, .FlushVectorD,
                          .InstrD, .Vs1D, .Vs2D, .VdD, .VMD,
                          .Funct6D, .Funct3D, .RegWriteD, .VRegWriteD,
                          .VALUResultSrcD, .VALUSrcAD, .VALUSrcBD, .IllegalVPUInstrD);
 
-  vdispatcher #(P) vdispatcher(.clk, .reset, .StallD, .FlushVectorD,
+  vdispatcher #(P) vdispatcher(.clk, .reset, .StallVectorD, .FlushVectorD,
                                .VectorD, .Vs1D, .Vs2D, .VdD, .ControllerValidD, .ExecutionUnitReadyD,
                                .MicroVectorD, .Vs1FinalD, .Vs2FinalD, .VdFinalD, .lmulDecodedD,
                                .LMULExpansionD);
