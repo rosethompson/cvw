@@ -72,7 +72,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   logic [P.VLEN-1:0] VResultFinalW;
 
   logic [P.VLEN-1:0] VIEUResultW [P.VPU_INT_EU-1:0];
-  logic [P.XLEN-1:0] VtoIEUFPResultW [P.VPU_INT_EU-1:0];
+  logic [P.XLEN-1:0] VIEUResultToScalarW [P.VPU_INT_EU-1:0];
 
   //logic       IllegalVPUInstrD;
 
@@ -83,13 +83,12 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   logic [P.VPU_QUEUEDEPTH-1:0] ExecutionUnitOrderW [P.VPU_MAX_EU-1:0];
   logic [P.VPU_QUEUEDEPTH-1:0] ExecutionUnitOrderD [P.VPU_MAX_EU-1:0];
 
-  logic            VdFinalweW;
+  logic            VRegWriteW, RegWriteW;
   logic [4:0]      VdFinalW;
   genvar i;
 
-  logic [P.VPU_MAX_EU-1:0] RegWriteW, VRegWriteW, EUDoneW;
-  logic [4:0]              EUVdFinalW [P.VPU_MAX_EU-1:0];
-
+  logic [P.VPU_MAX_EU-1:0] VIEURegWriteW, VIEUVRegWriteW;
+  logic [4:0]              VIEUVdFinalW [P.VPU_MAX_EU-1:0];
 
   // divide into control and data path
 
@@ -116,7 +115,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
 
 
 
-  vregfile #(P.VLEN) vregfile(clk, reset, VdFinalweW, Vs1FinalD, Vs2FinalD, VdFinalD, VdFinalW,
+  vregfile #(P.VLEN) vregfile(clk, reset, VRegWriteW, Vs1FinalD, Vs2FinalD, VdFinalD, VdFinalW,
                               VResultFinalW, VRD1D, VRD2D, VRD3D, v0D);
 
 
@@ -126,9 +125,9 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
                    .InstrD, .PCD, .ExecutionUnitOrderD(ExecutionUnitOrderD[i]), .ExecutionUnitOrderW(ExecutionUnitOrderW[i]),
                    .ControllerValidD(ControllerValidD[i]), .ExecutionUnitReadyD(ExecutionUnitReadyD[i]), .VMD, .Funct3D, .Funct6D,
                    .VdFinalD, .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD, .VALUResultSrcD,
-                   .VRD1D, .VRD2D, .VRD3D, .v0D, .ForwardedSrcAE, .ForwardedSrcBE, .VtoIEUFPResultW(VtoIEUFPResultW[i]),
-                   .VIEUResultW(VIEUResultW[i]), .RegWriteW(RegWriteW[i]), .VRegWriteW(VRegWriteW[i]),
-                   .VdFinalW(EUVdFinalW[i]));
+                   .VRD1D, .VRD2D, .VRD3D, .v0D, .ForwardedSrcAE, .ForwardedSrcBE, .VIEUResultToScalarW(VIEUResultToScalarW[i]),
+                   .VIEUResultW(VIEUResultW[i]), .VIEURegWriteW(VIEURegWriteW[i]), .VIEUVRegWriteW(VIEUVRegWriteW[i]),
+                   .VIEUVdFinalW(VIEUVdFinalW[i]));
   end
 
   for(i = 0; i < P.VPU_LSU_EU; i++) begin : vlsuif
@@ -137,8 +136,13 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
     assign VWriteDataM = '0;
     assign VEUAdrM = '0;
     assign ExecutionUnitResultValidW[i+P.VPU_INT_EU] = '0;
-    assign VRegWriteW[i+P.VPU_INT_EU] = '0;
-    assign EUVdFinalW[i+P.VPU_INT_EU] = '0;
+
+
+    //assign VIEUResultToScalarW[i+P.VPU_INT_EU] = '0;
+    //assign VIEUResultW[i+P.VPU_INT_EU] = '0;
+    assign VIEURegWriteW[i+P.VPU_INT_EU] = '0;
+    assign VIEUVRegWriteW[i+P.VPU_INT_EU] = '0;
+    assign VIEUVdFinalW[i+P.VPU_INT_EU] =  '0;
   end
 
   for(i = 0; i < P.VPU_FP_EU; i++) begin : vfpeu
@@ -146,8 +150,13 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
     //vfpeu #(P) vfpeu
     assign ExecutionUnitReadyD[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '1;
     assign ExecutionUnitResultValidW[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '0;
-    assign VRegWriteW[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '0;
-    assign EUVdFinalW[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '0;
+
+    //assign VIEUResultToScalarW[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '0;
+    //assign VIEUResultW[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '0;
+    assign VIEURegWriteW[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '0;
+    assign VIEUVRegWriteW[i+P.VPU_INT_EU+P.VPU_LSU_EU] = '0;
+    assign VIEUVdFinalW[i+P.VPU_INT_EU+P.VPU_LSU_EU] =  '0;
+
   end
 
 
@@ -155,10 +164,14 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   // the controller must select the correct EU to write back into the VRF so that instructions commit inorder.
   // *** for now let's just always pick the first EU.
 
-  assign VIEUFPResultFinalW = VtoIEUFPResultW[0];
-  assign VdFinalweW = VRegWriteW[0];
-  assign VdFinalW = EUVdFinalW[0];
-  assign VResultFinalW = VIEUResultW[0]; // *** these names are not clear enough. I keep confusing VIEU to mean goto the scalar IEU.
+  or_rows #(P.VPU_INT_EU, P.VLEN) VEUResultAOMux(.a(VIEUResultW), .y(VResultFinalW));
+  or_rows #(P.VPU_INT_EU, P.XLEN) VIEUFPResultAOMux(.a(VIEUResultToScalarW), .y(VIEUFPResultFinalW));
+  or_rows #(P.VPU_MAX_EU, 5) VdAOMux(.a(VIEUVdFinalW), .y(VdFinalW));
+  //or_rows #(P.VPU_INT_EU, 5) RdAOMux(.a(VIEURegWriteW), .y(VRdFinalW));
+  assign VRegWriteW = | VIEUVRegWriteW;
+  assign RegWriteW = | VIEURegWriteW;
+
+
   assign VPUBackEndBusyE = (~&ExecutionUnitReadyD) & ~VPUFrontEndBusyD;
 
 endmodule

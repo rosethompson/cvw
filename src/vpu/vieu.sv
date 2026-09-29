@@ -62,11 +62,11 @@ module vieu import cvw::*;  #(parameter cvw_t P)
    //
   // from/to the scalar core
   input logic [P.XLEN-1:0]            ForwardedSrcAE, ForwardedSrcBE, // Integer/FP input for convert, move (from IEU)
-  output logic [P.XLEN-1:0]           VtoIEUFPResultW,                // Int or FP result for
+  output logic [P.XLEN-1:0]           VIEUResultToScalarW,                // Int or FP result for
   output logic [P.VLEN-1:0]           VIEUResultW,
   // control output
-  output logic                        RegWriteW, VRegWriteW,
-  output logic [4:0]                  VdFinalW
+  output logic                        VIEURegWriteW, VIEUVRegWriteW,
+  output logic [4:0]                  VIEUVdFinalW
 );
 
   localparam BEATBITLEN = $clog2((P.VLEN/P.ELEN) + 1);
@@ -114,6 +114,11 @@ module vieu import cvw::*;  #(parameter cvw_t P)
 
   logic [31:0]               InstrE, InstrM, InstrW;
   logic [P.XLEN-1:0]         PCE, PCM, PCW;
+
+
+  logic [4:0]                PreVdFinalW;
+  logic                      PreRegWriteW, PreVRegWriteW;
+
 
   // *** add vector length later
   assign vlE = 4;
@@ -180,9 +185,6 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   flopenrc #(P.XLEN) pcwreg(clk, reset, FlushW, ~StallW, PCM, PCW);
   flopenrc #(32) instrwreg(clk, reset, FlushW, ~StallW, InstrM, InstrW);
 
-  assign VIEUResultW = VALUResultW; // *** replace with mux?
-
-  assign VtoIEUFPResultW = '0;    // ***
 
   // transfer from M to W stage if the instruction in the M stage is done and the next stage is currently empty
   // or if the next stage has an instruction and it will be consummed by WB.
@@ -195,6 +197,14 @@ module vieu import cvw::*;  #(parameter cvw_t P)
   flopenrc #(9+P.VPU_QUEUEDEPTH) contrlregW
     (clk, reset, FlushW | (ConsummedW & ~StallW), ~StallW & (EnableW | ConsummedW), // There needs to be a handshake going in the other direction to enable ControlRegW.  This is just like the input handshake.
      {VdFinalM, RegWriteM, VRegWriteM, VALUResultSrcM, ExecutionUnitResultValidM, ExecutionUnitOrderM},
-     {VdFinalW, RegWriteW, VRegWriteW, VALUResultSrcW, ExecutionUnitResultValidW, ExecutionUnitOrderW});
+     {PreVdFinalW, PreRegWriteW, PreVRegWriteW, VALUResultSrcW, ExecutionUnitResultValidW, ExecutionUnitOrderW});;
+
+  // AND part of AO-mux
+  assign VIEUResultW = ControllerWBReadyW ? VALUResultW : '0;
+  assign VIEUResultToScalarW = ControllerWBReadyW ? '0 : '0;    // *** fill with the correct result
+  assign VIEUVdFinalW = ControllerWBReadyW ? PreVdFinalW : '0;
+  assign VIEURegWriteW = ControllerWBReadyW ? PreRegWriteW : '0;
+  assign VIEUVRegWriteW = ControllerWBReadyW ? PreVRegWriteW : '0;
+
 
 endmodule

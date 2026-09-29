@@ -740,19 +740,14 @@ add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/ExecutionUnitResultVa
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/ControllerWBReadyW
 add wave -noupdate {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ControllerWBReadyW}
 add wave -noupdate {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/EnableW}
-add wave -noupdate -expand -label {Contributors: sim:/testbench/dut/core/vpu/vpu/vieu[0]/vieu/EnableW} -group {Contributors: {sim:/testbench/dut/core/vpu/vpu/vieu[0]/vieu/EnableW}} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ControllerWBReadyW}
-add wave -noupdate -expand -label {Contributors: sim:/testbench/dut/core/vpu/vpu/vieu[0]/vieu/EnableW} -group {Contributors: {sim:/testbench/dut/core/vpu/vpu/vieu[0]/vieu/EnableW}} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ExecutionUnitResultValidM}
-add wave -noupdate -expand -label {Contributors: sim:/testbench/dut/core/vpu/vpu/vieu[0]/vieu/EnableW} -group {Contributors: {sim:/testbench/dut/core/vpu/vpu/vieu[0]/vieu/EnableW}} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ExecutionUnitResultValidW}
+add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu/ControllerWBReadyW
 add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu/VIEUResultW
 add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu/VResultFinalW
 add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu/VdFinalW
-add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu/EUVdFinalW
-add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu/VdFinalweW
 add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu/VRegWriteW
-add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu/ControllerWBReadyW
 add wave -noupdate -expand /testbench/dut/core/vpu/vpu/ExecutionUnitReadyD
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {89834 ns} 1} {{Cursor 4} {79055 ns} 1} {{Cursor 3} {926 ns} 0}
+WaveRestoreCursors {{Cursor 4} {89834 ns} 1} {{Cursor 4} {79055 ns} 1} {{Cursor 3} {1070 ns} 0}
 quietly wave cursor active 3
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -768,4 +763,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {834 ns} {1090 ns}
+WaveRestoreZoom {766 ns} {1134 ns}
