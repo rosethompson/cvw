@@ -162,7 +162,6 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
 
 
   // the controller must select the correct EU to write back into the VRF so that instructions commit inorder.
-  // *** for now let's just always pick the first EU.
 
   or_rows #(P.VPU_INT_EU, P.VLEN) VEUResultAOMux(.a(VIEUResultW), .y(VResultFinalW));
   or_rows #(P.VPU_INT_EU, P.XLEN) VIEUFPResultAOMux(.a(VIEUResultToScalarW), .y(VIEUFPResultFinalW));
