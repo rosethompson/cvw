@@ -388,7 +388,7 @@ module wallypipelinedcore import cvw::*; #(parameter cvw_t P) (
   // *** fix me replace with driver from LSU
   assign VReadDataM = '0;
 
-  if (P.V_SUPPORTED) begin : vpu
+  if (P.ZVE32X_SUPPORTED) begin : vpu
     vpu #(P) vpu(.clk, .reset, .StallVectorD, .StallVectorE, .StallM, .StallW,
                  .FlushVectorD, .FlushVectorE, .FlushVectorM, .FlushW, .VPUFrontEndBusyD, .VPUBackEndBusyE,
                  .PCD, .InstrD, .VectorD, .ForwardedSrcAE, .ForwardedSrcBE,
