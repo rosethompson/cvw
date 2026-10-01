@@ -705,15 +705,30 @@ add wave -noupdate -expand -group vpu -expand -group Vdispatcher -expand -group 
 add wave -noupdate -expand -group vpu -expand -group Vdispatcher -expand -group lmulsequence /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/VdP1D
 add wave -noupdate -expand -group vpu -expand -group Vdispatcher -expand -group lmulsequence /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/VdP1QD
 add wave -noupdate -expand -group vpu -expand -group Vdispatcher -expand -group lmulsequence /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/lmulsequencer/VdFinalD
-add wave -noupdate -expand -group vpu -expand -group EUs /testbench/InstrEName
 add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/ExecutionUnitReadyD}
 add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/ControllerValidD}
 add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/CaptureInstrD}
 add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/BeatValidE}
-add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/ExecutionUnitResultValidE}
-add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/BeatE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/v0BeatE}
 add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/vlE}
 add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/BeatLength}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/ExecutionUnitResultValidE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} -expand -group fsm {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/DoneE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} -expand -group fsm {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/BeatValidE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} -expand -group fsm {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/BeatIncrD}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} -expand -group fsm {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/BeatResetD}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} -expand -group fsm {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/vieufsm/BeatE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/StallM}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ExecutionUnitResultValidE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ExecutionUnitOrderE}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ExecutionUnitResultValidM}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ExecutionUnitOrderM}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ExecutionUnitResultValidW}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ControllerWBReadyW}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} -color Salmon {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/NotConsummedW}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/StallW}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ExecutionUnitOrderW}
+add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[0]} {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/LocalStallW}
 add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/ExecutionUnitReadyD}
 add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/ControllerValidD}
 add wave -noupdate -expand -group vpu -expand -group EUs -expand -group {vieu[1]} {/testbench/dut/core/vpu/vpu/vieu[1]/vieu/vieufsm/CaptureInstrD}
@@ -730,12 +745,13 @@ add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vp
 add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/InstrOrderQueue/rptr
 add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/InstrOrderQueue/wptr
 add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/InstrOrderQueue/empty
+add wave -noupdate -expand -group {instruction queue} /testbench/dut/core/vpu/vpu/vcontroller/MatchW
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/vdispatcher/SelectedD
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/MicroVectorD
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/OrderD
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/ExecutionUnitReadyD
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/HeadOrderW
-add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/ExecutionUnitOrderW
+add wave -noupdate -expand /testbench/dut/core/vpu/vpu/vcontroller/ExecutionUnitOrderW
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/ExecutionUnitResultValidW
 add wave -noupdate /testbench/dut/core/vpu/vpu/vcontroller/ControllerWBReadyW
 add wave -noupdate {/testbench/dut/core/vpu/vpu/vieu[0]/vieu/ControllerWBReadyW}
@@ -747,7 +763,7 @@ add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu
 add wave -noupdate -expand -group {Vector Writeback} /testbench/dut/core/vpu/vpu/VRegWriteW
 add wave -noupdate -expand /testbench/dut/core/vpu/vpu/ExecutionUnitReadyD
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 4} {89834 ns} 1} {{Cursor 4} {79055 ns} 1} {{Cursor 3} {1070 ns} 0}
+WaveRestoreCursors {{Cursor 4} {89834 ns} 1} {{Cursor 4} {79055 ns} 1} {{Cursor 3} {976 ns} 0}
 quietly wave cursor active 3
 configure wave -namecolwidth 250
 configure wave -valuecolwidth 194
@@ -763,4 +779,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {766 ns} {1134 ns}
+WaveRestoreZoom {808 ns} {1206 ns}

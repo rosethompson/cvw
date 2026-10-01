@@ -106,7 +106,7 @@ module vpu import cvw::*;  #(parameter cvw_t P) (
   // vector instruction progress under this condiction.
 
 
-  vcontroller #(P) vcontroller(.clk, .reset, .StallVectorD, .FlushVectorD,
+  vcontroller #(P) vcontroller(.clk, .reset, .StallVectorD, .FlushVectorD, .StallW,
                                .InstrD, .VectorD, .Vs1FinalD, .Vs2FinalD, .VdFinalD,
                                .VMD, .Funct6D, .Funct3D, .RegWriteD, .VRegWriteD, .VALUSrcAD, .VALUSrcBD,
                                .VALUResultSrcD, .IllegalVPUInstrD, .ControllerValidD, .ExecutionUnitReadyD,

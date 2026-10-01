@@ -31,14 +31,15 @@
 module vcontroller import cvw::*;  #(parameter cvw_t P) (
   input logic                         clk, reset,
   // Decode stage control signals
-  input logic                         StallVectorD, FlushVectorD,       // Stall, flush Decode stage
-  input logic [31:0]                  InstrD,               // Instruction in Decode stage
-  input logic                         VectorD,              // This instruction is a vector
+  input logic                         StallVectorD, FlushVectorD, // Stall, flush Decode stage
+  input logic                         StallW,
+  input logic [31:0]                  InstrD,                     // Instruction in Decode stage
+  input logic                         VectorD,                    // This instruction is a vector
 
   // Decode stage outputs
-  output logic [4:0]                  Vs1FinalD, Vs2FinalD, // Vector Source 1 and 2
-  output logic [4:0]                  VdFinalD,             // Vector Destination read (overwrite)
-  output logic                        VMD,                  // 0 = mask enabled, 1 mask disabled
+  output logic [4:0]                  Vs1FinalD, Vs2FinalD,       // Vector Source 1 and 2
+  output logic [4:0]                  VdFinalD,                   // Vector Destination read (overwrite)
+  output logic                        VMD,                        // 0 = mask enabled, 1 mask disabled
   output logic [5:0]                  Funct6D,
   output logic [2:0]                  Funct3D,
   output logic                        RegWriteD,
@@ -95,7 +96,7 @@ module vcontroller import cvw::*;  #(parameter cvw_t P) (
   logic                         AnyMatchW;
   logic                         InstrOrderQueueFullD;
 
-  queue #(P.VPU_QUEUEDEPTH, P.VPU_QUEUEDEPTH) InstrOrderQueue(.clk, .reset, .enqueue(MicroVectorD), .dequeue(AnyMatchW),
+  queue #(P.VPU_QUEUEDEPTH, P.VPU_QUEUEDEPTH) InstrOrderQueue(.clk, .reset, .enqueue(MicroVectorD & ~StallVectorD), .dequeue(AnyMatchW & ~StallW),
                                                   .wdata(OrderD), .rdata(HeadOrderW), .full(InstrOrderQueueFullD), .empty());
 
   counter #(P.VPU_QUEUEDEPTH) ordercounter(clk, reset, MicroVectorD, OrderD);

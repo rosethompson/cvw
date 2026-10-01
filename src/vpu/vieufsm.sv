@@ -33,9 +33,10 @@ module vieufsm import cvw::*;  #(parameter     cvw_t P,
   (
    input logic                   clk,
    input logic                   reset,
-   input logic                   StallVectorE,
+   input logic                   LocalStallE,
    input logic                   FlushVectorE,
    input logic                   ControllerValidD,
+   input logic                   NotConsummedW,
    output logic                  ExecutionUnitReadyD,
    output logic [BEATBITLEN-1:0] BeatE,
    output logic                  ExecutionUnitResultValidE,
@@ -66,13 +67,13 @@ module vieufsm import cvw::*;  #(parameter     cvw_t P,
   flopenr #(1) readyreg(clk, CaptureInstrD, BeatResetD, '1, ReadyE); // SR flop with reset priority
   assign CaptureInstrD = ControllerValidD & ExecutionUnitReadyD;
 
-  assign BeatResetD = ExecutionUnitReadyD | reset;
+  assign BeatResetD = (ExecutionUnitReadyD & ~LocalStallE) | reset;
 
   counterval #(BEATBITLEN) beatcounter(clk, BeatResetD, BeatIncrD, P.VPU_INT_LANES[BEATBITLEN-1:0], BeatE);
 
-  assign BeatIncrD = BeatValidE & ~StallVectorE;
+  assign BeatIncrD = BeatValidE & ~LocalStallE;
   assign DoneE = BeatE >= BeatLength - 1; // *** optimize
-  assign ExecutionUnitReadyD = (DoneE & ExecutionUnitResultValidE) | ReadyE;
+  assign ExecutionUnitReadyD = ((DoneE & ExecutionUnitResultValidE) | ReadyE) & ~NotConsummedW;
   assign ExecutionUnitResultValidE = DoneE & BeatValidE;
 
 endmodule
