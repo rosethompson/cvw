@@ -83,8 +83,8 @@ localparam logic D_SUPPORTED   = 1;
 localparam logic Q_SUPPORTED   = 0;
 localparam logic ZFH_SUPPORTED = 1;
 localparam logic ZFA_SUPPORTED = 1;
-
-// Vector extensions
+localparam logic ZVFHMIN_SUPPORTED = 1;
+localparam logic ZVFH_SUPPORTED = 1;
 localparam logic ZVE32X_SUPPORTED = 1;
 localparam logic ZVE32F_SUPPORTED = 1;
 localparam logic ZVE64X_SUPPORTED = 1;
