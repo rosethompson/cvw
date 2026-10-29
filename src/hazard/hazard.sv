@@ -33,7 +33,7 @@ module hazard (
   input  logic  LSUStallM, IFUStallF,
   input  logic  FPUStallD, ExternalStall, VPUFrontEndBusyD, VPUBackEndBusyE,
   input  logic  DivBusyE, FDivBusyE,
-  input  logic  wfiM, IntPendingM, VectorD,
+  input  logic  wfiM, IntPendingM, VectorD, IllegalVPUInstrD,
   // Stall & flush outputs
   output logic StallF, StallD, StallE, StallM, StallW,
   output logic FlushD, FlushE, FlushM, FlushW,
@@ -80,7 +80,7 @@ module hazard (
   //   However, an active division operation resides in the Execute stage, and when the BP incorrectly mispredicts the divide as a taken branch, the divide must still complete
   // When a WFI is interrupted and causes a trap, it flushes the rest of the pipeline but not the W stage, because the WFI needs to commit
   assign FlushDCause = TrapM | RetM | CSRWriteFenceM | BPWrongE;
-  assign FlushECause = TrapM | RetM | CSRWriteFenceM  | VectorD | (BPWrongE & ~(DivBusyE | FDivBusyE));
+  assign FlushECause = TrapM | RetM | CSRWriteFenceM  | (VectorD & ~IllegalVPUInstrD) | (BPWrongE & ~(DivBusyE | FDivBusyE));
   assign FlushMCause = TrapM | RetM | CSRWriteFenceM;
   assign FlushWCause = TrapM & ~WFIInterruptedM;
 
