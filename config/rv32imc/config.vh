@@ -215,6 +215,7 @@ localparam BPRED_NUM_LHR = 32'd6;
 localparam BTB_SIZE = 32'd10;
 localparam RAS_SIZE = 32'd16;
 localparam INSTR_CLASS_PRED = 0;
+localparam ONE_PORT_BP_SRAM = 0;
 
 // FPU division architecture
 localparam RADIX = 32'd4;

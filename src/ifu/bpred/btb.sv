@@ -36,16 +36,15 @@ module btb import cvw::*; #(parameter cvw_t P,
 );
 
   logic [Depth-1:0]        PCNextFIndex, PCFIndex, PCDIndex, PCEIndex, PCMIndex, PCWIndex;
-  logic [Depth-1:0]        RAMIndex;
   logic                    MatchD, MatchE, MatchM, MatchW, MatchX;
   logic [P.XLEN+3:0]       ForwardBTBPredF;
-  logic [P.XLEN+3:0]       TableBTBPredF, TableBTBRAWPredF;
+  logic [P.XLEN+3:0]       TableBTBPredF;
   logic [P.XLEN-1:0]       IEUAdrW;
   logic [P.XLEN-1:0]       PCW;
   logic [P.XLEN-1:0]       BPBTAD, BPBTAE;
   logic                    BPBTAWrongE;
   logic                    BTBWrongM;
-  logic                    BTBWrongW;
+
 
   // hashing function for indexing the PC
   // We have Depth bits to index, but XLEN bits as the input.
@@ -78,20 +77,26 @@ module btb import cvw::*; #(parameter cvw_t P,
   // use this to select between reading or writting the BTB. When BTBWrongM is low read
   // the BTB. If writing still need to produce a prediction. Guess a non-cfi instruction
 
-/* -----\/----- EXCLUDED -----\/-----
-  mux2 #(Depth) adrmux(PCNextFIndex, PCMIndex, BTBWrongM, RAMIndex);
-  flopenrc #(1) btbwrongwreg(clk, reset, FlushW, ~StallW, BTBWrongM, BTBWrongW);
-  assign TableBTBPredF = BTBWrongW ? '0 : TableBTBRAWPredF;
+  if (P.ONE_PORT_BP_SRAM) begin
+    logic                    BTBWrongW;
+    logic [Depth-1:0]        RAMIndex;
+    logic [P.XLEN+3:0]       TableBTBRAWPredF;
 
+    mux2 #(Depth) adrmux(PCNextFIndex, PCMIndex, BTBWrongM, RAMIndex);
+    flopenrc #(1) btbwrongwreg(clk, reset, FlushW, ~StallW, BTBWrongM, BTBWrongW);
+    assign TableBTBPredF = BTBWrongW ? '0 : TableBTBRAWPredF;
 
-  ram1p1rwbe #(.USE_SRAM(P.USE_SRAM), .DEPTH(2**Depth), .WIDTH(P.XLEN+4)) memory(
-    .clk, .ce(~StallF | reset | (~StallW & ~FlushW)), .addr(RAMIndex), .dout(TableBTBRAWPredF),
-    .din({IClassM, IEUAdrM}), .we(BTBWrongM), .bwe('1));
- -----/\----- EXCLUDED -----/\----- */
+    ram1p1rwbe #(.USE_SRAM(P.USE_SRAM), .DEPTH(2**Depth), .WIDTH(P.XLEN+4)) memory(
+      .clk, .ce(~StallF | reset | (~StallW & ~FlushW)), .addr(RAMIndex), .dout(TableBTBRAWPredF),
+      .din({IClassM, IEUAdrM}), .we(BTBWrongM), .bwe('1));
 
-  ram2p1r1wbe #(.USE_SRAM(P.USE_SRAM), .DEPTH(2**Depth), .WIDTH(P.XLEN+4)) memory(
-    .clk, .ce1(~StallF | reset), .ra1(PCNextFIndex), .rd1(TableBTBPredF),
-    .ce2(~StallW & ~FlushW), .wa2(PCMIndex), .wd2({IClassM, IEUAdrM}), .we2(BTBWrongM), .bwe2('1));
+  end else begin
+
+    ram2p1r1wbe #(.USE_SRAM(P.USE_SRAM), .DEPTH(2**Depth), .WIDTH(P.XLEN+4)) memory(
+      .clk, .ce1(~StallF | reset), .ra1(PCNextFIndex), .rd1(TableBTBPredF),
+      .ce2(~StallW & ~FlushW), .wa2(PCMIndex), .wd2({IClassM, IEUAdrM}), .we2(BTBWrongM), .bwe2('1));
+
+  end
 
   flopenrc #(P.XLEN) BTBD(clk, reset, FlushD, ~StallD, BPBTAF, BPBTAD);
 

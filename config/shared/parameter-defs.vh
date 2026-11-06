@@ -112,6 +112,7 @@ localparam cvw_t P = '{
   BTB_SIZE :        BTB_SIZE,
   RAS_SIZE :        RAS_SIZE,
   INSTR_CLASS_PRED :  INSTR_CLASS_PRED,
+  ONE_PORT_BP_SRAM : ONE_PORT_BP_SRAM,
   RADIX :        RADIX,
   DIVCOPIES :        DIVCOPIES,
   ZBA_SUPPORTED :        ZBA_SUPPORTED,
