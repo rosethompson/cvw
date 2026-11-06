@@ -41,6 +41,7 @@ module gshare import cvw::*; #(parameter cvw_t P,
   logic [k-1:0]           GHRF, GHRD, GHRE, GHRM;
   logic [k-1:0]           GHRNextM, GHRNextF;
   logic                   PCSrcM;
+  logic                   WriteGshareM;
 
   if (TYPE == 1) begin // gshare: index is global history XOR PC
     assign IndexNextF = GHRNextF ^ {PCNextF[k+1] ^ PCNextF[1], PCNextF[k:2]};
@@ -71,14 +72,36 @@ module gshare import cvw::*; #(parameter cvw_t P,
 
   assign BPDirF = MatchX ? FwdNewBPDirF : PHTBPDirF;
 
-  ram2p1r1wbe #(.USE_SRAM(P.USE_SRAM), .DEPTH(2**k), .WIDTH(2)) PHT(.clk(clk),
-    .ce1(~StallF), .ce2(~StallW & ~FlushW),
-    .ra1(IndexNextF),
-    .rd1(PHTBPDirF),
-    .wa2(IndexM),
-    .wd2(NewBPDirM),
-    .we2(BranchM),
-    .bwe2(1'b1));
+  assign WriteGshareM = BranchM & ~NewBPDirSameM;
+
+  if (P.ONE_PORT_BP_SRAM) begin
+    logic WriteGshareW;
+    logic [k-1:0] RAMIndex;
+    logic [1:0]   PHTBPRawDirF;
+
+    mux2 #(k) adrmux(IndexNextF, IndexM, WriteGshareM, RAMIndex);
+    flopenrc #(1) gsharewrongwreg(clk, reset, FlushW, ~StallW, WriteGshareM, WriteGshareW);
+    assign PHTBPDirF = WriteGshareW ? {1'b0, GHRF[0]} : PHTBPRawDirF; // *** not sure what the best prediction is when we don't predict
+
+    ram1p1rwbe #(.USE_SRAM(P.USE_SRAM), .DEPTH(2**k), .WIDTH(2)) PHT(
+      .clk(clk),
+      .ce(~StallF | (~StallW & ~FlushW)),
+      .addr(RAMIndex),
+      .dout(PHTBPRawDirF),
+      .din(NewBPDirM),
+      .we(WriteGshareW),
+      .bwe(1'b1));
+
+  end else begin
+    ram2p1r1wbe #(.USE_SRAM(P.USE_SRAM), .DEPTH(2**k), .WIDTH(2)) PHT(.clk(clk),
+      .ce1(~StallF), .ce2(~StallW & ~FlushW),
+      .ra1(IndexNextF),
+      .rd1(PHTBPDirF),
+      .wa2(IndexM),
+      .wd2(NewBPDirM),
+      .we2(WriteGshareM),
+      .bwe2(1'b1));
+  end
 
   flopenrc #(2) PredictionRegD(clk, reset, FlushD, ~StallD, BPDirF, BPDirD);
   flopenrc #(2) PredictionRegE(clk, reset, FlushE, ~StallE, BPDirD, BPDirE);
@@ -86,6 +109,11 @@ module gshare import cvw::*; #(parameter cvw_t P,
   satCounter2 BPDirUpdateE(.BrDir(PCSrcE), .OldState(BPDirE), .NewState(NewBPDirE));
   flopenrc #(2) NewPredictionRegM(clk, reset, FlushM, ~StallM, NewBPDirE, NewBPDirM);
   flopenrc #(2) NewPredictionRegW(clk, reset, FlushW, ~StallW, NewBPDirM, NewBPDirW);
+
+  logic NewBPDirSameE, NewBPDirSameM;
+  assign NewBPDirSameE = BPDirE == NewBPDirE;
+  flopenrc #(1) NewPredSameRegM(clk, reset, FlushM, ~StallM, NewBPDirSameE, NewBPDirSameM);
+
 
   assign BPDirWrongE = PCSrcE != BPDirE[1] & BranchE;
 
